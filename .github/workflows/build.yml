@@ -3,36 +3,131 @@ name: Build
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
     branches: [main]
 
 jobs:
-  build-arch:
+  build:
+    name: Build (${{ matrix.distro }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: arch
+            container: archlinux:latest
+            install: |
+              pacman -Syu --noconfirm
+              pacman -S --noconfirm base-devel cmake git \
+                qt6-base qt6-declarative qt6-networkauth \
+                kirigami kirigami-addons kcoreaddons ki18n \
+                knotifications kstatusnotifieritem kconfig kconfigwidgets \
+                qtkeychain-qt6 extra-cmake-modules gettext
+
+          - distro: fedora
+            container: fedora:latest
+            install: |
+              dnf install -y --setopt=install_weak_deps=False \
+                gcc-c++ cmake git make findutils \
+                qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtnetworkauth-devel \
+                kf6-kirigami-devel kf6-kirigami-addons \
+                kf6-kcoreaddons-devel kf6-ki18n-devel \
+                kf6-knotifications-devel kf6-kstatusnotifieritem-devel \
+                kf6-kconfig-devel kf6-kconfigwidgets-devel \
+                qtkeychain-qt6-devel extra-cmake-modules gettext
+
+          - distro: opensuse
+            container: opensuse/tumbleweed
+            install: |
+              zypper -n install -y \
+                gcc-c++ cmake git make \
+                qt6-base-devel qt6-declarative-devel qt6-networkauth-devel \
+                kf6-kirigami-devel kf6-kirigami-addons-devel \
+                kf6-kcoreaddons-devel kf6-ki18n-devel \
+                kf6-knotifications-devel kf6-kstatusnotifieritem-devel \
+                kf6-kconfig-devel kf6-kconfigwidgets-devel \
+                qtkeychain-qt6-devel extra-cmake-modules gettext-tools
     container:
-      image: archlinux:latest
+      image: ${{ matrix.container }}
     steps:
-      - name: Install build deps
-        run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm \
-            base-devel cmake git \
-            qt6-base qt6-declarative qt6-networkauth \
-            kirigami kirigami-addons kcoreaddons ki18n \
-            knotifications kstatusnotifieritem kconfig kconfigwidgets \
-            qtkeychain-qt6 extra-cmake-modules gettext
+      - name: Install build dependencies
+        run: ${{ matrix.install }}
 
       - uses: actions/checkout@v4
 
       - name: Configure
         run: |
           cmake -B build -S . \
-            -DMERKZETTEL_CLIENT_ID=00000000-0000-0000-0000-000000000000 \
+            -DMERKZETTEL_CLIENT_ID=${{ secrets.MERKZETTEL_CLIENT_ID || '00000000-0000-0000-0000-000000000000' }} \
             -DMERKZETTEL_TENANT=common \
             -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build -j
+        run: cmake --build build -j$(nproc)
 
       - name: Verify binary
         run: test -x build/bin/merkzettel
+
+      - name: Package binary
+        run: |
+          install -d artifact/merkzettel-${{ matrix.distro }}
+          cp build/bin/merkzettel artifact/merkzettel-${{ matrix.distro }}/
+          cp -r LICENSE LICENSES README.md docs artifact/merkzettel-${{ matrix.distro }}/
+          if [ -f build/po/de/LC_MESSAGES/merkzettel.mo ]; then
+            install -D build/po/de/LC_MESSAGES/merkzettel.mo \
+              artifact/merkzettel-${{ matrix.distro }}/share/locale/de/LC_MESSAGES/merkzettel.mo
+          fi
+          tar -czf merkzettel-${{ matrix.distro }}.tar.gz -C artifact merkzettel-${{ matrix.distro }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: merkzettel-${{ matrix.distro }}
+          path: merkzettel-${{ matrix.distro }}.tar.gz
+          retention-days: 14
+
+  flatpak:
+    name: Build Flatpak
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6-9
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject client ID
+        run: |
+          CLIENT_ID="${{ secrets.MERKZETTEL_CLIENT_ID || '00000000-0000-0000-0000-000000000000' }}"
+          sed -i "s/__MERKZETTEL_CLIENT_ID__/${CLIENT_ID}/" flatpak/org.kde.merkzettel.yml
+
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: merkzettel.flatpak
+          manifest-path: flatpak/org.kde.merkzettel.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+
+  release:
+    name: Publish release
+    needs: [build, flatpak]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Stage release files
+        run: |
+          mkdir -p release
+          cp artifacts/*/*.tar.gz release/ 2>/dev/null || true
+          cp artifacts/*/*.flatpak release/ 2>/dev/null || true
+          ls -la release/
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}

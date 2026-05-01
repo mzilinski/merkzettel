@@ -1,0 +1,54 @@
+id: org.kde.merkzettel
+runtime: org.kde.Platform
+runtime-version: '6.9'
+sdk: org.kde.Sdk
+command: merkzettel
+
+finish-args:
+  # Microsoft Graph + OAuth callback need network.
+  - --share=network
+  # Wayland + X11 fallback for the QML UI.
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # KStatusNotifierItem talks to the Plasma tray host.
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # KWallet via the Secret Service / kwalletd6 D-Bus interface.
+  - --talk-name=org.freedesktop.secrets
+  - --talk-name=org.kde.kwalletd6
+  # KDE accent color / theme.
+  - --filesystem=xdg-config/kdeglobals:ro
+  - --filesystem=xdg-config/kwalletrc:ro
+
+cleanup:
+  - /include
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /share/man
+  - '*.la'
+  - '*.a'
+
+modules:
+  - name: qtkeychain
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_WITH_QT6=ON
+      - -DLIBSECRET_SUPPORT=OFF
+      - -DBUILD_TRANSLATIONS=OFF
+    sources:
+      - type: archive
+        url: https://github.com/frankosterfeld/qtkeychain/archive/refs/tags/0.16.0.tar.gz
+        sha256: 3be26ec4ae30eecf0c2ff7572ba83799791b157c76e15a05ef35f23dc25e4054
+
+  - name: merkzettel
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DMERKZETTEL_CLIENT_ID=__MERKZETTEL_CLIENT_ID__
+      - -DMERKZETTEL_TENANT=common
+    sources:
+      - type: dir
+        path: ..
