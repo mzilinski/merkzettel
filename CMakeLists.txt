@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(merkzettel VERSION 0.1.0 LANGUAGES CXX)
+project(merkzettel VERSION 0.3.1 LANGUAGES CXX)
 
 set(QT_MIN_VERSION 6.6.0)
 set(KF_MIN_VERSION 6.0.0)

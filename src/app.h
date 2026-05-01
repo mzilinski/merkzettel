@@ -64,6 +64,11 @@ public Q_SLOTS:
     void clearTaskReminder(const QString &taskId);
     void setTaskTitle(const QString &taskId, const QString &title);
     void setTaskBody(const QString &taskId, const QString &body);
+    void addChecklistItem(const QString &taskId, const QString &displayName);
+    void toggleChecklistItem(const QString &taskId, const QString &itemId);
+    void renameChecklistItem(const QString &taskId, const QString &itemId,
+                             const QString &displayName);
+    void deleteChecklistItem(const QString &taskId, const QString &itemId);
     void openTaskDetails(int row);
     void closeTaskDetails();
     void requestPickDateForDue(const QString &taskId);

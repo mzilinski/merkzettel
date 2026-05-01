@@ -37,7 +37,7 @@ QQC2.ItemDelegate {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Kirigami.Units.smallSpacing
-                visible: dueLbl.text.length > 0 || bodyHint.visible
+                visible: dueLbl.text.length > 0 || bodyHint.visible || progressLbl.visible
 
                 Kirigami.Icon {
                     visible: model.dueLabel.length > 0
@@ -63,6 +63,25 @@ QQC2.ItemDelegate {
                     source: "text-x-generic"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.small
                     Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                    color: Kirigami.Theme.disabledTextColor
+                }
+                Item {
+                    visible: progressLbl.visible && (dueLbl.visible || bodyHint.visible)
+                    Layout.preferredWidth: Kirigami.Units.smallSpacing
+                }
+                Kirigami.Icon {
+                    id: progressIcon
+                    visible: progressLbl.visible
+                    source: "checkbox"
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                    color: Kirigami.Theme.disabledTextColor
+                }
+                QQC2.Label {
+                    id: progressLbl
+                    text: model.checklistProgress || ""
+                    visible: text.length > 0
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
                     color: Kirigami.Theme.disabledTextColor
                 }
                 Item { Layout.fillWidth: true }

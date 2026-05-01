@@ -86,6 +86,8 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
     engine.rootContext()->setContextProperty(QStringLiteral("app"), &controller);
+    engine.rootContext()->setContextProperty(QStringLiteral("appVersion"),
+                                             QStringLiteral(MERKZETTEL_VERSION));
 
     engine.loadFromModule(QStringLiteral("org.kde.merkzettel"), QStringLiteral("Main"));
 

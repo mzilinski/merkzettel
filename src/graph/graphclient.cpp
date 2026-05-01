@@ -41,6 +41,11 @@ void GraphClient::del(const QString &path, GraphCallback cb)
     send(Method::Delete, path, {}, {}, std::move(cb));
 }
 
+void GraphClient::getAbsolute(const QString &absoluteUrl, GraphCallback cb)
+{
+    sendUrl(Method::Get, QUrl(absoluteUrl), {}, std::move(cb));
+}
+
 void GraphClient::send(Method method, const QString &path, const QUrlQuery &query,
                        const QJsonObject &body, GraphCallback cb, int retries)
 {
@@ -48,7 +53,12 @@ void GraphClient::send(Method method, const QString &path, const QUrlQuery &quer
     if (!query.isEmpty()) {
         url.setQuery(query);
     }
+    sendUrl(method, url, body, std::move(cb), retries);
+}
 
+void GraphClient::sendUrl(Method method, const QUrl &url, const QJsonObject &body,
+                          GraphCallback cb, int retries)
+{
     QNetworkRequest req(url);
     req.setRawHeader("Authorization",
                      QByteArray("Bearer ") + m_auth->accessToken().toUtf8());
@@ -66,13 +76,13 @@ void GraphClient::send(Method method, const QString &path, const QUrlQuery &quer
     case Method::Delete: reply = m_nam->deleteResource(req); break;
     }
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply, cb, method, path, query, body, retries] {
-        handleReply(reply, cb, method, path, query, body, retries);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, cb, method, url, body, retries] {
+        handleReply(reply, cb, method, url, body, retries);
     });
 }
 
 void GraphClient::handleReply(QNetworkReply *reply, GraphCallback cb,
-                              Method method, const QString &path, const QUrlQuery &query,
+                              Method method, const QUrl &url,
                               const QJsonObject &body, int retries)
 {
     reply->deleteLater();
@@ -83,8 +93,8 @@ void GraphClient::handleReply(QNetworkReply *reply, GraphCallback cb,
     if (status == 401 && retries > 0) {
         // Token expired — refresh and retry once.
         connect(m_auth, &AuthManager::accessTokenChanged, this,
-                [this, method, path, query, body, cb] {
-                    send(method, path, query, body, cb, 0);
+                [this, method, url, body, cb] {
+                    sendUrl(method, url, body, cb, 0);
                 }, Qt::SingleShotConnection);
         m_auth->requestFreshToken();
         return;
@@ -100,14 +110,16 @@ void GraphClient::handleReply(QNetworkReply *reply, GraphCallback cb,
         return;
     }
 
+    // Always prefix with "HTTP <status>" so callers can detect specific codes
+    // (e.g. 410 for expired delta tokens) without changing the callback shape.
     QString errMsg = QStringLiteral("HTTP %1").arg(status);
     const auto errDoc = QJsonDocument::fromJson(data);
     if (errDoc.isObject()) {
         const auto err = errDoc.object().value(QStringLiteral("error")).toObject();
         const QString msg = err.value(QStringLiteral("message")).toString();
-        if (!msg.isEmpty()) errMsg = msg;
+        if (!msg.isEmpty()) errMsg = QStringLiteral("HTTP %1: %2").arg(status).arg(msg);
     } else if (reply->error() != QNetworkReply::NoError) {
-        errMsg = reply->errorString();
+        errMsg = QStringLiteral("HTTP %1: %2").arg(status).arg(reply->errorString());
     }
     cb(QJsonValue(), errMsg);
 }

@@ -81,6 +81,12 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
     case HasReminderRole:  return t.hasReminder;
     case SectionKeyRole:   return sectionKey(t);
     case SectionLabelRole: return sectionLabel(t);
+    case ChecklistTotalRole: return t.totalChecklistCount;
+    case ChecklistProgressRole: {
+        if (t.totalChecklistCount <= 0) return QString();
+        const int done = t.totalChecklistCount - t.openChecklistCount;
+        return QStringLiteral("%1/%2").arg(done).arg(t.totalChecklistCount);
+    }
     case DueLabelRole: {
         if (!t.dueDate.isValid()) return QString();
         const QDate d = toLocalDate(t.dueDate);
@@ -110,6 +116,8 @@ QHash<int, QByteArray> TasksModel::roleNames() const
         {HasReminderRole, "hasReminder"},
         {SectionKeyRole, "sectionKey"},
         {SectionLabelRole, "sectionLabel"},
+        {ChecklistProgressRole, "checklistProgress"},
+        {ChecklistTotalRole, "checklistTotal"},
     };
 }
 
@@ -146,6 +154,14 @@ QVariantMap TasksModel::taskAt(int row) const
 {
     if (row < 0 || row >= m_tasks.size()) return {};
     const Task &t = m_tasks.at(row);
+    QVariantList items;
+    for (const auto &c : t.checklistItems) {
+        items.append(QVariantMap{
+            {QStringLiteral("id"), c.id},
+            {QStringLiteral("displayName"), c.displayName},
+            {QStringLiteral("isChecked"), c.isChecked},
+        });
+    }
     return {
         {QStringLiteral("taskId"), t.id},
         {QStringLiteral("title"), t.title},
@@ -157,6 +173,9 @@ QVariantMap TasksModel::taskAt(int row) const
         {QStringLiteral("dueDate"), t.dueDate},
         {QStringLiteral("hasReminder"), t.hasReminder},
         {QStringLiteral("reminderDate"), t.reminderDate},
+        {QStringLiteral("checklistItems"), items},
+        {QStringLiteral("openChecklistCount"), t.openChecklistCount},
+        {QStringLiteral("totalChecklistCount"), t.totalChecklistCount},
     };
 }
 

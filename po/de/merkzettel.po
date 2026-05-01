@@ -350,3 +350,30 @@ msgstr "Umbenennen"
 
 msgid "New list name"
 msgstr "Neuer Listenname"
+
+msgid "Subtasks"
+msgstr "Unteraufgaben"
+
+msgid "Add subtask ..."
+msgstr "Unteraufgabe hinzufügen ..."
+
+msgid "Delete subtask"
+msgstr "Unteraufgabe löschen"
+
+msgid "Maximum of 20 subtasks reached."
+msgstr "Maximal 20 Unteraufgaben erreicht."
+
+msgid "Share ..."
+msgstr "Teilen ..."
+
+msgid "%1 (shared)"
+msgstr "%1 (geteilt)"
+
+msgid "Sharing happens in the official Microsoft To Do web app. After the invitation is accepted, the list will appear here automatically."
+msgstr "Das Teilen läuft über die offizielle Microsoft-To-Do-Web-App. Sobald die Einladung angenommen wurde, erscheint die Liste hier automatisch."
+
+msgid "Open To Do web"
+msgstr "To-Do-Web öffnen"
+
+msgid "Don't show again"
+msgstr "Nicht mehr anzeigen"

@@ -14,6 +14,7 @@ public:
         IdRole = Qt::UserRole + 1,
         DisplayNameRole,
         IsDefaultRole,
+        IsSharedRole,
     };
 
     explicit TaskListsModel(QObject *parent = nullptr);

@@ -14,6 +14,14 @@ struct TaskList {
     QString id;
     QString displayName;
     bool isDefault = false;
+    bool isShared = false;  // Read-only — Graph doesn't expose share management.
+};
+
+struct ChecklistItem {
+    QString id;
+    QString displayName;
+    QDateTime createdDateTime;  // UTC, may be invalid
+    bool isChecked = false;
 };
 
 struct Task {
@@ -26,6 +34,9 @@ struct Task {
     QDateTime reminderDate;   // UTC, valid only if hasReminder
     QDateTime lastModified;
     bool hasReminder = false;
+    QList<ChecklistItem> checklistItems;  // empty unless populated by $expand or cache
+    int openChecklistCount = 0;
+    int totalChecklistCount = 0;
     bool completed() const { return status == QLatin1String("completed"); }
     bool isImportant() const { return importance == QLatin1String("high"); }
 };
@@ -51,11 +62,41 @@ public:
     void updateTask(const QString &listId, const QString &taskId, const QJsonObject &patch);
     void deleteTask(const QString &listId, const QString &taskId);
 
+    // Delta sync. If deltaLink is empty: starts a full delta walk against
+    // /me/todo/lists/{lid}/tasks/delta. Otherwise: resumes from deltaLink and
+    // returns only changes since that token. Paginates internally via
+    // @odata.nextLink and emits tasksDelta on completion.
+    void syncTasks(const QString &listId, const QString &deltaLink);
+    // One-shot bootstrap: requests a fresh delta token without transferring
+    // any task data (Graph's $deltatoken=latest shortcut). Use after a full
+    // fetchTasks so subsequent refresh() calls can run as cheap incremental
+    // delta syncs. Emits tasksDelta with empty changed/deleted but a
+    // populated newDeltaLink.
+    void bootstrapDeltaLink(const QString &listId);
+
+    void fetchChecklistItems(const QString &listId, const QString &taskId);
+    void addChecklistItem(const QString &listId, const QString &taskId,
+                          const QString &displayName);
+    void setChecklistItemChecked(const QString &listId, const QString &taskId,
+                                 const QString &itemId, bool checked);
+    void renameChecklistItem(const QString &listId, const QString &taskId,
+                             const QString &itemId, const QString &displayName);
+    void deleteChecklistItem(const QString &listId, const QString &taskId,
+                             const QString &itemId);
+
 Q_SIGNALS:
     void listsReceived(const QList<Merkzettel::TaskList> &lists);
     void tasksReceived(const QString &listId, const QList<Merkzettel::Task> &tasks);
     void taskMutated(const QString &listId);
     void listMutated();
+    void checklistItemsReceived(const QString &listId, const QString &taskId,
+                                const QList<Merkzettel::ChecklistItem> &items);
+    void checklistItemMutated(const QString &listId, const QString &taskId);
+    void tasksDelta(const QString &listId,
+                    const QList<Merkzettel::Task> &changed,
+                    const QStringList &deletedIds,
+                    const QString &newDeltaLink);
+    void tasksDeltaExpired(const QString &listId);
     void errorOccurred(const QString &message);
 
 private:
@@ -66,3 +107,4 @@ private:
 
 Q_DECLARE_METATYPE(Merkzettel::TaskList)
 Q_DECLARE_METATYPE(Merkzettel::Task)
+Q_DECLARE_METATYPE(Merkzettel::ChecklistItem)

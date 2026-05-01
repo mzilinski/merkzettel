@@ -27,12 +27,19 @@ public:
     void patch(const QString &path, const QJsonObject &body, GraphCallback cb);
     void del(const QString &path, GraphCallback cb);
 
+    // GET against an absolute URL. Use this to follow @odata.nextLink and
+    // @odata.deltaLink, which Graph returns as fully-qualified URLs that
+    // already encode any cursor/token.
+    void getAbsolute(const QString &absoluteUrl, GraphCallback cb);
+
 private:
     enum class Method { Get, Post, Patch, Delete };
     void send(Method method, const QString &path, const QUrlQuery &query,
               const QJsonObject &body, GraphCallback cb, int retries = 1);
+    void sendUrl(Method method, const QUrl &url, const QJsonObject &body,
+                 GraphCallback cb, int retries = 1);
     void handleReply(QNetworkReply *reply, GraphCallback cb,
-                     Method method, const QString &path, const QUrlQuery &query,
+                     Method method, const QUrl &url,
                      const QJsonObject &body, int retries);
 
     AuthManager *m_auth;

@@ -1,4 +1,5 @@
 import QtQuick
+import QtCore
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
@@ -14,6 +15,29 @@ Kirigami.ApplicationWindow {
     width: Kirigami.Units.gridUnit * 36
     height: Kirigami.Units.gridUnit * 42
     visible: !app.startMinimized
+
+    // Persists the "share explainer was acknowledged" flag across sessions
+    // so we only show the banner once per user.
+    Settings {
+        id: shareSettings
+        category: "Share"
+        property bool explainerSeen: false
+    }
+
+    function shareList(listId, displayName) {
+        // Microsoft Graph doesn't expose share-management for To-Do lists.
+        // Hand off to the official web app, where the user already has the
+        // familiar share UI; once the invitation is accepted, the list shows
+        // up automatically here with isShared = true.
+        const url = "https://to-do.office.com/tasks/list/" + listId;
+        if (!shareSettings.explainerSeen) {
+            shareExplainer.contextUrl = url;
+            shareExplainer.contextName = displayName;
+            shareExplainer.visible = true;
+        } else {
+            Qt.openUrlExternally(url);
+        }
+    }
 
     Connections {
         target: app
@@ -58,6 +82,35 @@ Kirigami.ApplicationWindow {
                 type: Kirigami.MessageType.Error
                 showCloseButton: true
                 visible: false
+            },
+            Kirigami.InlineMessage {
+                id: shareExplainer
+                property string contextUrl: ""
+                property string contextName: ""
+                Layout.fillWidth: true
+                type: Kirigami.MessageType.Information
+                showCloseButton: true
+                visible: false
+                text: i18n("Sharing happens in the official Microsoft To Do web app. After the invitation is accepted, the list will appear here automatically.")
+                actions: [
+                    Kirigami.Action {
+                        text: i18n("Open To Do web")
+                        icon.name: "internet-services"
+                        onTriggered: {
+                            Qt.openUrlExternally(shareExplainer.contextUrl);
+                            shareSettings.explainerSeen = true;
+                            shareExplainer.visible = false;
+                        }
+                    },
+                    Kirigami.Action {
+                        text: i18n("Don't show again")
+                        icon.name: "dialog-ok"
+                        onTriggered: {
+                            shareSettings.explainerSeen = true;
+                            shareExplainer.visible = false;
+                        }
+                    }
+                ]
             }
         ]
 
@@ -106,7 +159,9 @@ Kirigami.ApplicationWindow {
                              ? QQC2.AbstractButton.IconOnly
                              : QQC2.AbstractButton.TextBesideIcon
                     highlighted: app.currentListId === model.listId
-                    QQC2.ToolTip.text: model.displayName
+                    QQC2.ToolTip.text: model.isShared
+                                       ? i18n("%1 (shared)", model.displayName)
+                                       : model.displayName
                     QQC2.ToolTip.visible: hovered && root.globalDrawer.collapsed
                     QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
                     onClicked: {
@@ -119,8 +174,28 @@ Kirigami.ApplicationWindow {
                         }
                     }
 
+                    // Trailing share-indicator. Hidden when the drawer is
+                    // collapsed (icon-only mode) — the tooltip carries the
+                    // info there.
+                    Kirigami.Icon {
+                        anchors.right: parent.right
+                        anchors.rightMargin: Kirigami.Units.smallSpacing
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Kirigami.Units.iconSizes.small
+                        height: Kirigami.Units.iconSizes.small
+                        source: "emblem-shared-symbolic"
+                        visible: model.isShared && !root.globalDrawer.collapsed
+                        opacity: 0.7
+                    }
+
                     QQC2.Menu {
                         id: listCtxMenu
+                        QQC2.MenuItem {
+                            text: i18n("Share ...")
+                            icon.name: "emblem-shared-symbolic"
+                            onTriggered: shareList(model.listId, model.displayName)
+                        }
+                        QQC2.MenuSeparator {}
                         QQC2.MenuItem {
                             text: i18n("Rename list ...")
                             icon.name: "edit-rename"
@@ -173,7 +248,7 @@ Kirigami.ApplicationWindow {
                 "shortDescription": i18n("Microsoft To Do client for KDE"),
                 "homepage": "https://invent.kde.org/",
                 "bugAddress": "https://invent.kde.org/",
-                "version": "0.2",
+                "version": appVersion,
                 "otherText": i18n("Built with Kirigami, KDE Frameworks 6 and Qt 6.\n\nIf Merkzettel is useful to you, consider tipping the author: https://paypal.me/eit31\n\nThe underlying KDE/Qt stack is maintained by KDE e.V.: https://kde.org/community/donations/\n\nDisclaimer: This program is provided \"as is\", without warranty of any kind. The author accepts no liability for any data loss, missed appointments or other damages arising from its use, except in cases of intent or gross negligence, or for damages to life, body or health. See the GPL-3.0 license, sections 15 and 16, for the full disclaimer."),
                 "copyrightStatement": "© 2026 Malte Zilinski",
                 "desktopFileName": "org.kde.merkzettel",

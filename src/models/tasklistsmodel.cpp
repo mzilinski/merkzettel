@@ -19,6 +19,7 @@ QVariant TaskListsModel::data(const QModelIndex &index, int role) const
     case IdRole:          return l.id;
     case DisplayNameRole: return l.displayName;
     case IsDefaultRole:   return l.isDefault;
+    case IsSharedRole:    return l.isShared;
     }
     return {};
 }
@@ -29,6 +30,7 @@ QHash<int, QByteArray> TaskListsModel::roleNames() const
         {IdRole, "listId"},
         {DisplayNameRole, "displayName"},
         {IsDefaultRole, "isDefault"},
+        {IsSharedRole, "isShared"},
     };
 }
 

@@ -52,13 +52,91 @@ App::App(QObject *parent)
         m_db->upsertTasks(listId, tasks);
         if (listId == m_currentListId) {
             m_tasksModel->setTasks(tasks);
+            // If the detail sheet is open, refresh its task snapshot from the
+            // new model so checklist toggles, body edits etc. are visible.
+            const QString openId = m_detailTask.value(QStringLiteral("taskId")).toString();
+            if (!openId.isEmpty()) {
+                const int n = m_tasksModel->rowCount();
+                for (int i = 0; i < n; ++i) {
+                    const auto idx = m_tasksModel->index(i, 0);
+                    if (m_tasksModel->data(idx, TasksModel::IdRole).toString() == openId) {
+                        m_detailTask = m_tasksModel->taskAt(i);
+                        Q_EMIT detailTaskChanged();
+                        break;
+                    }
+                }
+            }
         }
         m_tray->setOpenCount(m_db->openTaskCountForToday());
         setStatus(i18n("%1 tasks", tasks.size()));
+        // After a full fetch, bootstrap a delta token so the next refresh
+        // can run as a cheap incremental sync. Skip if we already have one
+        // (e.g. taskMutated triggered a refetch but delta was still valid).
+        if (m_db->deltaLink(listId).isEmpty()) {
+            m_todo->bootstrapDeltaLink(listId);
+        }
     });
 
     connect(m_todo.get(), &TodoApi::taskMutated, this, [this](const QString &listId) {
         m_todo->fetchTasks(listId);
+    });
+
+    connect(m_todo.get(), &TodoApi::checklistItemMutated, this,
+            [this](const QString &listId, const QString &) {
+        m_todo->fetchTasks(listId);
+    });
+
+    connect(m_todo.get(), &TodoApi::tasksDelta, this,
+            [this](const QString &listId, const QList<Task> &changed,
+                   const QStringList &deletedIds, const QString &newDeltaLink) {
+        m_db->applyTaskDelta(listId, changed, deletedIds);
+        if (!newDeltaLink.isEmpty()) {
+            m_db->setDeltaLink(listId, newDeltaLink);
+        }
+        // Delta payloads carry no checklist items ($expand isn't supported on
+        // /tasks/delta). Refetch them per changed task so the cache stays in
+        // sync; small N typically (0-3 changes per sync).
+        for (const auto &t : changed) {
+            m_todo->fetchChecklistItems(listId, t.id);
+        }
+        if (listId == m_currentListId) {
+            const auto cached = m_db->tasks(listId);
+            m_tasksModel->setTasks(cached);
+        }
+        m_tray->setOpenCount(m_db->openTaskCountForToday());
+        setStatus(i18n("Synced — %1 changed, %2 removed",
+                       changed.size(), deletedIds.size()));
+    });
+
+    connect(m_todo.get(), &TodoApi::tasksDeltaExpired, this,
+            [this](const QString &listId) {
+        // Token expired (>30 days, server-side replay limit, etc). Drop the
+        // link and fall back to a full fetch — that path will bootstrap a
+        // fresh delta token afterwards.
+        m_db->clearDeltaLink(listId);
+        m_todo->fetchTasks(listId);
+    });
+
+    connect(m_todo.get(), &TodoApi::checklistItemsReceived, this,
+            [this](const QString &listId, const QString &taskId,
+                   const QList<ChecklistItem> &items) {
+        m_db->upsertChecklistItems(listId, taskId, items);
+        if (listId == m_currentListId) {
+            const auto cached = m_db->tasks(listId);
+            m_tasksModel->setTasks(cached);
+            // Re-emit detailTask if this task is open so subtasks UI updates.
+            if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
+                const int n = m_tasksModel->rowCount();
+                for (int i = 0; i < n; ++i) {
+                    const auto idx = m_tasksModel->index(i, 0);
+                    if (m_tasksModel->data(idx, TasksModel::IdRole).toString() == taskId) {
+                        m_detailTask = m_tasksModel->taskAt(i);
+                        Q_EMIT detailTaskChanged();
+                        break;
+                    }
+                }
+            }
+        }
     });
 
     connect(m_todo.get(), &TodoApi::listMutated, this, [this] {
@@ -126,7 +204,15 @@ void App::setCurrentListId(const QString &id)
     m_tasksModel->setTasks(cachedTasks);
 
     if (loggedIn()) {
-        m_todo->fetchTasks(id);
+        // Prefer incremental delta sync when we have a token from a prior run.
+        // Otherwise fall back to a full fetch (which will get a delta token
+        // bootstrapped on its tasksReceived path).
+        const QString delta = m_db->deltaLink(id);
+        if (!delta.isEmpty()) {
+            m_todo->syncTasks(id, delta);
+        } else {
+            m_todo->fetchTasks(id);
+        }
     }
 }
 
@@ -143,7 +229,12 @@ void App::refresh()
     setStatus(i18n("Synchronizing ..."));
     m_todo->fetchLists();
     if (!m_currentListId.isEmpty()) {
-        m_todo->fetchTasks(m_currentListId);
+        const QString delta = m_db->deltaLink(m_currentListId);
+        if (!delta.isEmpty()) {
+            m_todo->syncTasks(m_currentListId, delta);
+        } else {
+            m_todo->fetchTasks(m_currentListId);
+        }
     }
 }
 
@@ -302,6 +393,45 @@ void App::setTaskBody(const QString &taskId, const QString &body)
     m_todo->setTaskBody(m_currentListId, taskId, body);
 }
 
+void App::addChecklistItem(const QString &taskId, const QString &displayName)
+{
+    if (m_currentListId.isEmpty() || displayName.trimmed().isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    m_todo->addChecklistItem(m_currentListId, taskId, displayName.trimmed());
+}
+
+void App::toggleChecklistItem(const QString &taskId, const QString &itemId)
+{
+    if (m_currentListId.isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    // Look up current state from the open detail task to avoid an extra GET.
+    bool currentlyChecked = false;
+    const auto items = m_detailTask.value(QStringLiteral("checklistItems")).toList();
+    for (const auto &v : items) {
+        const auto m = v.toMap();
+        if (m.value(QStringLiteral("id")).toString() == itemId) {
+            currentlyChecked = m.value(QStringLiteral("isChecked")).toBool();
+            break;
+        }
+    }
+    m_todo->setChecklistItemChecked(m_currentListId, taskId, itemId, !currentlyChecked);
+}
+
+void App::renameChecklistItem(const QString &taskId, const QString &itemId,
+                              const QString &displayName)
+{
+    if (m_currentListId.isEmpty() || displayName.trimmed().isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    m_todo->renameChecklistItem(m_currentListId, taskId, itemId, displayName.trimmed());
+}
+
+void App::deleteChecklistItem(const QString &taskId, const QString &itemId)
+{
+    if (m_currentListId.isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    m_todo->deleteChecklistItem(m_currentListId, taskId, itemId);
+}
+
 void App::openTaskDetails(int row)
 {
     m_detailTask = m_tasksModel->taskAt(row);
@@ -363,15 +493,33 @@ void App::loadDemoData()
         t.lastModified = QDateTime::currentDateTimeUtc();
         return t;
     };
+    auto withItems = [](Task t, std::initializer_list<std::pair<const char *, bool>> items) {
+        int i = 0;
+        for (const auto &[name, checked] : items) {
+            ChecklistItem c;
+            c.id = QStringLiteral("%1-c%2").arg(t.id).arg(i++);
+            c.displayName = QString::fromUtf8(name);
+            c.isChecked = checked;
+            t.checklistItems.append(c);
+        }
+        t.totalChecklistCount = t.checklistItems.size();
+        for (const auto &c : t.checklistItems) if (!c.isChecked) ++t.openChecklistCount;
+        return t;
+    };
 
     m_demoTasks[QStringLiteral("demo-tasks")] = {
         mk("d1",  i18n("Pay electricity bill"),                "notStarted", "normal", QString(),
            due(today.addDays(-2))),
         mk("d2",  i18n("Reply to Anna about the proposal"),    "notStarted", "high",   QString(),
            due(today)),
-        mk("d3",  i18n("Buy groceries"),                       "notStarted", "normal",
+        withItems(mk("d3",  i18n("Buy groceries"),              "notStarted", "normal",
            i18n("milk, bread, coffee, oranges"),
-           due(today)),
+           due(today)), {
+               {"Milk", true},
+               {"Bread", true},
+               {"Coffee", false},
+               {"Oranges", false},
+           }),
         mk("d4",  i18n("Team standup"),                        "notStarted", "normal", QString(),
            due(today.addDays(1)), due(today.addDays(1), 9)),
         mk("d5",  i18n("Pick up parcel from the post office"), "notStarted", "normal", QString(),
@@ -381,8 +529,13 @@ void App::loadDemoData()
         mk("d7",  i18n("Read 'The Pragmatic Programmer' ch.4"),"notStarted", "normal",
            i18n("Focus on the chapter on orthogonality."),
            due(today.addDays(4))),
-        mk("d8",  i18n("Plan summer holiday"),                 "notStarted", "normal", QString(),
-           due(today.addDays(45))),
+        withItems(mk("d8",  i18n("Plan summer holiday"),       "notStarted", "normal", QString(),
+           due(today.addDays(45))), {
+               {"Pick destination", true},
+               {"Book flights", false},
+               {"Reserve hotel", false},
+               {"Buy travel insurance", false},
+           }),
         mk("d9",  i18n("Learn Rust"),                          "notStarted", "high",
            i18n("Start with the official book."),
            QDateTime()),
@@ -395,7 +548,11 @@ void App::loadDemoData()
     };
 
     m_demoTasks[QStringLiteral("demo-work")] = {
-        mk("w1", i18n("Quarterly report"),        "notStarted", "high",   QString(), due(today.addDays(2))),
+        withItems(mk("w1", i18n("Quarterly report"), "notStarted", "high", QString(), due(today.addDays(2))), {
+            {"Pull Q1 numbers", true},
+            {"Draft executive summary", false},
+            {"Review with manager", false},
+        }),
         mk("w2", i18n("Code review for Markus"),  "notStarted", "normal", QString(), due(today.addDays(1))),
         mk("w3", i18n("1:1 with manager"),        "notStarted", "normal", QString(), due(today.addDays(7), 14)),
     };

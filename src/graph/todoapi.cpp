@@ -5,6 +5,8 @@
 #include <QJsonArray>
 #include <QUrlQuery>
 #include <QTimeZone>
+#include <functional>
+#include <memory>
 
 namespace Merkzettel {
 
@@ -40,6 +42,19 @@ QJsonObject toGraphDateTime(const QDateTime &dt)
     };
 }
 
+ChecklistItem parseChecklistItem(const QJsonObject &obj)
+{
+    ChecklistItem c;
+    c.id = obj.value(QStringLiteral("id")).toString();
+    c.displayName = obj.value(QStringLiteral("displayName")).toString();
+    c.isChecked = obj.value(QStringLiteral("isChecked")).toBool();
+    const QString created = obj.value(QStringLiteral("createdDateTime")).toString();
+    if (!created.isEmpty()) {
+        c.createdDateTime = QDateTime::fromString(created, Qt::ISODate);
+    }
+    return c;
+}
+
 Task parseTask(const QJsonObject &obj)
 {
     Task t;
@@ -58,6 +73,18 @@ Task parseTask(const QJsonObject &obj)
     if (!lm.isEmpty()) {
         t.lastModified = QDateTime::fromString(lm, Qt::ISODate);
     }
+
+    // checklistItems comes via $expand on the tasks collection. Server orders
+    // ascending by createdDateTime; we keep that order.
+    const auto items = obj.value(QStringLiteral("checklistItems")).toArray();
+    for (const auto &v : items) {
+        t.checklistItems.append(parseChecklistItem(v.toObject()));
+    }
+    t.totalChecklistCount = t.checklistItems.size();
+    t.openChecklistCount = 0;
+    for (const auto &c : t.checklistItems) {
+        if (!c.isChecked) ++t.openChecklistCount;
+    }
     return t;
 }
 
@@ -68,6 +95,7 @@ TaskList parseList(const QJsonObject &obj)
     l.displayName = obj.value(QStringLiteral("displayName")).toString();
     l.isDefault = obj.value(QStringLiteral("wellknownListName")).toString()
                   == QLatin1String("defaultList");
+    l.isShared = obj.value(QStringLiteral("isShared")).toBool();
     return l;
 }
 
@@ -94,6 +122,10 @@ void TodoApi::fetchTasks(const QString &listId)
     QUrlQuery q;
     q.addQueryItem(QStringLiteral("$top"), QStringLiteral("200"));
     q.addQueryItem(QStringLiteral("$orderby"), QStringLiteral("createdDateTime desc"));
+    // $expand keeps subtasks in the same roundtrip. Worst case is 200 tasks * 20
+    // checklist items = 4000 sub-objects per fetch, which is acceptable. Switch
+    // to lazy load (only when the detail sheet opens) if this becomes a hotspot.
+    q.addQueryItem(QStringLiteral("$expand"), QStringLiteral("checklistItems"));
 
     m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks").arg(listId), q,
                  [this, listId](const QJsonValue &val, const QString &err) {
@@ -203,6 +235,129 @@ void TodoApi::renameList(const QString &listId, const QString &newName)
                    [this](const QJsonValue &, const QString &err) {
         if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
         Q_EMIT listMutated();
+    });
+}
+
+void TodoApi::syncTasks(const QString &listId, const QString &deltaLink)
+{
+    struct DeltaState {
+        QList<Task> changed;
+        QStringList deleted;
+    };
+    auto state = std::make_shared<DeltaState>();
+    auto handler = std::make_shared<std::function<void(const QJsonValue &, const QString &)>>();
+    *handler = [this, listId, state, handler](const QJsonValue &val, const QString &err) {
+        if (!err.isEmpty()) {
+            // 410 means the delta token is no longer valid — caller must drop
+            // it and run a full fetchTasks fallback.
+            if (err.contains(QStringLiteral("HTTP 410"))) {
+                Q_EMIT tasksDeltaExpired(listId);
+            } else {
+                Q_EMIT errorOccurred(err);
+            }
+            return;
+        }
+        const auto obj = val.toObject();
+        const auto items = obj.value(QStringLiteral("value")).toArray();
+        for (const auto &v : items) {
+            const auto taskObj = v.toObject();
+            // Tasks removed since the last delta carry the @removed annotation
+            // (Graph quirk: it's a top-level key, not inside the task body).
+            if (taskObj.contains(QStringLiteral("@removed"))) {
+                state->deleted.append(taskObj.value(QStringLiteral("id")).toString());
+            } else {
+                state->changed.append(parseTask(taskObj));
+            }
+        }
+        const QString nextLink = obj.value(QStringLiteral("@odata.nextLink")).toString();
+        if (!nextLink.isEmpty()) {
+            m_graph->getAbsolute(nextLink, *handler);
+            return;
+        }
+        const QString newDeltaLink = obj.value(QStringLiteral("@odata.deltaLink")).toString();
+        Q_EMIT tasksDelta(listId, state->changed, state->deleted, newDeltaLink);
+    };
+
+    if (deltaLink.isEmpty()) {
+        m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/delta").arg(listId), {}, *handler);
+    } else {
+        m_graph->getAbsolute(deltaLink, *handler);
+    }
+}
+
+void TodoApi::bootstrapDeltaLink(const QString &listId)
+{
+    QUrlQuery q;
+    q.addQueryItem(QStringLiteral("$deltatoken"), QStringLiteral("latest"));
+    m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/delta").arg(listId), q,
+                 [this, listId](const QJsonValue &val, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        const QString newDeltaLink = val.toObject()
+            .value(QStringLiteral("@odata.deltaLink")).toString();
+        Q_EMIT tasksDelta(listId, {}, {}, newDeltaLink);
+    });
+}
+
+void TodoApi::fetchChecklistItems(const QString &listId, const QString &taskId)
+{
+    m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems").arg(listId, taskId), {},
+                 [this, listId, taskId](const QJsonValue &val, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        QList<ChecklistItem> items;
+        for (const auto &v : val.toObject().value(QStringLiteral("value")).toArray()) {
+            items.append(parseChecklistItem(v.toObject()));
+        }
+        Q_EMIT checklistItemsReceived(listId, taskId, items);
+    });
+}
+
+void TodoApi::addChecklistItem(const QString &listId, const QString &taskId,
+                               const QString &displayName)
+{
+    QJsonObject body;
+    body.insert(QStringLiteral("displayName"), displayName);
+    body.insert(QStringLiteral("isChecked"), false);
+    m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems").arg(listId, taskId), body,
+                  [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT checklistItemMutated(listId, taskId);
+    });
+}
+
+void TodoApi::setChecklistItemChecked(const QString &listId, const QString &taskId,
+                                      const QString &itemId, bool checked)
+{
+    QJsonObject patch;
+    patch.insert(QStringLiteral("isChecked"), checked);
+    m_graph->patch(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems/%3")
+                       .arg(listId, taskId, itemId), patch,
+                   [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT checklistItemMutated(listId, taskId);
+    });
+}
+
+void TodoApi::renameChecklistItem(const QString &listId, const QString &taskId,
+                                  const QString &itemId, const QString &displayName)
+{
+    QJsonObject patch;
+    patch.insert(QStringLiteral("displayName"), displayName);
+    m_graph->patch(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems/%3")
+                       .arg(listId, taskId, itemId), patch,
+                   [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT checklistItemMutated(listId, taskId);
+    });
+}
+
+void TodoApi::deleteChecklistItem(const QString &listId, const QString &taskId,
+                                  const QString &itemId)
+{
+    m_graph->del(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems/%3")
+                     .arg(listId, taskId, itemId),
+                 [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT checklistItemMutated(listId, taskId);
     });
 }
 

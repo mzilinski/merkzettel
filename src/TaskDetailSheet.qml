@@ -158,6 +158,81 @@ Kirigami.OverlaySheet {
 
         Kirigami.Separator { Layout.fillWidth: true }
 
+        Kirigami.Heading {
+            level: 4
+            text: i18n("Subtasks")
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing
+
+            Repeater {
+                model: hasTask && task.checklistItems ? task.checklistItems : []
+                delegate: RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
+                    QQC2.CheckBox {
+                        checked: modelData.isChecked
+                        onToggled: if (hasTask) app.toggleChecklistItem(task.taskId, modelData.id)
+                    }
+                    QQC2.TextField {
+                        Layout.fillWidth: true
+                        text: modelData.displayName
+                        font.strikeout: modelData.isChecked
+                        color: modelData.isChecked ? Kirigami.Theme.disabledTextColor
+                                                   : Kirigami.Theme.textColor
+                        onEditingFinished: {
+                            const trimmed = text.trim();
+                            if (hasTask && trimmed.length > 0 && trimmed !== modelData.displayName) {
+                                app.renameChecklistItem(task.taskId, modelData.id, trimmed);
+                            }
+                        }
+                    }
+                    QQC2.ToolButton {
+                        icon.name: "edit-delete"
+                        QQC2.ToolTip.text: i18n("Delete subtask")
+                        QQC2.ToolTip.visible: hovered
+                        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                        onClicked: if (hasTask) app.deleteChecklistItem(task.taskId, modelData.id)
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                QQC2.TextField {
+                    id: newItemField
+                    Layout.fillWidth: true
+                    placeholderText: i18n("Add subtask ...")
+                    // Graph caps checklist items at 20 per task; disable the
+                    // input rather than letting the request fail.
+                    enabled: hasTask && (task.totalChecklistCount || 0) < 20
+                    onAccepted: addCurrent()
+                    function addCurrent() {
+                        if (text.trim().length > 0 && hasTask) {
+                            app.addChecklistItem(task.taskId, text.trim());
+                            text = "";
+                        }
+                    }
+                }
+                QQC2.Button {
+                    icon.name: "list-add"
+                    enabled: newItemField.enabled && newItemField.text.trim().length > 0
+                    onClicked: newItemField.addCurrent()
+                }
+            }
+
+            QQC2.Label {
+                visible: hasTask && (task.totalChecklistCount || 0) >= 20
+                text: i18n("Maximum of 20 subtasks reached.")
+                color: Kirigami.Theme.disabledTextColor
+                font.italic: true
+            }
+        }
+
+        Kirigami.Separator { Layout.fillWidth: true }
+
         QQC2.TextArea {
             id: bodyArea
             Layout.fillWidth: true

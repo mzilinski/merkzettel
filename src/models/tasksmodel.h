@@ -24,6 +24,8 @@ public:
         HasReminderRole,
         SectionKeyRole,
         SectionLabelRole,
+        ChecklistProgressRole,
+        ChecklistTotalRole,
     };
 
     explicit TasksModel(QObject *parent = nullptr);
