@@ -62,6 +62,7 @@ public:
 
     void fetchLists();
     void fetchTasks(const QString &listId);
+    void createList(const QString &displayName);
     void deleteList(const QString &listId);
     void renameList(const QString &listId, const QString &newName);
     void addTask(const QString &listId, const QString &title, const QDateTime &due = {});
@@ -112,6 +113,7 @@ Q_SIGNALS:
     void tasksReceived(const QString &listId, const QList<Merkzettel::Task> &tasks);
     void taskMutated(const QString &listId);
     void listMutated();
+    void listCreated(const QString &listId);  // newly-created id, for select-after-create
     void checklistItemsReceived(const QString &listId, const QString &taskId,
                                 const QList<Merkzettel::ChecklistItem> &items);
     void checklistItemMutated(const QString &listId, const QString &taskId);

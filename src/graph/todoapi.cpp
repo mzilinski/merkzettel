@@ -270,6 +270,21 @@ void TodoApi::deleteTask(const QString &listId, const QString &taskId)
     });
 }
 
+void TodoApi::createList(const QString &displayName)
+{
+    QJsonObject body;
+    body.insert(QStringLiteral("displayName"), displayName);
+    m_graph->post(QStringLiteral("/me/todo/lists"), body,
+                  [this](const QJsonValue &val, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        // Emit listCreated first so the App can preselect the new list,
+        // then listMutated to trigger a refresh.
+        const QString newId = val.toObject().value(QStringLiteral("id")).toString();
+        if (!newId.isEmpty()) Q_EMIT listCreated(newId);
+        Q_EMIT listMutated();
+    });
+}
+
 void TodoApi::deleteList(const QString &listId)
 {
     m_graph->del(QStringLiteral("/me/todo/lists/%1").arg(listId),

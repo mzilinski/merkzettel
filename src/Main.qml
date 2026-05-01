@@ -116,6 +116,12 @@ Kirigami.ApplicationWindow {
 
         actions: [
             Kirigami.Action {
+                text: i18n("New list ...")
+                icon.name: "list-add"
+                enabled: app.loggedIn
+                onTriggered: createListDialog.open()
+            },
+            Kirigami.Action {
                 text: i18n("Sync")
                 icon.name: "view-refresh"
                 enabled: app.loggedIn
@@ -358,6 +364,47 @@ Kirigami.ApplicationWindow {
                 onTriggered: {
                     app.deleteList(deleteListDialog.listId);
                     deleteListDialog.close();
+                }
+            }
+        ]
+    }
+
+    Kirigami.PromptDialog {
+        id: createListDialog
+        parent: root.overlay
+        title: i18n("New list")
+        standardButtons: Kirigami.PromptDialog.NoButton
+
+        onOpened: {
+            createNameField.text = "";
+            createNameField.forceActiveFocus();
+        }
+
+        QQC2.TextField {
+            id: createNameField
+            Layout.fillWidth: true
+            placeholderText: i18n("List name")
+            onAccepted: {
+                if (text.trim().length > 0) {
+                    app.createList(text.trim());
+                    createListDialog.close();
+                }
+            }
+        }
+
+        customFooterActions: [
+            Kirigami.Action {
+                text: i18n("Cancel")
+                icon.name: "dialog-cancel"
+                onTriggered: createListDialog.close()
+            },
+            Kirigami.Action {
+                text: i18n("Create")
+                icon.name: "list-add"
+                enabled: createNameField.text.trim().length > 0
+                onTriggered: {
+                    app.createList(createNameField.text.trim());
+                    createListDialog.close();
                 }
             }
         ]

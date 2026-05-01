@@ -413,3 +413,15 @@ msgstr "https://... oder Dateipfad"
 
 msgid "Label (optional)"
 msgstr "Beschriftung (optional)"
+
+msgid "New list ..."
+msgstr "Neue Liste ..."
+
+msgid "New list"
+msgstr "Neue Liste"
+
+msgid "List name"
+msgstr "Listenname"
+
+msgid "Create"
+msgstr "Erstellen"

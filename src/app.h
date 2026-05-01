@@ -58,6 +58,7 @@ public Q_SLOTS:
     void completeTask(const QString &taskId);
     void uncompleteTask(const QString &taskId);
     void deleteTask(const QString &taskId);
+    void createList(const QString &displayName);
     void deleteList(const QString &listId);
     void renameList(const QString &listId, const QString &newName);
     void toggleImportance(const QString &taskId);
