@@ -4,10 +4,13 @@
 #include <QString>
 #include <QDateTime>
 #include <QVariantMap>
+#include <QSet>
 #include <memory>
 
 #include "models/tasksmodel.h"
 #include "models/tasklistsmodel.h"
+
+class QTimer;
 
 namespace Merkzettel {
 
@@ -94,6 +97,8 @@ private:
     void loadDemoData();
     void switchDemoList(const QString &id);
 
+    void checkReminders();
+
     std::unique_ptr<AuthManager> m_auth;
     std::unique_ptr<GraphClient> m_graph;
     std::unique_ptr<TodoApi> m_todo;
@@ -101,6 +106,10 @@ private:
     std::unique_ptr<TrayIcon> m_tray;
     TasksModel *m_tasksModel;
     TaskListsModel *m_listsModel;
+    QTimer *m_reminderTimer = nullptr;
+    // Composite key "taskId|reminderIsoUtc" so that resetting a reminder to
+    // a new time produces a new key and re-fires.
+    QSet<QString> m_firedReminders;
 
     QString m_status;
     QString m_currentListId;

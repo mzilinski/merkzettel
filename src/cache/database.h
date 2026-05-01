@@ -35,6 +35,15 @@ public:
 
     int openTaskCountForToday() const;
 
+    struct ReminderHit {
+        QString listId;
+        QString taskId;
+        QString title;
+        QDateTime reminderUtc;
+    };
+    // Open tasks across all lists whose reminder fires at or before `cutoff`.
+    QList<ReminderHit> reminderHitsBefore(const QDateTime &cutoff) const;
+
     QString deltaLink(const QString &listId) const;
     void setDeltaLink(const QString &listId, const QString &deltaLink);
     void clearDeltaLink(const QString &listId);

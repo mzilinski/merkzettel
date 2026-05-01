@@ -398,3 +398,6 @@ msgstr "Jährlich"
 
 msgid "(custom)"
 msgstr "(angepasst)"
+
+msgid "Reminder"
+msgstr "Erinnerung"

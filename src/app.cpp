@@ -9,10 +9,12 @@
 #include "models/tasklistsmodel.h"
 
 #include <KLocalizedString>
+#include <KNotification>
 #include <QApplication>
 #include <QDate>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QTimer>
 #include <QTimeZone>
 #include <QRegularExpression>
 #include <QDebug>
@@ -153,6 +155,10 @@ App::App(QObject *parent)
     connect(m_tray.get(), &TrayIcon::activated, this, &App::toggleWindow);
     connect(m_tray.get(), &TrayIcon::quitRequested, this, [] { qApp->quit(); });
     connect(m_tray.get(), &TrayIcon::syncRequested, this, &App::refresh);
+
+    m_reminderTimer = new QTimer(this);
+    m_reminderTimer->setInterval(60 * 1000);  // 1 minute
+    connect(m_reminderTimer, &QTimer::timeout, this, &App::checkReminders);
 }
 
 App::~App() = default;
@@ -179,6 +185,16 @@ void App::start()
         }
     }
     m_tray->setOpenCount(m_db->openTaskCountForToday());
+
+    // Mark every already-overdue reminder as "fired" so launching the app
+    // doesn't unleash a flood of notifications. Anything firing from now on
+    // is genuine.
+    const auto stale = m_db->reminderHitsBefore(QDateTime::currentDateTimeUtc());
+    for (const auto &h : stale) {
+        m_firedReminders.insert(h.taskId + QLatin1Char('|')
+                                + h.reminderUtc.toUTC().toString(Qt::ISODate));
+    }
+    m_reminderTimer->start();
 
     m_auth->start();
     Q_EMIT loggedInChanged();
@@ -510,6 +526,36 @@ void App::requestPickDateForDue(const QString &taskId)
 }
 
 void App::toggleWindow() { Q_EMIT windowToggleRequested(); }
+
+void App::checkReminders()
+{
+    if (m_demoMode) return;
+    const auto hits = m_db->reminderHitsBefore(QDateTime::currentDateTimeUtc());
+    for (const auto &h : hits) {
+        const QString key = h.taskId + QLatin1Char('|')
+                            + h.reminderUtc.toUTC().toString(Qt::ISODate);
+        if (m_firedReminders.contains(key)) continue;
+        m_firedReminders.insert(key);
+
+        auto *notif = new KNotification(QStringLiteral("reminder"),
+                                        KNotification::CloseOnTimeout);
+        notif->setTitle(i18n("Reminder"));
+        notif->setText(h.title);
+        notif->setIconName(QStringLiteral("appointment-soon"));
+
+        // "Mark done" closes the task right from the notification — single
+        // most useful action here. Show window stays the implicit fallback
+        // when the user clicks the notification body.
+        const QString listId = h.listId;
+        const QString taskId = h.taskId;
+        auto *doneAction = notif->addAction(i18n("Mark done"));
+        connect(doneAction, &KNotificationAction::activated, this, [this, listId, taskId] {
+            if (loggedIn()) m_todo->setTaskStatus(listId, taskId, QStringLiteral("completed"));
+        });
+
+        notif->sendEvent();
+    }
+}
 
 void App::loadDemoData()
 {

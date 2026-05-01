@@ -102,6 +102,30 @@ void Database::upsertLists(const QList<TaskList> &lists)
     db.commit();
 }
 
+QList<Database::ReminderHit> Database::reminderHitsBefore(const QDateTime &cutoff) const
+{
+    QList<ReminderHit> result;
+    auto db = QSqlDatabase::database(m_connectionName);
+    QSqlQuery q(db);
+    q.prepare(QStringLiteral(
+        "SELECT list_id, id, title, reminder_utc FROM tasks "
+        "WHERE has_reminder = 1 AND status != 'completed' "
+        "AND reminder_utc IS NOT NULL AND reminder_utc <= ? "
+        "ORDER BY reminder_utc ASC"));
+    q.bindValue(0, cutoff.toUTC().toString(Qt::ISODate));
+    q.exec();
+    while (q.next()) {
+        ReminderHit h;
+        h.listId = q.value(0).toString();
+        h.taskId = q.value(1).toString();
+        h.title = q.value(2).toString();
+        const QString r = q.value(3).toString();
+        if (!r.isEmpty()) h.reminderUtc = QDateTime::fromString(r, Qt::ISODate);
+        result.append(h);
+    }
+    return result;
+}
+
 QString Database::deltaLink(const QString &listId) const
 {
     auto db = QSqlDatabase::database(m_connectionName);
