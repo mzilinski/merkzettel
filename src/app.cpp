@@ -12,11 +12,13 @@
 #include <KNotification>
 #include <QApplication>
 #include <QDate>
+#include <QDesktopServices>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QTimer>
 #include <QTimeZone>
 #include <QRegularExpression>
+#include <QUrl>
 #include <QDebug>
 
 namespace Merkzettel {
@@ -90,6 +92,32 @@ App::App(QObject *parent)
         m_todo->fetchTasks(listId);
     });
 
+    connect(m_todo.get(), &TodoApi::linkedResourceMutated, this,
+            [this](const QString &listId, const QString &) {
+        m_todo->fetchTasks(listId);
+    });
+
+    connect(m_todo.get(), &TodoApi::linkedResourcesReceived, this,
+            [this](const QString &listId, const QString &taskId,
+                   const QList<LinkedResource> &items) {
+        m_db->upsertLinkedResources(listId, taskId, items);
+        if (listId == m_currentListId) {
+            const auto cached = m_db->tasks(listId);
+            m_tasksModel->setTasks(cached);
+            if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
+                const int n = m_tasksModel->rowCount();
+                for (int i = 0; i < n; ++i) {
+                    const auto idx = m_tasksModel->index(i, 0);
+                    if (m_tasksModel->data(idx, TasksModel::IdRole).toString() == taskId) {
+                        m_detailTask = m_tasksModel->taskAt(i);
+                        Q_EMIT detailTaskChanged();
+                        break;
+                    }
+                }
+            }
+        }
+    });
+
     connect(m_todo.get(), &TodoApi::tasksDelta, this,
             [this](const QString &listId, const QList<Task> &changed,
                    const QStringList &deletedIds, const QString &newDeltaLink) {
@@ -97,11 +125,12 @@ App::App(QObject *parent)
         if (!newDeltaLink.isEmpty()) {
             m_db->setDeltaLink(listId, newDeltaLink);
         }
-        // Delta payloads carry no checklist items ($expand isn't supported on
-        // /tasks/delta). Refetch them per changed task so the cache stays in
-        // sync; small N typically (0-3 changes per sync).
+        // Delta payloads carry no expand fields ($expand isn't supported on
+        // /tasks/delta). Refetch sub-collections per changed task so the
+        // cache stays in sync; small N typically (0-3 changes per sync).
         for (const auto &t : changed) {
             m_todo->fetchChecklistItems(listId, t.id);
+            m_todo->fetchLinkedResources(listId, t.id);
         }
         if (listId == m_currentListId) {
             const auto cached = m_db->tasks(listId);
@@ -496,6 +525,33 @@ void App::setTaskRecurrencePattern(const QString &taskId, const QString &pattern
         });
     }
     m_todo->setTaskRecurrence(m_currentListId, taskId, rec);
+}
+
+void App::addLinkedResource(const QString &taskId, const QString &webUrl,
+                            const QString &displayName)
+{
+    if (m_currentListId.isEmpty() || webUrl.trimmed().isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    // applicationName defaults to the URL host (more useful than a fixed
+    // "Merkzettel" label when listing alongside Outlook-created links).
+    const QUrl url(webUrl.trimmed());
+    const QString appName = url.host().isEmpty() ? QStringLiteral("Merkzettel") : url.host();
+    const QString name = displayName.trimmed().isEmpty()
+                             ? webUrl.trimmed() : displayName.trimmed();
+    m_todo->addLinkedResource(m_currentListId, taskId, appName, webUrl.trimmed(), name);
+}
+
+void App::removeLinkedResource(const QString &taskId, const QString &resourceId)
+{
+    if (m_currentListId.isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    m_todo->removeLinkedResource(m_currentListId, taskId, resourceId);
+}
+
+void App::openLinkedResource(const QString &webUrl)
+{
+    if (webUrl.isEmpty()) return;
+    QDesktopServices::openUrl(QUrl(webUrl));
 }
 
 void App::openTaskDetails(int row)

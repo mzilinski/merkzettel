@@ -78,6 +78,18 @@ QQC2.ItemDelegate {
                     color: Kirigami.Theme.disabledTextColor
                 }
                 Item {
+                    visible: linkIcon.visible && (dueLbl.visible || bodyHint.visible || recurrenceIcon.visible)
+                    Layout.preferredWidth: Kirigami.Units.smallSpacing
+                }
+                Kirigami.Icon {
+                    id: linkIcon
+                    visible: (model.linkedResourceCount || 0) > 0
+                    source: "internet-services"
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                    color: Kirigami.Theme.disabledTextColor
+                }
+                Item {
                     visible: progressLbl.visible && (dueLbl.visible || bodyHint.visible)
                     Layout.preferredWidth: Kirigami.Units.smallSpacing
                 }

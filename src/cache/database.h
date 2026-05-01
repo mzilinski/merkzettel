@@ -29,6 +29,8 @@ public:
     // dedicated /checklistItems fetch after delta detects a changed task.
     void upsertChecklistItems(const QString &listId, const QString &taskId,
                               const QList<ChecklistItem> &items);
+    void upsertLinkedResources(const QString &listId, const QString &taskId,
+                               const QList<LinkedResource> &items);
 
     QList<TaskList> lists() const;
     QList<Task> tasks(const QString &listId) const;
@@ -51,6 +53,7 @@ public:
 private:
     void createSchema();
     QHash<QString, QList<ChecklistItem>> checklistItemsByTask(const QString &listId) const;
+    QHash<QString, QList<LinkedResource>> linkedResourcesByTask(const QString &listId) const;
     QString m_connectionName;
 };
 

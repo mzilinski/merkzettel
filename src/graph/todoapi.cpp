@@ -57,6 +57,17 @@ ChecklistItem parseChecklistItem(const QJsonObject &obj)
     return c;
 }
 
+LinkedResource parseLinkedResource(const QJsonObject &obj)
+{
+    LinkedResource r;
+    r.id = obj.value(QStringLiteral("id")).toString();
+    r.applicationName = obj.value(QStringLiteral("applicationName")).toString();
+    r.webUrl = obj.value(QStringLiteral("webUrl")).toString();
+    r.displayName = obj.value(QStringLiteral("displayName")).toString();
+    r.externalId = obj.value(QStringLiteral("externalId")).toString();
+    return r;
+}
+
 Task parseTask(const QJsonObject &obj)
 {
     Task t;
@@ -93,6 +104,11 @@ Task parseTask(const QJsonObject &obj)
     t.openChecklistCount = 0;
     for (const auto &c : t.checklistItems) {
         if (!c.isChecked) ++t.openChecklistCount;
+    }
+
+    const auto links = obj.value(QStringLiteral("linkedResources")).toArray();
+    for (const auto &v : links) {
+        t.linkedResources.append(parseLinkedResource(v.toObject()));
     }
     return t;
 }
@@ -134,7 +150,8 @@ void TodoApi::fetchTasks(const QString &listId)
     // $expand keeps subtasks in the same roundtrip. Worst case is 200 tasks * 20
     // checklist items = 4000 sub-objects per fetch, which is acceptable. Switch
     // to lazy load (only when the detail sheet opens) if this becomes a hotspot.
-    q.addQueryItem(QStringLiteral("$expand"), QStringLiteral("checklistItems"));
+    q.addQueryItem(QStringLiteral("$expand"),
+                   QStringLiteral("checklistItems,linkedResources"));
 
     m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks").arg(listId), q,
                  [this, listId](const QJsonValue &val, const QString &err) {
@@ -393,6 +410,47 @@ void TodoApi::deleteChecklistItem(const QString &listId, const QString &taskId,
                  [this, listId, taskId](const QJsonValue &, const QString &err) {
         if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
         Q_EMIT checklistItemMutated(listId, taskId);
+    });
+}
+
+void TodoApi::fetchLinkedResources(const QString &listId, const QString &taskId)
+{
+    m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/%2/linkedResources").arg(listId, taskId), {},
+                 [this, listId, taskId](const QJsonValue &val, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        QList<LinkedResource> items;
+        for (const auto &v : val.toObject().value(QStringLiteral("value")).toArray()) {
+            items.append(parseLinkedResource(v.toObject()));
+        }
+        Q_EMIT linkedResourcesReceived(listId, taskId, items);
+    });
+}
+
+void TodoApi::addLinkedResource(const QString &listId, const QString &taskId,
+                                const QString &applicationName,
+                                const QString &webUrl,
+                                const QString &displayName)
+{
+    QJsonObject body;
+    body.insert(QStringLiteral("applicationName"), applicationName);
+    body.insert(QStringLiteral("webUrl"), webUrl);
+    body.insert(QStringLiteral("displayName"), displayName);
+    m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks/%2/linkedResources").arg(listId, taskId),
+                  body,
+                  [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT linkedResourceMutated(listId, taskId);
+    });
+}
+
+void TodoApi::removeLinkedResource(const QString &listId, const QString &taskId,
+                                   const QString &resourceId)
+{
+    m_graph->del(QStringLiteral("/me/todo/lists/%1/tasks/%2/linkedResources/%3")
+                     .arg(listId, taskId, resourceId),
+                 [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT linkedResourceMutated(listId, taskId);
     });
 }
 

@@ -75,6 +75,10 @@ public Q_SLOTS:
     // pattern: "" (clear) / "daily" / "weekly" / "monthly" / "yearly".
     // Unknown values are no-ops.
     void setTaskRecurrencePattern(const QString &taskId, const QString &pattern);
+    void addLinkedResource(const QString &taskId, const QString &webUrl,
+                           const QString &displayName);
+    void removeLinkedResource(const QString &taskId, const QString &resourceId);
+    void openLinkedResource(const QString &webUrl);
     void openTaskDetails(int row);
     void closeTaskDetails();
     void requestPickDateForDue(const QString &taskId);

@@ -85,6 +85,7 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
     case SectionLabelRole: return sectionLabel(t);
     case ChecklistTotalRole: return t.totalChecklistCount;
     case HasRecurrenceRole: return !t.recurrenceJson.isEmpty();
+    case LinkedResourceCountRole: return int(t.linkedResources.size());
     case ChecklistProgressRole: {
         if (t.totalChecklistCount <= 0) return QString();
         const int done = t.totalChecklistCount - t.openChecklistCount;
@@ -122,6 +123,7 @@ QHash<int, QByteArray> TasksModel::roleNames() const
         {ChecklistProgressRole, "checklistProgress"},
         {ChecklistTotalRole, "checklistTotal"},
         {HasRecurrenceRole, "hasRecurrence"},
+        {LinkedResourceCountRole, "linkedResourceCount"},
     };
 }
 
@@ -166,6 +168,15 @@ QVariantMap TasksModel::taskAt(int row) const
             {QStringLiteral("isChecked"), c.isChecked},
         });
     }
+    QVariantList links;
+    for (const auto &r : t.linkedResources) {
+        links.append(QVariantMap{
+            {QStringLiteral("id"), r.id},
+            {QStringLiteral("displayName"), r.displayName},
+            {QStringLiteral("webUrl"), r.webUrl},
+            {QStringLiteral("applicationName"), r.applicationName},
+        });
+    }
     // Surface a coarse pattern string for the UI ComboBox: "" / "daily" /
     // "weekly" / "monthly" / "yearly". Anything else (custom interval,
     // weekly with specific weekdays, ...) becomes "custom" — the UI then
@@ -199,6 +210,8 @@ QVariantMap TasksModel::taskAt(int row) const
         {QStringLiteral("totalChecklistCount"), t.totalChecklistCount},
         {QStringLiteral("recurrencePattern"), patternKind},
         {QStringLiteral("recurrenceCustom"), patternCustom},
+        {QStringLiteral("linkedResources"), links},
+        {QStringLiteral("linkedResourceCount"), int(t.linkedResources.size())},
     };
 }
 

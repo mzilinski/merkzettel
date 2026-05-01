@@ -24,6 +24,14 @@ struct ChecklistItem {
     bool isChecked = false;
 };
 
+struct LinkedResource {
+    QString id;
+    QString applicationName;  // source app label (e.g. "Outlook", "Merkzettel")
+    QString webUrl;           // target URL
+    QString displayName;      // user-facing label
+    QString externalId;       // opaque external-system id, pass-through
+};
+
 struct Task {
     QString id;
     QString title;
@@ -41,6 +49,7 @@ struct Task {
     QList<ChecklistItem> checklistItems;  // empty unless populated by $expand or cache
     int openChecklistCount = 0;
     int totalChecklistCount = 0;
+    QList<LinkedResource> linkedResources;  // empty unless populated by $expand or cache
     bool completed() const { return status == QLatin1String("completed"); }
     bool isImportant() const { return importance == QLatin1String("high"); }
 };
@@ -90,6 +99,14 @@ public:
     void deleteChecklistItem(const QString &listId, const QString &taskId,
                              const QString &itemId);
 
+    void fetchLinkedResources(const QString &listId, const QString &taskId);
+    void addLinkedResource(const QString &listId, const QString &taskId,
+                           const QString &applicationName,
+                           const QString &webUrl,
+                           const QString &displayName);
+    void removeLinkedResource(const QString &listId, const QString &taskId,
+                              const QString &resourceId);
+
 Q_SIGNALS:
     void listsReceived(const QList<Merkzettel::TaskList> &lists);
     void tasksReceived(const QString &listId, const QList<Merkzettel::Task> &tasks);
@@ -98,6 +115,9 @@ Q_SIGNALS:
     void checklistItemsReceived(const QString &listId, const QString &taskId,
                                 const QList<Merkzettel::ChecklistItem> &items);
     void checklistItemMutated(const QString &listId, const QString &taskId);
+    void linkedResourcesReceived(const QString &listId, const QString &taskId,
+                                 const QList<Merkzettel::LinkedResource> &items);
+    void linkedResourceMutated(const QString &listId, const QString &taskId);
     void tasksDelta(const QString &listId,
                     const QList<Merkzettel::Task> &changed,
                     const QStringList &deletedIds,
@@ -114,3 +134,4 @@ private:
 Q_DECLARE_METATYPE(Merkzettel::TaskList)
 Q_DECLARE_METATYPE(Merkzettel::Task)
 Q_DECLARE_METATYPE(Merkzettel::ChecklistItem)
+Q_DECLARE_METATYPE(Merkzettel::LinkedResource)

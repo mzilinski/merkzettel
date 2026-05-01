@@ -272,6 +272,78 @@ Kirigami.OverlaySheet {
 
         Kirigami.Separator { Layout.fillWidth: true }
 
+        Kirigami.Heading {
+            level: 4
+            text: i18n("Links")
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing
+
+            Repeater {
+                model: hasTask && task.linkedResources ? task.linkedResources : []
+                delegate: RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
+                    Kirigami.Icon {
+                        source: "internet-services"
+                        Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                        Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                    }
+                    QQC2.Label {
+                        Layout.fillWidth: true
+                        text: `<a href="${modelData.webUrl}">${modelData.displayName || modelData.webUrl}</a>`
+                        textFormat: Text.RichText
+                        elide: Text.ElideRight
+                        onLinkActivated: link => app.openLinkedResource(link)
+                        QQC2.ToolTip.text: modelData.webUrl
+                        QQC2.ToolTip.visible: hovered && (modelData.displayName || "").length > 0
+                        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                        HoverHandler { id: hoverArea }
+                        property bool hovered: hoverArea.hovered
+                    }
+                    QQC2.ToolButton {
+                        icon.name: "edit-delete"
+                        QQC2.ToolTip.text: i18n("Remove link")
+                        QQC2.ToolTip.visible: hovered
+                        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                        onClicked: if (hasTask) app.removeLinkedResource(task.taskId, modelData.id)
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                QQC2.TextField {
+                    id: newLinkUrl
+                    Layout.fillWidth: true
+                    placeholderText: i18n("https://... or file path")
+                    onAccepted: addCurrent()
+                    function addCurrent() {
+                        if (text.trim().length > 0 && hasTask) {
+                            app.addLinkedResource(task.taskId, text.trim(), newLinkName.text.trim());
+                            text = "";
+                            newLinkName.text = "";
+                        }
+                    }
+                }
+                QQC2.TextField {
+                    id: newLinkName
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 8
+                    placeholderText: i18n("Label (optional)")
+                    onAccepted: newLinkUrl.addCurrent()
+                }
+                QQC2.Button {
+                    icon.name: "list-add"
+                    enabled: newLinkUrl.text.trim().length > 0
+                    onClicked: newLinkUrl.addCurrent()
+                }
+            }
+        }
+
+        Kirigami.Separator { Layout.fillWidth: true }
+
         QQC2.TextArea {
             id: bodyArea
             Layout.fillWidth: true

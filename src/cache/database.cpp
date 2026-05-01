@@ -74,6 +74,19 @@ void Database::createSchema()
         ")"));
     q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_check_task ON checklist_items(task_id)"));
     q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_check_list ON checklist_items(list_id)"));
+    q.exec(QStringLiteral(
+        "CREATE TABLE IF NOT EXISTS linked_resources ("
+        "  id TEXT PRIMARY KEY,"
+        "  task_id TEXT NOT NULL,"
+        "  list_id TEXT NOT NULL,"
+        "  application_name TEXT,"
+        "  web_url TEXT,"
+        "  display_name TEXT,"
+        "  external_id TEXT,"
+        "  sort_order INTEGER NOT NULL DEFAULT 0"
+        ")"));
+    q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_linkres_task ON linked_resources(task_id)"));
+    q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_linkres_list ON linked_resources(list_id)"));
 
     // Migrate older schemas: add columns if missing.
     q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN importance TEXT NOT NULL DEFAULT 'normal'"));
@@ -167,6 +180,11 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
     delChk.bindValue(0, listId);
     delChk.exec();
 
+    QSqlQuery delLinks(db);
+    delLinks.prepare(QStringLiteral("DELETE FROM linked_resources WHERE list_id = ?"));
+    delLinks.bindValue(0, listId);
+    delLinks.exec();
+
     QSqlQuery q(db);
     q.prepare(QStringLiteral(
         "INSERT INTO tasks(id, list_id, title, status, importance, body, due_utc, "
@@ -177,6 +195,12 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
         "INSERT INTO checklist_items(id, task_id, list_id, display_name, is_checked, "
         "created_utc, sort_order) "
         "VALUES(?, ?, ?, ?, ?, ?, ?)"));
+
+    QSqlQuery lnk(db);
+    lnk.prepare(QStringLiteral(
+        "INSERT INTO linked_resources(id, task_id, list_id, application_name, "
+        "web_url, display_name, external_id, sort_order) "
+        "VALUES(?, ?, ?, ?, ?, ?, ?, ?)"));
 
     for (const auto &t : tasks) {
         q.bindValue(0, t.id);
@@ -203,6 +227,18 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
                               ? c.createdDateTime.toUTC().toString(Qt::ISODate) : QVariant());
             chk.bindValue(6, order++);
             chk.exec();
+        }
+        order = 0;
+        for (const auto &r : t.linkedResources) {
+            lnk.bindValue(0, r.id);
+            lnk.bindValue(1, t.id);
+            lnk.bindValue(2, listId);
+            lnk.bindValue(3, r.applicationName);
+            lnk.bindValue(4, r.webUrl);
+            lnk.bindValue(5, r.displayName);
+            lnk.bindValue(6, r.externalId);
+            lnk.bindValue(7, order++);
+            lnk.exec();
         }
     }
     db.commit();
@@ -357,6 +393,7 @@ QList<Task> Database::tasks(const QString &listId) const
     }
 
     const auto itemsByTask = checklistItemsByTask(listId);
+    const auto linksByTask = linkedResourcesByTask(listId);
     for (auto &t : result) {
         t.checklistItems = itemsByTask.value(t.id);
         t.totalChecklistCount = t.checklistItems.size();
@@ -364,8 +401,64 @@ QList<Task> Database::tasks(const QString &listId) const
         for (const auto &c : t.checklistItems) {
             if (!c.isChecked) ++t.openChecklistCount;
         }
+        t.linkedResources = linksByTask.value(t.id);
     }
     return result;
+}
+
+QHash<QString, QList<LinkedResource>> Database::linkedResourcesByTask(const QString &listId) const
+{
+    QHash<QString, QList<LinkedResource>> result;
+    auto db = QSqlDatabase::database(m_connectionName);
+    QSqlQuery q(db);
+    q.prepare(QStringLiteral(
+        "SELECT id, task_id, application_name, web_url, display_name, external_id "
+        "FROM linked_resources WHERE list_id = ? "
+        "ORDER BY task_id ASC, sort_order ASC"));
+    q.bindValue(0, listId);
+    q.exec();
+    while (q.next()) {
+        LinkedResource r;
+        r.id = q.value(0).toString();
+        const QString taskId = q.value(1).toString();
+        r.applicationName = q.value(2).toString();
+        r.webUrl = q.value(3).toString();
+        r.displayName = q.value(4).toString();
+        r.externalId = q.value(5).toString();
+        result[taskId].append(r);
+    }
+    return result;
+}
+
+void Database::upsertLinkedResources(const QString &listId, const QString &taskId,
+                                     const QList<LinkedResource> &items)
+{
+    auto db = QSqlDatabase::database(m_connectionName);
+    db.transaction();
+
+    QSqlQuery del(db);
+    del.prepare(QStringLiteral("DELETE FROM linked_resources WHERE task_id = ?"));
+    del.bindValue(0, taskId);
+    del.exec();
+
+    QSqlQuery ins(db);
+    ins.prepare(QStringLiteral(
+        "INSERT INTO linked_resources(id, task_id, list_id, application_name, "
+        "web_url, display_name, external_id, sort_order) "
+        "VALUES(?, ?, ?, ?, ?, ?, ?, ?)"));
+    int order = 0;
+    for (const auto &r : items) {
+        ins.bindValue(0, r.id);
+        ins.bindValue(1, taskId);
+        ins.bindValue(2, listId);
+        ins.bindValue(3, r.applicationName);
+        ins.bindValue(4, r.webUrl);
+        ins.bindValue(5, r.displayName);
+        ins.bindValue(6, r.externalId);
+        ins.bindValue(7, order++);
+        ins.exec();
+    }
+    db.commit();
 }
 
 int Database::openTaskCountForToday() const

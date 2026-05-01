@@ -401,3 +401,15 @@ msgstr "(angepasst)"
 
 msgid "Reminder"
 msgstr "Erinnerung"
+
+msgid "Links"
+msgstr "Verknüpfungen"
+
+msgid "Remove link"
+msgstr "Verknüpfung entfernen"
+
+msgid "https://... or file path"
+msgstr "https://... oder Dateipfad"
+
+msgid "Label (optional)"
+msgstr "Beschriftung (optional)"
