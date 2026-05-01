@@ -1,6 +1,8 @@
 #include "tasksmodel.h"
 
 #include <QDateTime>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLocale>
 #include <KLocalizedString>
 #include <algorithm>
@@ -82,6 +84,7 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
     case SectionKeyRole:   return sectionKey(t);
     case SectionLabelRole: return sectionLabel(t);
     case ChecklistTotalRole: return t.totalChecklistCount;
+    case HasRecurrenceRole: return !t.recurrenceJson.isEmpty();
     case ChecklistProgressRole: {
         if (t.totalChecklistCount <= 0) return QString();
         const int done = t.totalChecklistCount - t.openChecklistCount;
@@ -118,6 +121,7 @@ QHash<int, QByteArray> TasksModel::roleNames() const
         {SectionLabelRole, "sectionLabel"},
         {ChecklistProgressRole, "checklistProgress"},
         {ChecklistTotalRole, "checklistTotal"},
+        {HasRecurrenceRole, "hasRecurrence"},
     };
 }
 
@@ -162,6 +166,23 @@ QVariantMap TasksModel::taskAt(int row) const
             {QStringLiteral("isChecked"), c.isChecked},
         });
     }
+    // Surface a coarse pattern string for the UI ComboBox: "" / "daily" /
+    // "weekly" / "monthly" / "yearly". Anything else (custom interval,
+    // weekly with specific weekdays, ...) becomes "custom" — the UI then
+    // shows it as read-only because we don't have a designer for it.
+    QString patternKind;
+    bool patternCustom = false;
+    if (!t.recurrenceJson.isEmpty()) {
+        const auto doc = QJsonDocument::fromJson(t.recurrenceJson.toUtf8());
+        const auto pat = doc.object().value(QStringLiteral("pattern")).toObject();
+        const QString type = pat.value(QStringLiteral("type")).toString();
+        const int interval = pat.value(QStringLiteral("interval")).toInt(1);
+        if (type == QLatin1String("daily") && interval == 1) patternKind = QStringLiteral("daily");
+        else if (type == QLatin1String("weekly") && interval == 1) patternKind = QStringLiteral("weekly");
+        else if (type == QLatin1String("absoluteMonthly") && interval == 1) patternKind = QStringLiteral("monthly");
+        else if (type == QLatin1String("absoluteYearly") && interval == 1) patternKind = QStringLiteral("yearly");
+        else { patternKind = QStringLiteral("custom"); patternCustom = true; }
+    }
     return {
         {QStringLiteral("taskId"), t.id},
         {QStringLiteral("title"), t.title},
@@ -176,6 +197,8 @@ QVariantMap TasksModel::taskAt(int row) const
         {QStringLiteral("checklistItems"), items},
         {QStringLiteral("openChecklistCount"), t.openChecklistCount},
         {QStringLiteral("totalChecklistCount"), t.totalChecklistCount},
+        {QStringLiteral("recurrencePattern"), patternKind},
+        {QStringLiteral("recurrenceCustom"), patternCustom},
     };
 }
 

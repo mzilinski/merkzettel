@@ -26,6 +26,7 @@ public:
         SectionLabelRole,
         ChecklistProgressRole,
         ChecklistTotalRole,
+        HasRecurrenceRole,
     };
 
     explicit TasksModel(QObject *parent = nullptr);

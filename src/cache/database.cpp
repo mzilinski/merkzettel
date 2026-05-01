@@ -57,8 +57,10 @@ void Database::createSchema()
         "  due_utc TEXT,"
         "  reminder_utc TEXT,"
         "  has_reminder INTEGER NOT NULL DEFAULT 0,"
-        "  last_modified TEXT"
+        "  last_modified TEXT,"
+        "  recurrence_json TEXT"
         ")"));
+    q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN recurrence_json TEXT"));
     q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_tasks_list ON tasks(list_id)"));
     q.exec(QStringLiteral(
         "CREATE TABLE IF NOT EXISTS checklist_items ("
@@ -144,8 +146,8 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
     QSqlQuery q(db);
     q.prepare(QStringLiteral(
         "INSERT INTO tasks(id, list_id, title, status, importance, body, due_utc, "
-        "reminder_utc, has_reminder, last_modified) "
-        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+        "reminder_utc, has_reminder, last_modified, recurrence_json) "
+        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
     QSqlQuery chk(db);
     chk.prepare(QStringLiteral(
         "INSERT INTO checklist_items(id, task_id, list_id, display_name, is_checked, "
@@ -163,6 +165,7 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
         q.bindValue(7, t.reminderDate.isValid() ? t.reminderDate.toUTC().toString(Qt::ISODate) : QVariant());
         q.bindValue(8, t.hasReminder ? 1 : 0);
         q.bindValue(9, t.lastModified.isValid() ? t.lastModified.toUTC().toString(Qt::ISODate) : QVariant());
+        q.bindValue(10, t.recurrenceJson.isEmpty() ? QVariant() : t.recurrenceJson);
         q.exec();
 
         int order = 0;
@@ -202,12 +205,13 @@ void Database::applyTaskDelta(const QString &listId,
     QSqlQuery upsert(db);
     upsert.prepare(QStringLiteral(
         "INSERT INTO tasks(id, list_id, title, status, importance, body, due_utc, "
-        "reminder_utc, has_reminder, last_modified) "
-        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+        "reminder_utc, has_reminder, last_modified, recurrence_json) "
+        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
         "ON CONFLICT(id) DO UPDATE SET "
         "title=excluded.title, status=excluded.status, importance=excluded.importance, "
         "body=excluded.body, due_utc=excluded.due_utc, reminder_utc=excluded.reminder_utc, "
-        "has_reminder=excluded.has_reminder, last_modified=excluded.last_modified"));
+        "has_reminder=excluded.has_reminder, last_modified=excluded.last_modified, "
+        "recurrence_json=excluded.recurrence_json"));
     for (const auto &t : changed) {
         upsert.bindValue(0, t.id);
         upsert.bindValue(1, listId);
@@ -219,6 +223,7 @@ void Database::applyTaskDelta(const QString &listId,
         upsert.bindValue(7, t.reminderDate.isValid() ? t.reminderDate.toUTC().toString(Qt::ISODate) : QVariant());
         upsert.bindValue(8, t.hasReminder ? 1 : 0);
         upsert.bindValue(9, t.lastModified.isValid() ? t.lastModified.toUTC().toString(Qt::ISODate) : QVariant());
+        upsert.bindValue(10, t.recurrenceJson.isEmpty() ? QVariant() : t.recurrenceJson);
         upsert.exec();
     }
     db.commit();
@@ -302,7 +307,8 @@ QList<Task> Database::tasks(const QString &listId) const
     auto db = QSqlDatabase::database(m_connectionName);
     QSqlQuery q(db);
     q.prepare(QStringLiteral(
-        "SELECT id, title, status, importance, body, due_utc, reminder_utc, has_reminder, last_modified "
+        "SELECT id, title, status, importance, body, due_utc, reminder_utc, has_reminder, "
+        "last_modified, recurrence_json "
         "FROM tasks WHERE list_id = ? "
         "ORDER BY (status = 'completed') ASC, due_utc ASC NULLS LAST, "
         "(importance = 'high') DESC, title ASC"));
@@ -322,6 +328,7 @@ QList<Task> Database::tasks(const QString &listId) const
         t.hasReminder = q.value(7).toInt() != 0;
         const QString lm = q.value(8).toString();
         if (!lm.isEmpty()) t.lastModified = QDateTime::fromString(lm, Qt::ISODate);
+        t.recurrenceJson = q.value(9).toString();
         result.append(t);
     }
 

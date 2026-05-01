@@ -66,6 +66,18 @@ QQC2.ItemDelegate {
                     color: Kirigami.Theme.disabledTextColor
                 }
                 Item {
+                    visible: recurrenceIcon.visible && (dueLbl.visible || bodyHint.visible)
+                    Layout.preferredWidth: Kirigami.Units.smallSpacing
+                }
+                Kirigami.Icon {
+                    id: recurrenceIcon
+                    visible: model.hasRecurrence
+                    source: "view-refresh-symbolic"
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                    color: Kirigami.Theme.disabledTextColor
+                }
+                Item {
                     visible: progressLbl.visible && (dueLbl.visible || bodyHint.visible)
                     Layout.preferredWidth: Kirigami.Units.smallSpacing
                 }

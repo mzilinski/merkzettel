@@ -99,6 +99,45 @@ Kirigami.OverlaySheet {
             }
 
             RowLayout {
+                Kirigami.FormData.label: i18n("Repeat:")
+                spacing: Kirigami.Units.smallSpacing
+                QQC2.ComboBox {
+                    id: recurrenceCombo
+                    Layout.fillWidth: true
+                    enabled: hasTask && !task.recurrenceCustom
+                    textRole: "label"
+                    valueRole: "value"
+                    model: [
+                        { value: "",        label: i18n("Never") },
+                        { value: "daily",   label: i18n("Daily") },
+                        { value: "weekly",  label: i18n("Weekly") },
+                        { value: "monthly", label: i18n("Monthly") },
+                        { value: "yearly",  label: i18n("Yearly") },
+                    ]
+                    currentIndex: {
+                        if (!hasTask) return 0;
+                        const p = task.recurrencePattern || "";
+                        for (let i = 0; i < model.length; ++i) {
+                            if (model[i].value === p) return i;
+                        }
+                        return 0;  // "custom" falls back to "Never" in the picker
+                    }
+                    onActivated: {
+                        if (!hasTask) return;
+                        const value = model[currentIndex].value;
+                        if (value === (task.recurrencePattern || "")) return;
+                        app.setTaskRecurrencePattern(task.taskId, value);
+                    }
+                }
+                QQC2.Label {
+                    visible: hasTask && task.recurrenceCustom
+                    text: i18n("(custom)")
+                    color: Kirigami.Theme.disabledTextColor
+                    font.italic: true
+                }
+            }
+
+            RowLayout {
                 Kirigami.FormData.label: i18n("Reminder:")
                 spacing: Kirigami.Units.smallSpacing
                 QQC2.Switch {

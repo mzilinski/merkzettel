@@ -377,3 +377,24 @@ msgstr "To-Do-Web öffnen"
 
 msgid "Don't show again"
 msgstr "Nicht mehr anzeigen"
+
+msgid "Repeat:"
+msgstr "Wiederholung:"
+
+msgid "Never"
+msgstr "Nie"
+
+msgid "Daily"
+msgstr "Täglich"
+
+msgid "Weekly"
+msgstr "Wöchentlich"
+
+msgid "Monthly"
+msgstr "Monatlich"
+
+msgid "Yearly"
+msgstr "Jährlich"
+
+msgid "(custom)"
+msgstr "(angepasst)"

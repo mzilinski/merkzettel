@@ -3,8 +3,10 @@
 
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QUrlQuery>
 #include <QTimeZone>
+#include <QDate>
 #include <functional>
 #include <memory>
 
@@ -72,6 +74,13 @@ Task parseTask(const QJsonObject &obj)
     const QString lm = obj.value(QStringLiteral("lastModifiedDateTime")).toString();
     if (!lm.isEmpty()) {
         t.lastModified = QDateTime::fromString(lm, Qt::ISODate);
+    }
+
+    // patternedRecurrence is a nested object; serialize verbatim so the
+    // app doesn't have to track every Graph pattern type.
+    const auto rec = obj.value(QStringLiteral("recurrence")).toObject();
+    if (!rec.isEmpty()) {
+        t.recurrenceJson = QString::fromUtf8(QJsonDocument(rec).toJson(QJsonDocument::Compact));
     }
 
     // checklistItems comes via $expand on the tasks collection. Server orders
@@ -198,6 +207,32 @@ void TodoApi::setTaskBody(const QString &listId, const QString &taskId, const QS
         {QStringLiteral("content"), body},
     };
     updateTask(listId, taskId, {{QStringLiteral("body"), bodyObj}});
+}
+
+void TodoApi::setTaskRecurrence(const QString &listId, const QString &taskId,
+                                const QJsonObject &recurrence)
+{
+    QJsonObject patch;
+    if (recurrence.isEmpty()) {
+        // Clearing: explicit JSON null tells Graph to drop the field.
+        patch.insert(QStringLiteral("recurrence"), QJsonValue::Null);
+    } else {
+        // Light validation: auto-fill range.startDate (today) and
+        // range.recurrenceTimeZone (UTC) if missing — saves callers from
+        // having to know these are required.
+        QJsonObject rec = recurrence;
+        QJsonObject range = rec.value(QStringLiteral("range")).toObject();
+        if (!range.contains(QStringLiteral("startDate"))) {
+            range.insert(QStringLiteral("startDate"),
+                         QDate::currentDate().toString(Qt::ISODate));
+        }
+        if (!range.contains(QStringLiteral("recurrenceTimeZone"))) {
+            range.insert(QStringLiteral("recurrenceTimeZone"), QStringLiteral("UTC"));
+        }
+        rec.insert(QStringLiteral("range"), range);
+        patch.insert(QStringLiteral("recurrence"), rec);
+    }
+    updateTask(listId, taskId, patch);
 }
 
 void TodoApi::updateTask(const QString &listId, const QString &taskId, const QJsonObject &patch)

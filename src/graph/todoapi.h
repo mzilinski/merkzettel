@@ -34,6 +34,10 @@ struct Task {
     QDateTime reminderDate;   // UTC, valid only if hasReminder
     QDateTime lastModified;
     bool hasReminder = false;
+    // Microsoft Graph patternedRecurrence as a JSON string (or empty if none).
+    // Stored verbatim so the API and cache stay schema-compatible if Graph
+    // adds new pattern types in the future.
+    QString recurrenceJson;
     QList<ChecklistItem> checklistItems;  // empty unless populated by $expand or cache
     int openChecklistCount = 0;
     int totalChecklistCount = 0;
@@ -59,6 +63,8 @@ public:
     void clearTaskReminder(const QString &listId, const QString &taskId);
     void setTaskTitle(const QString &listId, const QString &taskId, const QString &title);
     void setTaskBody(const QString &listId, const QString &taskId, const QString &body);
+    void setTaskRecurrence(const QString &listId, const QString &taskId,
+                           const QJsonObject &recurrence);  // empty = clear
     void updateTask(const QString &listId, const QString &taskId, const QJsonObject &patch);
     void deleteTask(const QString &listId, const QString &taskId);
 

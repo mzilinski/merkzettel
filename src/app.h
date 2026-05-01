@@ -69,6 +69,9 @@ public Q_SLOTS:
     void renameChecklistItem(const QString &taskId, const QString &itemId,
                              const QString &displayName);
     void deleteChecklistItem(const QString &taskId, const QString &itemId);
+    // pattern: "" (clear) / "daily" / "weekly" / "monthly" / "yearly".
+    // Unknown values are no-ops.
+    void setTaskRecurrencePattern(const QString &taskId, const QString &pattern);
     void openTaskDetails(int row);
     void closeTaskDetails();
     void requestPickDateForDue(const QString &taskId);
