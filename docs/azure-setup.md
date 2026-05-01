@@ -1,46 +1,48 @@
-# Azure App Registration fuer Merkzettel
+# Azure App Registration for Merkzettel
 
-Damit Merkzettel sich gegen Microsoft To Do (Microsoft Graph) authentifizieren kann, brauchst du eine eigene **Azure App Registration**. Microsoft erlaubt das fuer persoenliche und Work/School-Accounts kostenlos. Der Vorgang dauert ca. 5 Minuten.
+To let Merkzettel authenticate against Microsoft To Do (Microsoft Graph), you need your own **Azure App Registration**. Microsoft allows this for free for both personal and work/school accounts. The whole process takes about 5 minutes.
 
-## 1. Anlegen
+## 1. Register
 
-1. Gehe zu <https://entra.microsoft.com/> → **Anwendungen** → **App-Registrierungen** → **Neue Registrierung**.
-2. **Name**: `Merkzettel` (frei waehlbar).
-3. **Unterstuetzte Kontotypen**: waehle, was zu dir passt. Fuer eine private + Work-Anbindung:
-   - **Konten in einem beliebigen Verzeichnis (Multitenant) und persoenliche Microsoft-Konten**
-4. **Umleitungs-URI**: Plattform **Oeffentlicher Client/native (mobile und Desktop)**, URI exakt:
+1. Go to <https://entra.microsoft.com/> → **Applications** → **App registrations** → **New registration**.
+2. **Name**: `Merkzettel` (anything works).
+3. **Supported account types**: pick what fits you. For both personal and work use:
+   - **Accounts in any organizational directory (multitenant) and personal Microsoft accounts**
+4. **Redirect URI**: platform **Mobile and desktop applications**, URI exactly:
    `http://localhost:53682/callback`
-   (Merkzettel hoert auf festem Port 53682. Wenn du den Port aendern willst, muss `kCallbackPort` in `src/auth/authmanager.cpp` und die Azure-URI uebereinstimmen.)
-5. **Registrieren** klicken.
+   (Merkzettel listens on the fixed port 53682. If you want a different port, change `kCallbackPort` in `src/auth/authmanager.cpp` and the Azure URI to match.)
+5. Click **Register**.
 
-## 2. Public-Client-Modus aktivieren
+## 2. Enable public-client mode
 
-In der neuen App-Registrierung:
+In the new app registration:
 
-1. Linke Sidebar → **Authentifizierung**.
-2. Scrolle zu **Erweiterte Einstellungen** → **Oeffentliche Clientflows zulassen** → **Ja**.
-3. Speichern.
+1. Left sidebar → **Authentication**.
+2. Scroll to **Advanced settings** → **Allow public client flows** → **Yes**.
+3. Save.
 
-> Wichtig: KEIN „Client Secret" anlegen. Public Clients verwenden PKCE statt Secret.
+> Important: do NOT create a "Client Secret". Public clients use PKCE instead of a secret.
 
-## 3. API-Berechtigungen setzen
+## 3. Configure API permissions
 
-1. Linke Sidebar → **API-Berechtigungen** → **Berechtigung hinzufuegen** → **Microsoft Graph** → **Delegierte Berechtigungen**.
-2. Suche und aktiviere:
+1. Left sidebar → **API permissions** → **Add a permission** → **Microsoft Graph** → **Delegated permissions**.
+2. Search and enable:
    - `Tasks.ReadWrite`
    - `User.Read`
    - `offline_access`
-3. **Berechtigungen hinzufuegen**.
-4. Fuer persoenliche Microsoft-Konten ist keine Admin-Zustimmung noetig. Fuer Work/School-Tenants kann ein Admin-Consent noetig sein — frag deinen IT-Admin oder klicke „Administratorzustimmung erteilen".
+   - `openid`
+   - `profile`
+3. Click **Add permissions**.
+4. Personal Microsoft accounts do not need admin consent. Work/school tenants may need an admin consent — ask your IT admin or click "Grant admin consent" if you have rights.
 
-## 4. Werte herauskopieren
+## 4. Copy the values
 
-Im **Ueberblick** der App-Registrierung:
+In the **Overview** of the app registration:
 
-- **Anwendungs-(Client-)ID**: lange UUID, z. B. `12345678-aaaa-bbbb-cccc-1234567890ab`
-- **Verzeichnis-(Mandanten-)ID**: nur fuer single-tenant relevant. Fuer den Mehrkontenfall verwenden wir `common`.
+- **Application (client) ID**: a long UUID, e.g. `12345678-aaaa-bbbb-cccc-1234567890ab`
+- **Directory (tenant) ID**: only relevant for single-tenant. For multi-tenant we use `common`.
 
-## 5. Merkzettel bauen
+## 5. Build Merkzettel
 
 ```bash
 cmake -B build -S . \
@@ -50,21 +52,21 @@ cmake --build build -j
 ./build/bin/merkzettel
 ```
 
-Beim ersten Start oeffnet sich der Browser, Microsoft fragt nach Zustimmung, und Merkzettel speichert das Refresh-Token in KWallet.
+On first launch the browser opens, Microsoft asks for consent, and Merkzettel stores the refresh token in KWallet.
 
-## Tenant-Werte im Ueberblick
+## Tenant values at a glance
 
-| Wert | Bedeutung |
+| Value | Meaning |
 |---|---|
-| `common` | Persoenliche **und** Work/School-Konten |
-| `organizations` | Nur Work/School (alle Tenants) |
-| `consumers` | Nur persoenliche Microsoft-Konten |
-| `<tenant-uuid>` | Genau dein eigener Work/School-Tenant |
+| `common` | Personal **and** work/school accounts |
+| `organizations` | Work/school only (any tenant) |
+| `consumers` | Personal Microsoft accounts only |
+| `<tenant-uuid>` | Exactly your own work/school tenant |
 
-## Token-Speicher
+## Token storage
 
-Das Refresh-Token landet in **KWallet** unter:
+The refresh token lives in **KWallet** under:
 - Service: `merkzettel`
 - Key: `refresh_token`
 
-Loeschen via KWallet-Manager oder `Abmelden` im App-Menue.
+Delete it via the KWallet manager or the `Sign out` action in the app menu.

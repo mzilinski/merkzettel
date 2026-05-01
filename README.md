@@ -114,9 +114,8 @@ cmake --install build --prefix ~/.local
 
 Issues and PRs welcome. Conventions:
 
-- C++ code and comments in English
-- Commit messages and project documentation in German (umlauts as `ae`/`oe`/`ue` in markdown)
-- User-facing strings in source code always **English** + `i18n()` + translation in `po/<lang>/merkzettel.po`
+- All code, comments, commit messages and documentation in English
+- User-facing strings in source code always wrapped in `i18n()`; translations live in `po/<lang>/merkzettel.po`
 - Adding a language: create `po/<lang>/merkzettel.po`, the build picks it up automatically
 - Run `cmake --build build` and verify the binary launches headlessly with `QT_QPA_PLATFORM=offscreen ./build/bin/merkzettel --demo` before opening a PR
 
