@@ -98,6 +98,7 @@ Kirigami.ApplicationWindow {
             Repeater {
                 model: app.listsModel
                 delegate: QQC2.ItemDelegate {
+                    id: listItem
                     Layout.fillWidth: true
                     text: root.globalDrawer.collapsed ? "" : model.displayName
                     icon.name: model.isDefault ? "emblem-favorite" : "view-list-text"
@@ -116,6 +117,25 @@ Kirigami.ApplicationWindow {
                         if (!root.wideScreen) {
                             root.globalDrawer.close();
                         }
+                    }
+
+                    QQC2.Menu {
+                        id: listCtxMenu
+                        QQC2.MenuItem {
+                            text: i18n("Delete list ...")
+                            icon.name: "edit-delete"
+                            enabled: !model.isDefault
+                            onTriggered: {
+                                deleteListDialog.listId = model.listId;
+                                deleteListDialog.listName = model.displayName;
+                                deleteListDialog.open();
+                            }
+                        }
+                    }
+
+                    TapHandler {
+                        acceptedButtons: Qt.RightButton
+                        onTapped: listCtxMenu.popup()
                     }
                 }
             }
@@ -231,6 +251,31 @@ Kirigami.ApplicationWindow {
                 app.setTaskReminder(tid, d);
             }
         }
+    }
+
+    Kirigami.PromptDialog {
+        id: deleteListDialog
+        property string listId: ""
+        property string listName: ""
+        parent: root.overlay
+        title: i18n("Delete list?")
+        subtitle: i18n("This will permanently delete the list \"%1\" and all of its tasks. This cannot be undone.", listName)
+        standardButtons: Kirigami.PromptDialog.NoButton
+        customFooterActions: [
+            Kirigami.Action {
+                text: i18n("Cancel")
+                icon.name: "dialog-cancel"
+                onTriggered: deleteListDialog.close()
+            },
+            Kirigami.Action {
+                text: i18n("Delete")
+                icon.name: "edit-delete"
+                onTriggered: {
+                    app.deleteList(deleteListDialog.listId);
+                    deleteListDialog.close();
+                }
+            }
+        ]
     }
 
     KDA.TimePopup {

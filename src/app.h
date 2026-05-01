@@ -55,6 +55,7 @@ public Q_SLOTS:
     void completeTask(const QString &taskId);
     void uncompleteTask(const QString &taskId);
     void deleteTask(const QString &taskId);
+    void deleteList(const QString &listId);
     void toggleImportance(const QString &taskId);
     void setTaskDueDate(const QString &taskId, const QDateTime &due);
     void clearTaskDueDate(const QString &taskId);

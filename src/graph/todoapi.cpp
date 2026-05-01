@@ -186,4 +186,13 @@ void TodoApi::deleteTask(const QString &listId, const QString &taskId)
     });
 }
 
+void TodoApi::deleteList(const QString &listId)
+{
+    m_graph->del(QStringLiteral("/me/todo/lists/%1").arg(listId),
+                 [this](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT listMutated();
+    });
+}
+
 } // namespace Merkzettel

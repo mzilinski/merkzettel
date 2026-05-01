@@ -325,3 +325,16 @@ msgstr "KDE-Frameworks-6-Tutorial fertig machen"
 
 msgid "Watch Qt 6.6 release video"
 msgstr "Qt-6.6-Release-Video ansehen"
+
+# --- List delete dialog ---
+msgid "Delete list ..."
+msgstr "Liste löschen ..."
+
+msgid "Delete list?"
+msgstr "Liste löschen?"
+
+msgid "This will permanently delete the list \"%1\" and all of its tasks. This cannot be undone."
+msgstr "Dies löscht die Liste „%1\" und alle enthaltenen Aufgaben dauerhaft. Das kann nicht rückgängig gemacht werden."
+
+msgid "Cancel"
+msgstr "Abbrechen"

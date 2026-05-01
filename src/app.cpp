@@ -61,6 +61,10 @@ App::App(QObject *parent)
         m_todo->fetchTasks(listId);
     });
 
+    connect(m_todo.get(), &TodoApi::listMutated, this, [this] {
+        m_todo->fetchLists();
+    });
+
     connect(m_todo.get(), &TodoApi::errorOccurred, this, [this](const QString &msg) {
         setStatus(i18n("Error: %1", msg));
         Q_EMIT errorOccurred(msg);
@@ -222,6 +226,13 @@ void App::deleteTask(const QString &taskId)
     if (m_currentListId.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
     m_todo->deleteTask(m_currentListId, taskId);
+}
+
+void App::deleteList(const QString &listId)
+{
+    if (listId.isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    m_todo->deleteList(listId);
 }
 
 void App::toggleImportance(const QString &taskId)

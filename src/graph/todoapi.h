@@ -38,6 +38,7 @@ public:
 
     void fetchLists();
     void fetchTasks(const QString &listId);
+    void deleteList(const QString &listId);
     void addTask(const QString &listId, const QString &title, const QDateTime &due = {});
     void setTaskStatus(const QString &listId, const QString &taskId, const QString &status);
     void setTaskImportance(const QString &listId, const QString &taskId, const QString &importance);
@@ -53,6 +54,7 @@ Q_SIGNALS:
     void listsReceived(const QList<Merkzettel::TaskList> &lists);
     void tasksReceived(const QString &listId, const QList<Merkzettel::Task> &tasks);
     void taskMutated(const QString &listId);
+    void listMutated();
     void errorOccurred(const QString &message);
 
 private:
