@@ -54,7 +54,7 @@ jobs:
       - name: Install build dependencies
         run: ${{ matrix.install }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Configure
         run: |
@@ -80,7 +80,7 @@ jobs:
           fi
           tar -czf merkzettel-${{ matrix.distro }}.tar.gz -C artifact merkzettel-${{ matrix.distro }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: merkzettel-${{ matrix.distro }}
           path: merkzettel-${{ matrix.distro }}.tar.gz
@@ -93,7 +93,7 @@ jobs:
       image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.9
       options: --privileged
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Inject client ID
         run: |
@@ -114,7 +114,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           path: artifacts
 
