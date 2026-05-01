@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-arch:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Install build deps
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm \
+            base-devel cmake git \
+            qt6-base qt6-declarative qt6-networkauth \
+            kirigami kirigami-addons kcoreaddons ki18n \
+            knotifications kstatusnotifieritem kconfig kconfigwidgets \
+            qtkeychain-qt6 extra-cmake-modules gettext
+
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -B build -S . \
+            -DMERKZETTEL_CLIENT_ID=00000000-0000-0000-0000-000000000000 \
+            -DMERKZETTEL_TENANT=common \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Verify binary
+        run: test -x build/bin/merkzettel
