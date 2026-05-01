@@ -71,12 +71,17 @@ int main(int argc, char *argv[])
     QCommandLineOption trayOption(
         {QStringLiteral("t"), QStringLiteral("tray")},
         i18n("Start hidden in the system tray"));
+    QCommandLineOption demoOption(
+        QStringLiteral("demo"),
+        i18n("Run with built-in demo data, no sign-in or network access"));
     parser.addOption(trayOption);
+    parser.addOption(demoOption);
     parser.process(app);
     about.processCommandLine(&parser);
 
     Merkzettel::App controller;
     controller.setStartMinimized(parser.isSet(trayOption));
+    controller.setDemoMode(parser.isSet(demoOption));
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));

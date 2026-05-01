@@ -226,3 +226,102 @@ msgstr "Gebaut mit Kirigami, KDE Frameworks 6 und Qt 6.\n\nWenn dir Merkzettel n
 
 msgid "Start hidden in the system tray"
 msgstr "Versteckt im System-Tray starten"
+
+# --- Demo mode ---
+msgid "Run with built-in demo data, no sign-in or network access"
+msgstr "Mit eingebauten Demo-Daten starten, ohne Anmeldung oder Netzwerkzugriff"
+
+msgid "Demo mode — no real data, all changes are local"
+msgstr "Demo-Modus — keine echten Daten, alle Änderungen nur lokal"
+
+msgid "Demo mode — change not applied"
+msgstr "Demo-Modus — Änderung nicht übernommen"
+
+msgid "Demo mode — nothing to sync"
+msgstr "Demo-Modus — nichts zu synchronisieren"
+
+# Demo lists
+msgid "Work"
+msgstr "Arbeit"
+
+msgid "Home"
+msgstr "Privat"
+
+msgid "Shopping"
+msgstr "Einkaufen"
+
+msgid "Learning"
+msgstr "Lernen"
+
+# Demo tasks
+msgid "Pay electricity bill"
+msgstr "Stromrechnung bezahlen"
+
+msgid "Reply to Anna about the proposal"
+msgstr "Anna wegen des Angebots antworten"
+
+msgid "Buy groceries"
+msgstr "Einkaufen gehen"
+
+msgid "milk, bread, coffee, oranges"
+msgstr "Milch, Brot, Kaffee, Orangen"
+
+msgid "Team standup"
+msgstr "Team-Standup"
+
+msgid "Pick up parcel from the post office"
+msgstr "Paket bei der Post abholen"
+
+msgid "Submit travel expenses"
+msgstr "Reisekosten einreichen"
+
+msgid "Read 'The Pragmatic Programmer' ch.4"
+msgstr "„Der pragmatische Programmierer\" Kapitel 4 lesen"
+
+msgid "Focus on the chapter on orthogonality."
+msgstr "Schwerpunkt auf das Kapitel zur Orthogonalität."
+
+msgid "Plan summer holiday"
+msgstr "Sommerurlaub planen"
+
+msgid "Learn Rust"
+msgstr "Rust lernen"
+
+msgid "Start with the official book."
+msgstr "Mit dem offiziellen Buch anfangen."
+
+msgid "Refactor printer driver"
+msgstr "Druckertreiber refaktorieren"
+
+msgid "Update CV"
+msgstr "Lebenslauf aktualisieren"
+
+msgid "Renew library card"
+msgstr "Bibliotheksausweis verlängern"
+
+msgid "Quarterly report"
+msgstr "Quartalsbericht"
+
+msgid "Code review for Markus"
+msgstr "Code-Review für Markus"
+
+msgid "1:1 with manager"
+msgstr "1:1 mit Vorgesetztem"
+
+msgid "Water the plants"
+msgstr "Pflanzen gießen"
+
+msgid "Fix the bathroom faucet"
+msgstr "Wasserhahn im Bad reparieren"
+
+msgid "New running shoes"
+msgstr "Neue Laufschuhe"
+
+msgid "Birthday present for Mum"
+msgstr "Geburtstagsgeschenk für Mama"
+
+msgid "Finish KDE Frameworks 6 tutorial"
+msgstr "KDE-Frameworks-6-Tutorial fertig machen"
+
+msgid "Watch Qt 6.6 release video"
+msgstr "Qt-6.6-Release-Video ansehen"

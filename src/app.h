@@ -35,6 +35,8 @@ public:
     void start();
     void setStartMinimized(bool minimized) { m_startMinimized = minimized; }
     bool startMinimized() const { return m_startMinimized; }
+    void setDemoMode(bool on) { m_demoMode = on; }
+    bool demoMode() const { return m_demoMode; }
 
     bool loggedIn() const;
     QString status() const;
@@ -79,6 +81,8 @@ private:
     void onAuthError(const QString &message);
     void setStatus(const QString &status);
     QPair<QString, QDateTime> parseAddInput(const QString &raw) const;
+    void loadDemoData();
+    void switchDemoList(const QString &id);
 
     std::unique_ptr<AuthManager> m_auth;
     std::unique_ptr<GraphClient> m_graph;
@@ -92,6 +96,8 @@ private:
     QString m_currentListId;
     QVariantMap m_detailTask;
     bool m_startMinimized = false;
+    bool m_demoMode = false;
+    QHash<QString, QList<Task>> m_demoTasks;
 };
 
 } // namespace Merkzettel

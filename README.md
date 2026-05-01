@@ -7,6 +7,12 @@
 >
 > *Deutsche Beschreibung weiter unten.*
 
+| English | Deutsch |
+|:---:|:---:|
+| ![English screenshot](screenshots/main-en.png) | ![Deutscher Screenshot](screenshots/main-de.png) |
+
+> Try it without an Azure account: `merkzettel --demo` runs the UI with hard-coded demo lists and tasks (no sign-in, no network, all mutations no-ops). Both screenshots above were taken with `--demo`.
+
 ---
 
 ## Deutsch
@@ -76,6 +82,7 @@ cmake --install build --prefix ~/.local
 | Flag | Wirkung |
 |---|---|
 | `--tray`, `-t` | Startet versteckt im System-Tray (Klick aufs Tray-Icon zeigt das Fenster) |
+| `--demo` | Laeuft mit eingebauten Demo-Daten — keine Anmeldung, kein Netzwerk, keine Persistenz. Nuetzlich fuer Screenshots oder zum Ausprobieren ohne Azure-Setup |
 | `--help` | Zeigt alle KAboutData-Optionen |
 
 ### Architektur
