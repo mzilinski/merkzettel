@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Name=Merkzettel
+GenericName=To-Do
+GenericName[de]=Aufgaben
+Comment=Microsoft To Do client for KDE
+Comment[de]=Microsoft-To-Do-Client fuer KDE
+Exec=merkzettel
+Icon=merkzettel
+Categories=Qt;KDE;Office;
+Keywords=todo;tasks;microsoft;outlook;aufgaben;
+StartupNotify=true
+StartupWMClass=merkzettel
+X-DBUS-StartupType=Unique
+Actions=StartHidden;
+
+[Desktop Action StartHidden]
+Name=Start in tray
+Name[de]=Im Tray starten
+Exec=merkzettel --tray
+Icon=merkzettel

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.kde.merkzettel</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Merkzettel</name>
+  <summary>Microsoft To Do client for KDE</summary>
+  <summary xml:lang="de">Microsoft-To-Do-Client fuer KDE</summary>
+
+  <description>
+    <p>Merkzettel is a native KDE client for Microsoft To Do, built with Kirigami.</p>
+    <p xml:lang="de">Merkzettel ist ein nativer KDE-Client fuer Microsoft To Do, gebaut mit Kirigami.</p>
+  </description>
+
+  <launchable type="desktop-id">org.kde.merkzettel.desktop</launchable>
+
+  <provides>
+    <binary>merkzettel</binary>
+  </provides>
+
+  <categories>
+    <category>Office</category>
+  </categories>
+
+  <url type="homepage">https://invent.kde.org/</url>
+
+  <developer id="org.kde">
+    <name>Merkzettel contributors</name>
+  </developer>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.1.0" date="2026-05-01">
+      <description>
+        <p>Initial release: PKCE login, list/create/complete/delete tasks, tray icon, SQLite cache.</p>
+      </description>
+    </release>
+  </releases>
+</component>
