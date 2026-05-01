@@ -235,6 +235,13 @@ void App::deleteList(const QString &listId)
     m_todo->deleteList(listId);
 }
 
+void App::renameList(const QString &listId, const QString &newName)
+{
+    if (listId.isEmpty() || newName.trimmed().isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    m_todo->renameList(listId, newName.trimmed());
+}
+
 void App::toggleImportance(const QString &taskId)
 {
     if (m_currentListId.isEmpty()) return;

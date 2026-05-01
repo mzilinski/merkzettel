@@ -326,7 +326,7 @@ msgstr "KDE-Frameworks-6-Tutorial fertig machen"
 msgid "Watch Qt 6.6 release video"
 msgstr "Qt-6.6-Release-Video ansehen"
 
-# --- List delete dialog ---
+# --- List dialogs ---
 msgid "Delete list ..."
 msgstr "Liste löschen ..."
 
@@ -338,3 +338,15 @@ msgstr "Dies löscht die Liste „%1\" und alle enthaltenen Aufgaben dauerhaft. 
 
 msgid "Cancel"
 msgstr "Abbrechen"
+
+msgid "Rename list ..."
+msgstr "Liste umbenennen ..."
+
+msgid "Rename list"
+msgstr "Liste umbenennen"
+
+msgid "Rename"
+msgstr "Umbenennen"
+
+msgid "New list name"
+msgstr "Neuer Listenname"

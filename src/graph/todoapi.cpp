@@ -195,4 +195,15 @@ void TodoApi::deleteList(const QString &listId)
     });
 }
 
+void TodoApi::renameList(const QString &listId, const QString &newName)
+{
+    QJsonObject body;
+    body.insert(QStringLiteral("displayName"), newName);
+    m_graph->patch(QStringLiteral("/me/todo/lists/%1").arg(listId), body,
+                   [this](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT listMutated();
+    });
+}
+
 } // namespace Merkzettel

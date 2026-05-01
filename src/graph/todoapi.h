@@ -39,6 +39,7 @@ public:
     void fetchLists();
     void fetchTasks(const QString &listId);
     void deleteList(const QString &listId);
+    void renameList(const QString &listId, const QString &newName);
     void addTask(const QString &listId, const QString &title, const QDateTime &due = {});
     void setTaskStatus(const QString &listId, const QString &taskId, const QString &status);
     void setTaskImportance(const QString &listId, const QString &taskId, const QString &importance);

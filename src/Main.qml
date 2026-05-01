@@ -122,6 +122,16 @@ Kirigami.ApplicationWindow {
                     QQC2.Menu {
                         id: listCtxMenu
                         QQC2.MenuItem {
+                            text: i18n("Rename list ...")
+                            icon.name: "edit-rename"
+                            enabled: !model.isDefault
+                            onTriggered: {
+                                renameListDialog.listId = model.listId;
+                                renameListDialog.oldName = model.displayName;
+                                renameListDialog.open();
+                            }
+                        }
+                        QQC2.MenuItem {
                             text: i18n("Delete list ...")
                             icon.name: "edit-delete"
                             enabled: !model.isDefault
@@ -273,6 +283,51 @@ Kirigami.ApplicationWindow {
                 onTriggered: {
                     app.deleteList(deleteListDialog.listId);
                     deleteListDialog.close();
+                }
+            }
+        ]
+    }
+
+    Kirigami.PromptDialog {
+        id: renameListDialog
+        property string listId: ""
+        property string oldName: ""
+        parent: root.overlay
+        title: i18n("Rename list")
+        standardButtons: Kirigami.PromptDialog.NoButton
+
+        onOpened: {
+            renameField.text = oldName;
+            renameField.selectAll();
+            renameField.forceActiveFocus();
+        }
+
+        QQC2.TextField {
+            id: renameField
+            Layout.fillWidth: true
+            placeholderText: i18n("New list name")
+            onAccepted: {
+                if (text.trim().length > 0 && text.trim() !== renameListDialog.oldName) {
+                    app.renameList(renameListDialog.listId, text.trim());
+                }
+                renameListDialog.close();
+            }
+        }
+
+        customFooterActions: [
+            Kirigami.Action {
+                text: i18n("Cancel")
+                icon.name: "dialog-cancel"
+                onTriggered: renameListDialog.close()
+            },
+            Kirigami.Action {
+                text: i18n("Rename")
+                icon.name: "edit-rename"
+                enabled: renameField.text.trim().length > 0
+                         && renameField.text.trim() !== renameListDialog.oldName
+                onTriggered: {
+                    app.renameList(renameListDialog.listId, renameField.text.trim());
+                    renameListDialog.close();
                 }
             }
         ]
