@@ -15,6 +15,7 @@ struct TaskList {
     QString displayName;
     bool isDefault = false;
     bool isShared = false;  // Read-only — Graph doesn't expose share management.
+    bool isVirtual = false; // Synthetic local entry (e.g. "Alle"), not a Graph list.
 };
 
 struct ChecklistItem {
@@ -34,6 +35,7 @@ struct LinkedResource {
 
 struct Task {
     QString id;
+    QString listId;        // Parent list this task belongs to.
     QString title;
     QString status;        // "notStarted", "inProgress", "completed"
     QString importance;    // "low", "normal", "high"

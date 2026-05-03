@@ -12,7 +12,7 @@ Kirigami.Page {
         spacing: Kirigami.Units.largeSpacing * 2
 
         Kirigami.Icon {
-            source: "view-tasks-symbolic"
+            source: "view-pim-tasks"
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: Kirigami.Units.iconSizes.huge
             Layout.preferredHeight: Kirigami.Units.iconSizes.huge

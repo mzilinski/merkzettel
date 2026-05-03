@@ -11,6 +11,7 @@
 #include "models/tasklistsmodel.h"
 
 class QTimer;
+class KColorSchemeManager;
 
 namespace Merkzettel {
 
@@ -30,6 +31,8 @@ class App : public QObject
     Q_PROPERTY(TaskListsModel *listsModel READ listsModel CONSTANT)
     Q_PROPERTY(QVariantMap detailTask READ detailTask NOTIFY detailTaskChanged)
     Q_PROPERTY(bool startMinimized READ startMinimized CONSTANT)
+    // "auto" / "light" / "dark" — drives the color-scheme menu's checked state.
+    Q_PROPERTY(QString colorScheme READ colorScheme NOTIFY colorSchemeChanged)
 
 public:
     explicit App(QObject *parent = nullptr);
@@ -46,6 +49,7 @@ public:
     QString currentListId() const;
     void setCurrentListId(const QString &id);
     QVariantMap detailTask() const { return m_detailTask; }
+    QString colorScheme() const { return m_colorScheme; }
 
     TasksModel *tasksModel() const;
     TaskListsModel *listsModel() const;
@@ -84,6 +88,9 @@ public Q_SLOTS:
     void closeTaskDetails();
     void requestPickDateForDue(const QString &taskId);
     void toggleWindow();
+    // Color scheme picker — "auto"/"light"/"dark" only. KColorSchemeManager
+    // auto-saves; the choice survives across launches.
+    void setColorScheme(const QString &scheme);
 
 Q_SIGNALS:
     void loggedInChanged();
@@ -93,6 +100,7 @@ Q_SIGNALS:
     void errorOccurred(const QString &message);
     void windowToggleRequested();
     void pickDateRequested(const QString &taskId, const QDateTime &initial);
+    void colorSchemeChanged();
 
 private:
     void onAuthenticated();
@@ -101,6 +109,23 @@ private:
     QPair<QString, QDateTime> parseAddInput(const QString &raw) const;
     void loadDemoData();
     void switchDemoList(const QString &id);
+
+    // True iff the synthetic "Alle" smart-list is selected.
+    bool isVirtualAll() const;
+    // Resolve the originating listId for a task that lives in m_tasksModel.
+    // Used by mutations when the virtual all-list is active. Falls back to
+    // m_currentListId for the non-virtual path.
+    QString listIdForTask(const QString &taskId) const;
+    // Refresh m_tasksModel from the local cache when virtual is active.
+    void refreshAggregatedTasks();
+    // Push current display-name map to TasksModel for ListNameRole resolution.
+    void pushListNamesToModel();
+    // Trigger a sync (delta or full fetch) for every real list. Used by
+    // refresh() when virtual is active and on entering the virtual list.
+    void syncAllLists();
+    // After m_tasksModel is replaced, re-resolve the open detail-sheet task
+    // by id from the new model contents.
+    void refreshDetailTaskFromModel();
 
     void checkReminders();
 
@@ -122,6 +147,8 @@ private:
     bool m_startMinimized = false;
     bool m_demoMode = false;
     QHash<QString, QList<Task>> m_demoTasks;
+    KColorSchemeManager *m_colorSchemeManager = nullptr;
+    QString m_colorScheme = QStringLiteral("auto");
 };
 
 } // namespace Merkzettel

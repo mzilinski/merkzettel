@@ -1,5 +1,7 @@
 #include "tasklistsmodel.h"
 
+#include <KLocalizedString>
+
 namespace Merkzettel {
 
 TaskListsModel::TaskListsModel(QObject *parent) : QAbstractListModel(parent) {}
@@ -20,6 +22,7 @@ QVariant TaskListsModel::data(const QModelIndex &index, int role) const
     case DisplayNameRole: return l.displayName;
     case IsDefaultRole:   return l.isDefault;
     case IsSharedRole:    return l.isShared;
+    case IsVirtualRole:   return l.isVirtual;
     }
     return {};
 }
@@ -31,13 +34,23 @@ QHash<int, QByteArray> TaskListsModel::roleNames() const
         {DisplayNameRole, "displayName"},
         {IsDefaultRole, "isDefault"},
         {IsSharedRole, "isShared"},
+        {IsVirtualRole, "isVirtual"},
     };
 }
 
 void TaskListsModel::setLists(const QList<TaskList> &lists)
 {
     beginResetModel();
-    m_lists = lists;
+    m_lists.clear();
+    m_lists.reserve(lists.size() + 1);
+    if (!lists.isEmpty()) {
+        TaskList all;
+        all.id = QString::fromLatin1(kVirtualAllId);
+        all.displayName = i18n("All");
+        all.isVirtual = true;
+        m_lists.append(all);
+    }
+    m_lists.append(lists);
     endResetModel();
     Q_EMIT countChanged();
 }

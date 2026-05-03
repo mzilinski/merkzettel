@@ -17,24 +17,36 @@ Kirigami.ScrollablePage {
     ]
 
     header: QQC2.ToolBar {
-        contentItem: RowLayout {
+        contentItem: ColumnLayout {
             spacing: Kirigami.Units.smallSpacing
-            QQC2.TextField {
-                id: addField
+            RowLayout {
                 Layout.fillWidth: true
-                placeholderText: i18n("New task ... (\"tomorrow\", \"mo\", \"25.5.\" at end for due date)")
-                onAccepted: addCurrent()
-                function addCurrent() {
-                    if (text.trim().length > 0) {
-                        app.addTask(text.trim());
-                        text = "";
+                spacing: Kirigami.Units.smallSpacing
+                QQC2.TextField {
+                    id: addField
+                    Layout.fillWidth: true
+                    placeholderText: i18n("New task ... (\"tomorrow\", \"mo\", \"25.5.\" at end for due date)")
+                    onAccepted: addCurrent()
+                    function addCurrent() {
+                        if (text.trim().length > 0) {
+                            app.addTask(text.trim());
+                            text = "";
+                        }
                     }
                 }
+                QQC2.Button {
+                    icon.name: "list-add"
+                    enabled: addField.text.trim().length > 0
+                    onClicked: addField.addCurrent()
+                }
             }
-            QQC2.Button {
-                icon.name: "list-add"
-                enabled: addField.text.trim().length > 0
-                onClicked: addField.addCurrent()
+            Kirigami.SearchField {
+                id: searchField
+                Layout.fillWidth: true
+                placeholderText: app.currentListId === "__all__"
+                                 ? i18n("Search across all lists ...")
+                                 : i18n("Search tasks ...")
+                onTextChanged: app.tasksModel.filterText = text
             }
         }
     }
@@ -73,9 +85,11 @@ Kirigami.ScrollablePage {
             anchors.centerIn: parent
             width: parent.width - Kirigami.Units.gridUnit * 4
             visible: tasksView.count === 0
-            text: i18n("No tasks")
-            explanation: i18n("Type a task above and press Enter.")
-            icon.name: "checkmark"
+            text: searchField.text.length > 0 ? i18n("No matching tasks") : i18n("No tasks")
+            explanation: searchField.text.length > 0
+                ? i18n("Try a different search term.")
+                : i18n("Type a task above and press Enter.")
+            icon.name: searchField.text.length > 0 ? "system-search" : "checkmark"
         }
     }
 }

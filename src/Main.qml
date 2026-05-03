@@ -135,6 +135,31 @@ Kirigami.ApplicationWindow {
             },
             Kirigami.Action { separator: true },
             Kirigami.Action {
+                text: i18n("Appearance")
+                icon.name: "preferences-desktop-color"
+                Kirigami.Action {
+                    text: i18n("Follow system")
+                    icon.name: "preferences-desktop-theme-applications"
+                    checkable: true
+                    checked: app.colorScheme === "auto"
+                    onTriggered: app.setColorScheme("auto")
+                }
+                Kirigami.Action {
+                    text: i18n("Light")
+                    icon.name: "brightness-high"
+                    checkable: true
+                    checked: app.colorScheme === "light"
+                    onTriggered: app.setColorScheme("light")
+                }
+                Kirigami.Action {
+                    text: i18n("Dark")
+                    icon.name: "brightness-low"
+                    checkable: true
+                    checked: app.colorScheme === "dark"
+                    onTriggered: app.setColorScheme("dark")
+                }
+            },
+            Kirigami.Action {
                 text: i18n("Donate ...")
                 icon.name: "help-donate"
                 onTriggered: Qt.openUrlExternally("https://paypal.me/eit31")
@@ -160,7 +185,8 @@ Kirigami.ApplicationWindow {
                     id: listItem
                     Layout.fillWidth: true
                     text: root.globalDrawer.collapsed ? "" : model.displayName
-                    icon.name: model.isDefault ? "emblem-favorite" : "view-list-text"
+                    icon.name: model.isVirtual ? "view-list-icons"
+                              : (model.isDefault ? "emblem-favorite" : "view-list-text")
                     display: root.globalDrawer.collapsed
                              ? QQC2.AbstractButton.IconOnly
                              : QQC2.AbstractButton.TextBesideIcon
@@ -226,7 +252,9 @@ Kirigami.ApplicationWindow {
 
                     TapHandler {
                         acceptedButtons: Qt.RightButton
-                        onTapped: listCtxMenu.popup()
+                        // The synthetic "Alle" smart-list isn't a real Graph
+                        // resource — share/rename/delete don't apply to it.
+                        onTapped: if (!model.isVirtual) listCtxMenu.popup()
                     }
                 }
             }

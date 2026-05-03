@@ -34,6 +34,9 @@ public:
 
     QList<TaskList> lists() const;
     QList<Task> tasks(const QString &listId) const;
+    // Cross-list read for the virtual "Alle"/All smart-list. Each Task has its
+    // originating listId populated so callers can route mutations correctly.
+    QList<Task> allTasks() const;
 
     int openTaskCountForToday() const;
 

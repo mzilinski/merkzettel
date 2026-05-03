@@ -158,7 +158,9 @@ void TodoApi::fetchTasks(const QString &listId)
         if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
         QList<Task> tasks;
         for (const auto &v : val.toObject().value(QStringLiteral("value")).toArray()) {
-            tasks.append(parseTask(v.toObject()));
+            Task t = parseTask(v.toObject());
+            t.listId = listId;
+            tasks.append(std::move(t));
         }
         Q_EMIT tasksReceived(listId, tasks);
     });
@@ -333,7 +335,9 @@ void TodoApi::syncTasks(const QString &listId, const QString &deltaLink)
             if (taskObj.contains(QStringLiteral("@removed"))) {
                 state->deleted.append(taskObj.value(QStringLiteral("id")).toString());
             } else {
-                state->changed.append(parseTask(taskObj));
+                Task t = parseTask(taskObj);
+                t.listId = listId;
+                state->changed.append(std::move(t));
             }
         }
         const QString nextLink = obj.value(QStringLiteral("@odata.nextLink")).toString();

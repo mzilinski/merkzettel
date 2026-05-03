@@ -377,6 +377,7 @@ QList<Task> Database::tasks(const QString &listId) const
     while (q.next()) {
         Task t;
         t.id = q.value(0).toString();
+        t.listId = listId;
         t.title = q.value(1).toString();
         t.status = q.value(2).toString();
         t.importance = q.value(3).toString();
@@ -394,6 +395,84 @@ QList<Task> Database::tasks(const QString &listId) const
 
     const auto itemsByTask = checklistItemsByTask(listId);
     const auto linksByTask = linkedResourcesByTask(listId);
+    for (auto &t : result) {
+        t.checklistItems = itemsByTask.value(t.id);
+        t.totalChecklistCount = t.checklistItems.size();
+        t.openChecklistCount = 0;
+        for (const auto &c : t.checklistItems) {
+            if (!c.isChecked) ++t.openChecklistCount;
+        }
+        t.linkedResources = linksByTask.value(t.id);
+    }
+    return result;
+}
+
+QList<Task> Database::allTasks() const
+{
+    QList<Task> result;
+    auto db = QSqlDatabase::database(m_connectionName);
+    QSqlQuery q(db);
+    q.exec(QStringLiteral(
+        "SELECT id, list_id, title, status, importance, body, due_utc, reminder_utc, "
+        "has_reminder, last_modified, recurrence_json "
+        "FROM tasks "
+        "ORDER BY (status = 'completed') ASC, due_utc ASC NULLS LAST, "
+        "(importance = 'high') DESC, title ASC"));
+    while (q.next()) {
+        Task t;
+        t.id = q.value(0).toString();
+        t.listId = q.value(1).toString();
+        t.title = q.value(2).toString();
+        t.status = q.value(3).toString();
+        t.importance = q.value(4).toString();
+        t.body = q.value(5).toString();
+        const QString due = q.value(6).toString();
+        if (!due.isEmpty()) t.dueDate = QDateTime::fromString(due, Qt::ISODate);
+        const QString rem = q.value(7).toString();
+        if (!rem.isEmpty()) t.reminderDate = QDateTime::fromString(rem, Qt::ISODate);
+        t.hasReminder = q.value(8).toInt() != 0;
+        const QString lm = q.value(9).toString();
+        if (!lm.isEmpty()) t.lastModified = QDateTime::fromString(lm, Qt::ISODate);
+        t.recurrenceJson = q.value(10).toString();
+        result.append(t);
+    }
+
+    // Hydrate checklist items and linked resources globally — single query
+    // each, group by task_id.
+    QHash<QString, QList<ChecklistItem>> itemsByTask;
+    {
+        QSqlQuery cq(db);
+        cq.exec(QStringLiteral(
+            "SELECT id, task_id, display_name, is_checked, created_utc "
+            "FROM checklist_items ORDER BY task_id ASC, sort_order ASC"));
+        while (cq.next()) {
+            ChecklistItem c;
+            c.id = cq.value(0).toString();
+            const QString taskId = cq.value(1).toString();
+            c.displayName = cq.value(2).toString();
+            c.isChecked = cq.value(3).toInt() != 0;
+            const QString created = cq.value(4).toString();
+            if (!created.isEmpty()) c.createdDateTime = QDateTime::fromString(created, Qt::ISODate);
+            itemsByTask[taskId].append(c);
+        }
+    }
+    QHash<QString, QList<LinkedResource>> linksByTask;
+    {
+        QSqlQuery lq(db);
+        lq.exec(QStringLiteral(
+            "SELECT id, task_id, application_name, web_url, display_name, external_id "
+            "FROM linked_resources ORDER BY task_id ASC, sort_order ASC"));
+        while (lq.next()) {
+            LinkedResource r;
+            r.id = lq.value(0).toString();
+            const QString taskId = lq.value(1).toString();
+            r.applicationName = lq.value(2).toString();
+            r.webUrl = lq.value(3).toString();
+            r.displayName = lq.value(4).toString();
+            r.externalId = lq.value(5).toString();
+            linksByTask[taskId].append(r);
+        }
+    }
     for (auto &t : result) {
         t.checklistItems = itemsByTask.value(t.id);
         t.totalChecklistCount = t.checklistItems.size();

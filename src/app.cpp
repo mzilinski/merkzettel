@@ -8,6 +8,8 @@
 #include "models/tasksmodel.h"
 #include "models/tasklistsmodel.h"
 
+#include <KColorSchemeManager>
+#include <KColorSchemeModel>
 #include <KLocalizedString>
 #include <KNotification>
 #include <QApplication>
@@ -32,7 +34,18 @@ App::App(QObject *parent)
     , m_tray(std::make_unique<TrayIcon>(this))
     , m_tasksModel(new TasksModel(this))
     , m_listsModel(new TaskListsModel(this))
+    // Singleton since KF 6.6 — the first call constructs and auto-restores
+    // the previously-saved color scheme. No saved choice = follow system.
+    , m_colorSchemeManager(KColorSchemeManager::instance())
 {
+    // Sync our cached label with whatever the manager restored — needed so the
+    // QML drawer's checkmark lands on the right entry at first paint.
+    {
+        const QString id = m_colorSchemeManager->activeSchemeId();
+        if (id == QLatin1String("BreezeLight")) m_colorScheme = QStringLiteral("light");
+        else if (id == QLatin1String("BreezeDark")) m_colorScheme = QStringLiteral("dark");
+        else m_colorScheme = QStringLiteral("auto");
+    }
     connect(m_auth.get(), &AuthManager::authenticated, this, &App::onAuthenticated);
     connect(m_auth.get(), &AuthManager::authError, this, &App::onAuthError);
     connect(m_auth.get(), &AuthManager::loggedOut, this, [this] {
@@ -45,8 +58,12 @@ App::App(QObject *parent)
     connect(m_todo.get(), &TodoApi::listsReceived, this, [this](const QList<TaskList> &lists) {
         m_db->upsertLists(lists);
         m_listsModel->setLists(lists);
+        pushListNamesToModel();
         if (m_currentListId.isEmpty() && !lists.isEmpty()) {
             setCurrentListId(lists.first().id);
+        } else if (isVirtualAll()) {
+            // Virtual all-list: refresh tasks across every real list.
+            syncAllLists();
         } else if (!m_currentListId.isEmpty()) {
             m_todo->fetchTasks(m_currentListId);
         }
@@ -58,20 +75,10 @@ App::App(QObject *parent)
         m_db->upsertTasks(listId, tasks);
         if (listId == m_currentListId) {
             m_tasksModel->setTasks(tasks);
-            // If the detail sheet is open, refresh its task snapshot from the
-            // new model so checklist toggles, body edits etc. are visible.
-            const QString openId = m_detailTask.value(QStringLiteral("taskId")).toString();
-            if (!openId.isEmpty()) {
-                const int n = m_tasksModel->rowCount();
-                for (int i = 0; i < n; ++i) {
-                    const auto idx = m_tasksModel->index(i, 0);
-                    if (m_tasksModel->data(idx, TasksModel::IdRole).toString() == openId) {
-                        m_detailTask = m_tasksModel->taskAt(i);
-                        Q_EMIT detailTaskChanged();
-                        break;
-                    }
-                }
-            }
+            refreshDetailTaskFromModel();
+        } else if (isVirtualAll()) {
+            m_tasksModel->setTasks(m_db->allTasks());
+            refreshDetailTaskFromModel();
         }
         m_tray->setOpenCount(m_db->openTaskCountForToday());
         setStatus(i18n("%1 tasks", tasks.size()));
@@ -105,15 +112,12 @@ App::App(QObject *parent)
             const auto cached = m_db->tasks(listId);
             m_tasksModel->setTasks(cached);
             if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
-                const int n = m_tasksModel->rowCount();
-                for (int i = 0; i < n; ++i) {
-                    const auto idx = m_tasksModel->index(i, 0);
-                    if (m_tasksModel->data(idx, TasksModel::IdRole).toString() == taskId) {
-                        m_detailTask = m_tasksModel->taskAt(i);
-                        Q_EMIT detailTaskChanged();
-                        break;
-                    }
-                }
+                refreshDetailTaskFromModel();
+            }
+        } else if (isVirtualAll()) {
+            m_tasksModel->setTasks(m_db->allTasks());
+            if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
+                refreshDetailTaskFromModel();
             }
         }
     });
@@ -135,6 +139,9 @@ App::App(QObject *parent)
         if (listId == m_currentListId) {
             const auto cached = m_db->tasks(listId);
             m_tasksModel->setTasks(cached);
+        } else if (isVirtualAll()) {
+            m_tasksModel->setTasks(m_db->allTasks());
+            refreshDetailTaskFromModel();
         }
         m_tray->setOpenCount(m_db->openTaskCountForToday());
         setStatus(i18n("Synced — %1 changed, %2 removed",
@@ -157,17 +164,13 @@ App::App(QObject *parent)
         if (listId == m_currentListId) {
             const auto cached = m_db->tasks(listId);
             m_tasksModel->setTasks(cached);
-            // Re-emit detailTask if this task is open so subtasks UI updates.
             if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
-                const int n = m_tasksModel->rowCount();
-                for (int i = 0; i < n; ++i) {
-                    const auto idx = m_tasksModel->index(i, 0);
-                    if (m_tasksModel->data(idx, TasksModel::IdRole).toString() == taskId) {
-                        m_detailTask = m_tasksModel->taskAt(i);
-                        Q_EMIT detailTaskChanged();
-                        break;
-                    }
-                }
+                refreshDetailTaskFromModel();
+            }
+        } else if (isVirtualAll()) {
+            m_tasksModel->setTasks(m_db->allTasks());
+            if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
+                refreshDetailTaskFromModel();
             }
         }
     });
@@ -219,6 +222,7 @@ void App::start()
     const auto cachedLists = m_db->lists();
     if (!cachedLists.isEmpty()) {
         m_listsModel->setLists(cachedLists);
+        pushListNamesToModel();
         if (m_currentListId.isEmpty()) {
             setCurrentListId(cachedLists.first().id);
         }
@@ -257,6 +261,14 @@ void App::setCurrentListId(const QString &id)
         return;
     }
 
+    if (isVirtualAll()) {
+        // Aggregate everything we already have cached, then trigger a sync of
+        // every real list so the aggregated view picks up remote changes.
+        m_tasksModel->setTasks(m_db->allTasks());
+        if (loggedIn()) syncAllLists();
+        return;
+    }
+
     const auto cachedTasks = m_db->tasks(id);
     m_tasksModel->setTasks(cachedTasks);
 
@@ -273,6 +285,66 @@ void App::setCurrentListId(const QString &id)
     }
 }
 
+bool App::isVirtualAll() const
+{
+    return m_currentListId == QString::fromLatin1(TaskListsModel::kVirtualAllId);
+}
+
+QString App::listIdForTask(const QString &taskId) const
+{
+    if (isVirtualAll()) return m_tasksModel->listIdForTask(taskId);
+    return m_currentListId;
+}
+
+void App::refreshAggregatedTasks()
+{
+    if (isVirtualAll()) m_tasksModel->setTasks(m_db->allTasks());
+}
+
+void App::pushListNamesToModel()
+{
+    QHash<QString, QString> names;
+    const int n = m_listsModel->rowCount();
+    for (int i = 0; i < n; ++i) {
+        const auto idx = m_listsModel->index(i, 0);
+        if (m_listsModel->data(idx, TaskListsModel::IsVirtualRole).toBool()) continue;
+        const QString id = m_listsModel->data(idx, TaskListsModel::IdRole).toString();
+        const QString name = m_listsModel->data(idx, TaskListsModel::DisplayNameRole).toString();
+        if (!id.isEmpty()) names.insert(id, name);
+    }
+    m_tasksModel->setListNames(names);
+}
+
+void App::syncAllLists()
+{
+    if (!loggedIn()) return;
+    const int n = m_listsModel->rowCount();
+    for (int i = 0; i < n; ++i) {
+        const auto idx = m_listsModel->index(i, 0);
+        if (m_listsModel->data(idx, TaskListsModel::IsVirtualRole).toBool()) continue;
+        const QString id = m_listsModel->data(idx, TaskListsModel::IdRole).toString();
+        if (id.isEmpty()) continue;
+        const QString delta = m_db->deltaLink(id);
+        if (!delta.isEmpty()) m_todo->syncTasks(id, delta);
+        else m_todo->fetchTasks(id);
+    }
+}
+
+void App::refreshDetailTaskFromModel()
+{
+    const QString openId = m_detailTask.value(QStringLiteral("taskId")).toString();
+    if (openId.isEmpty()) return;
+    const int n = m_tasksModel->rowCount();
+    for (int i = 0; i < n; ++i) {
+        const auto idx = m_tasksModel->index(i, 0);
+        if (m_tasksModel->data(idx, TasksModel::IdRole).toString() == openId) {
+            m_detailTask = m_tasksModel->taskAt(i);
+            Q_EMIT detailTaskChanged();
+            return;
+        }
+    }
+}
+
 void App::login() { m_auth->login(); }
 void App::logout() { m_auth->logout(); }
 
@@ -285,7 +357,9 @@ void App::refresh()
     if (!loggedIn()) return;
     setStatus(i18n("Synchronizing ..."));
     m_todo->fetchLists();
-    if (!m_currentListId.isEmpty()) {
+    if (isVirtualAll()) {
+        syncAllLists();
+    } else if (!m_currentListId.isEmpty()) {
         const QString delta = m_db->deltaLink(m_currentListId);
         if (!delta.isEmpty()) {
             m_todo->syncTasks(m_currentListId, delta);
@@ -349,31 +423,55 @@ QPair<QString, QDateTime> App::parseAddInput(const QString &raw) const
 
 void App::addTask(const QString &input)
 {
-    if (m_currentListId.isEmpty() || input.trimmed().isEmpty()) return;
+    if (input.trimmed().isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+
+    QString targetList = m_currentListId;
+    if (isVirtualAll() || targetList.isEmpty()) {
+        // Virtual smart-list (or no selection yet): pick the user's default
+        // list, falling back to the first real list if none is flagged.
+        QString defaultId, firstRealId;
+        const int n = m_listsModel->rowCount();
+        for (int i = 0; i < n; ++i) {
+            const auto idx = m_listsModel->index(i, 0);
+            if (m_listsModel->data(idx, TaskListsModel::IsVirtualRole).toBool()) continue;
+            const QString id = m_listsModel->data(idx, TaskListsModel::IdRole).toString();
+            if (firstRealId.isEmpty()) firstRealId = id;
+            if (m_listsModel->data(idx, TaskListsModel::IsDefaultRole).toBool()) {
+                defaultId = id;
+                break;
+            }
+        }
+        targetList = defaultId.isEmpty() ? firstRealId : defaultId;
+    }
+    if (targetList.isEmpty()) return;
+
     const auto parsed = parseAddInput(input.trimmed());
-    m_todo->addTask(m_currentListId, parsed.first, parsed.second);
+    m_todo->addTask(targetList, parsed.first, parsed.second);
 }
 
 void App::completeTask(const QString &taskId)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->setTaskStatus(m_currentListId, taskId, QStringLiteral("completed"));
+    m_todo->setTaskStatus(lid, taskId, QStringLiteral("completed"));
 }
 
 void App::uncompleteTask(const QString &taskId)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->setTaskStatus(m_currentListId, taskId, QStringLiteral("notStarted"));
+    m_todo->setTaskStatus(lid, taskId, QStringLiteral("notStarted"));
 }
 
 void App::deleteTask(const QString &taskId)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->deleteTask(m_currentListId, taskId);
+    m_todo->deleteTask(lid, taskId);
 }
 
 void App::createList(const QString &displayName)
@@ -399,7 +497,8 @@ void App::renameList(const QString &listId, const QString &newName)
 
 void App::toggleImportance(const QString &taskId)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
     const int n = m_tasksModel->rowCount();
     QString current = QStringLiteral("normal");
@@ -412,61 +511,69 @@ void App::toggleImportance(const QString &taskId)
     }
     const QString next = (current == QLatin1String("high")) ? QStringLiteral("normal")
                                                             : QStringLiteral("high");
-    m_todo->setTaskImportance(m_currentListId, taskId, next);
+    m_todo->setTaskImportance(lid, taskId, next);
 }
 
 void App::setTaskDueDate(const QString &taskId, const QDateTime &due)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->setTaskDueDate(m_currentListId, taskId, due);
+    m_todo->setTaskDueDate(lid, taskId, due);
 }
 
 void App::clearTaskDueDate(const QString &taskId)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->setTaskDueDate(m_currentListId, taskId, {});
+    m_todo->setTaskDueDate(lid, taskId, {});
 }
 
 void App::setTaskReminder(const QString &taskId, const QDateTime &when)
 {
-    if (m_currentListId.isEmpty() || !when.isValid()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty() || !when.isValid()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->setTaskReminder(m_currentListId, taskId, when);
+    m_todo->setTaskReminder(lid, taskId, when);
 }
 
 void App::clearTaskReminder(const QString &taskId)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->clearTaskReminder(m_currentListId, taskId);
+    m_todo->clearTaskReminder(lid, taskId);
 }
 
 void App::setTaskTitle(const QString &taskId, const QString &title)
 {
-    if (m_currentListId.isEmpty() || title.trimmed().isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty() || title.trimmed().isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->setTaskTitle(m_currentListId, taskId, title.trimmed());
+    m_todo->setTaskTitle(lid, taskId, title.trimmed());
 }
 
 void App::setTaskBody(const QString &taskId, const QString &body)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->setTaskBody(m_currentListId, taskId, body);
+    m_todo->setTaskBody(lid, taskId, body);
 }
 
 void App::addChecklistItem(const QString &taskId, const QString &displayName)
 {
-    if (m_currentListId.isEmpty() || displayName.trimmed().isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty() || displayName.trimmed().isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->addChecklistItem(m_currentListId, taskId, displayName.trimmed());
+    m_todo->addChecklistItem(lid, taskId, displayName.trimmed());
 }
 
 void App::toggleChecklistItem(const QString &taskId, const QString &itemId)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
     // Look up current state from the open detail task to avoid an extra GET.
     bool currentlyChecked = false;
@@ -478,27 +585,30 @@ void App::toggleChecklistItem(const QString &taskId, const QString &itemId)
             break;
         }
     }
-    m_todo->setChecklistItemChecked(m_currentListId, taskId, itemId, !currentlyChecked);
+    m_todo->setChecklistItemChecked(lid, taskId, itemId, !currentlyChecked);
 }
 
 void App::renameChecklistItem(const QString &taskId, const QString &itemId,
                               const QString &displayName)
 {
-    if (m_currentListId.isEmpty() || displayName.trimmed().isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty() || displayName.trimmed().isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->renameChecklistItem(m_currentListId, taskId, itemId, displayName.trimmed());
+    m_todo->renameChecklistItem(lid, taskId, itemId, displayName.trimmed());
 }
 
 void App::deleteChecklistItem(const QString &taskId, const QString &itemId)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->deleteChecklistItem(m_currentListId, taskId, itemId);
+    m_todo->deleteChecklistItem(lid, taskId, itemId);
 }
 
 void App::setTaskRecurrencePattern(const QString &taskId, const QString &pattern)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
 
     QJsonObject rec;
@@ -541,13 +651,14 @@ void App::setTaskRecurrencePattern(const QString &taskId, const QString &pattern
             {QStringLiteral("type"), QStringLiteral("noEnd")},
         });
     }
-    m_todo->setTaskRecurrence(m_currentListId, taskId, rec);
+    m_todo->setTaskRecurrence(lid, taskId, rec);
 }
 
 void App::addLinkedResource(const QString &taskId, const QString &webUrl,
                             const QString &displayName)
 {
-    if (m_currentListId.isEmpty() || webUrl.trimmed().isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty() || webUrl.trimmed().isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
     // applicationName defaults to the URL host (more useful than a fixed
     // "Merkzettel" label when listing alongside Outlook-created links).
@@ -555,14 +666,15 @@ void App::addLinkedResource(const QString &taskId, const QString &webUrl,
     const QString appName = url.host().isEmpty() ? QStringLiteral("Merkzettel") : url.host();
     const QString name = displayName.trimmed().isEmpty()
                              ? webUrl.trimmed() : displayName.trimmed();
-    m_todo->addLinkedResource(m_currentListId, taskId, appName, webUrl.trimmed(), name);
+    m_todo->addLinkedResource(lid, taskId, appName, webUrl.trimmed(), name);
 }
 
 void App::removeLinkedResource(const QString &taskId, const QString &resourceId)
 {
-    if (m_currentListId.isEmpty()) return;
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->removeLinkedResource(m_currentListId, taskId, resourceId);
+    m_todo->removeLinkedResource(lid, taskId, resourceId);
 }
 
 void App::openLinkedResource(const QString &webUrl)
@@ -600,6 +712,24 @@ void App::requestPickDateForDue(const QString &taskId)
 
 void App::toggleWindow() { Q_EMIT windowToggleRequested(); }
 
+void App::setColorScheme(const QString &scheme)
+{
+    if (scheme == m_colorScheme) return;
+    if (scheme == QLatin1String("light")) {
+        m_colorSchemeManager->activateScheme(
+            m_colorSchemeManager->indexForSchemeId(QStringLiteral("BreezeLight")));
+    } else if (scheme == QLatin1String("dark")) {
+        m_colorSchemeManager->activateScheme(
+            m_colorSchemeManager->indexForSchemeId(QStringLiteral("BreezeDark")));
+    } else {
+        // Anything else (incl. "auto") = follow system. An invalid model index
+        // resets the manager to "no override".
+        m_colorSchemeManager->activateScheme(QModelIndex());
+    }
+    m_colorScheme = scheme;
+    Q_EMIT colorSchemeChanged();
+}
+
 void App::checkReminders()
 {
     if (m_demoMode) return;
@@ -614,7 +744,7 @@ void App::checkReminders()
                                         KNotification::CloseOnTimeout);
         notif->setTitle(i18n("Reminder"));
         notif->setText(h.title);
-        notif->setIconName(QStringLiteral("appointment-soon"));
+        notif->setIconName(QStringLiteral("task-reminder"));
 
         // "Mark done" closes the task right from the notification — single
         // most useful action here. Show window stays the implicit fallback
@@ -640,6 +770,7 @@ void App::loadDemoData()
         {QStringLiteral("demo-learning"), i18n("Learning"), false},
     };
     m_listsModel->setLists(lists);
+    pushListNamesToModel();
 
     const QDate today = QDate::currentDate();
     auto due = [](const QDate &d, int hour = 9) {
@@ -746,7 +877,20 @@ void App::loadDemoData()
 
 void App::switchDemoList(const QString &id)
 {
-    m_tasksModel->setTasks(m_demoTasks.value(id));
+    if (id == QString::fromLatin1(TaskListsModel::kVirtualAllId)) {
+        QList<Task> all;
+        for (auto it = m_demoTasks.constBegin(); it != m_demoTasks.constEnd(); ++it) {
+            for (Task t : it.value()) {
+                t.listId = it.key();
+                all.append(std::move(t));
+            }
+        }
+        m_tasksModel->setTasks(all);
+        return;
+    }
+    QList<Task> tasks = m_demoTasks.value(id);
+    for (auto &t : tasks) t.listId = id;
+    m_tasksModel->setTasks(tasks);
 }
 
 void App::onAuthenticated()

@@ -37,7 +37,30 @@ QQC2.ItemDelegate {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Kirigami.Units.smallSpacing
-                visible: dueLbl.text.length > 0 || bodyHint.visible || progressLbl.visible
+                visible: listLbl.visible || dueLbl.text.length > 0 || bodyHint.visible || progressLbl.visible
+
+                Kirigami.Icon {
+                    visible: listLbl.visible
+                    source: "view-list-text"
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                    color: Kirigami.Theme.disabledTextColor
+                }
+                QQC2.Label {
+                    id: listLbl
+                    text: model.listName || ""
+                    // Originating list only matters in the aggregated view —
+                    // hide for normal lists where every row shares the same.
+                    visible: text.length > 0 && app.currentListId === "__all__"
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                    color: Kirigami.Theme.disabledTextColor
+                    elide: Text.ElideRight
+                    Layout.maximumWidth: Kirigami.Units.gridUnit * 8
+                }
+                Item {
+                    visible: listLbl.visible && dueLbl.visible
+                    Layout.preferredWidth: Kirigami.Units.smallSpacing
+                }
 
                 Kirigami.Icon {
                     visible: model.dueLabel.length > 0

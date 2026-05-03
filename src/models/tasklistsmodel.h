@@ -15,7 +15,11 @@ public:
         DisplayNameRole,
         IsDefaultRole,
         IsSharedRole,
+        IsVirtualRole,
     };
+
+    // Sentinel id for the synthetic "Alle"/All smart-list entry.
+    static constexpr auto kVirtualAllId = "__all__";
 
     explicit TaskListsModel(QObject *parent = nullptr);
 

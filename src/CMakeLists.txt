@@ -36,6 +36,7 @@ target_link_libraries(merkzettel PRIVATE
     KF6::StatusNotifierItem
     KF6::ConfigCore
     KF6::ConfigGui
+    KF6::ColorScheme
     qt6keychain
 )
 

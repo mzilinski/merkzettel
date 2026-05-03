@@ -86,6 +86,8 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
     case ChecklistTotalRole: return t.totalChecklistCount;
     case HasRecurrenceRole: return !t.recurrenceJson.isEmpty();
     case LinkedResourceCountRole: return int(t.linkedResources.size());
+    case ListIdRole:       return t.listId;
+    case ListNameRole:     return m_listNames.value(t.listId);
     case ChecklistProgressRole: {
         if (t.totalChecklistCount <= 0) return QString();
         const int done = t.totalChecklistCount - t.openChecklistCount;
@@ -124,15 +126,15 @@ QHash<int, QByteArray> TasksModel::roleNames() const
         {ChecklistTotalRole, "checklistTotal"},
         {HasRecurrenceRole, "hasRecurrence"},
         {LinkedResourceCountRole, "linkedResourceCount"},
+        {ListIdRole, "listId"},
+        {ListNameRole, "listName"},
     };
 }
 
 void TasksModel::setTasks(const QList<Task> &tasks)
 {
-    beginResetModel();
-    m_tasks = tasks;
-    // Sort: by section rank, then important first, then by due date, then by title.
-    std::sort(m_tasks.begin(), m_tasks.end(), [](const Task &a, const Task &b) {
+    m_allTasks = tasks;
+    std::sort(m_allTasks.begin(), m_allTasks.end(), [](const Task &a, const Task &b) {
         const int sa = sectionRank(a);
         const int sb = sectionRank(b);
         if (sa != sb) return sa < sb;
@@ -143,15 +145,48 @@ void TasksModel::setTasks(const QList<Task> &tasks)
             return a.dueDate.isValid();
         return a.title.localeAwareCompare(b.title) < 0;
     });
-    endResetModel();
-    Q_EMIT countChanged();
+    applyFilter();
 }
 
 void TasksModel::clear()
 {
-    if (m_tasks.isEmpty()) return;
+    if (m_allTasks.isEmpty() && m_tasks.isEmpty()) return;
+    beginResetModel();
+    m_allTasks.clear();
+    m_tasks.clear();
+    endResetModel();
+    Q_EMIT countChanged();
+}
+
+QString TasksModel::filterText() const
+{
+    return m_filterText;
+}
+
+void TasksModel::setFilterText(const QString &text)
+{
+    const QString trimmed = text.trimmed();
+    if (trimmed == m_filterText) return;
+    m_filterText = trimmed;
+    Q_EMIT filterTextChanged();
+    applyFilter();
+}
+
+bool TasksModel::matchesFilter(const Task &t) const
+{
+    if (m_filterText.isEmpty()) return true;
+    return t.title.contains(m_filterText, Qt::CaseInsensitive)
+        || t.body.contains(m_filterText, Qt::CaseInsensitive);
+}
+
+void TasksModel::applyFilter()
+{
     beginResetModel();
     m_tasks.clear();
+    m_tasks.reserve(m_allTasks.size());
+    for (const auto &t : m_allTasks) {
+        if (matchesFilter(t)) m_tasks.append(t);
+    }
     endResetModel();
     Q_EMIT countChanged();
 }
@@ -212,7 +247,29 @@ QVariantMap TasksModel::taskAt(int row) const
         {QStringLiteral("recurrenceCustom"), patternCustom},
         {QStringLiteral("linkedResources"), links},
         {QStringLiteral("linkedResourceCount"), int(t.linkedResources.size())},
+        {QStringLiteral("listId"), t.listId},
+        {QStringLiteral("listName"), m_listNames.value(t.listId)},
     };
+}
+
+QString TasksModel::listIdForTask(const QString &taskId) const
+{
+    for (const auto &t : m_allTasks) {
+        if (t.id == taskId) return t.listId;
+    }
+    return {};
+}
+
+void TasksModel::setListNames(const QHash<QString, QString> &names)
+{
+    if (m_listNames == names) return;
+    m_listNames = names;
+    if (!m_tasks.isEmpty()) {
+        // Re-emit dataChanged for ListNameRole so existing rows pick up the
+        // resolved names immediately.
+        Q_EMIT dataChanged(index(0, 0), index(m_tasks.size() - 1, 0),
+                           {ListNameRole});
+    }
 }
 
 } // namespace Merkzettel
