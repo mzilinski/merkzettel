@@ -50,6 +50,15 @@ Kirigami.ApplicationWindow {
                 root.requestActivate();
             }
         }
+        function onWindowActivateRequested() {
+            if (root.windowState === Qt.WindowMinimized) {
+                root.showNormal();
+            } else {
+                root.show();
+            }
+            root.raise();
+            root.requestActivate();
+        }
         function onErrorOccurred(message) {
             errorBanner.text = message;
             errorBanner.visible = true;

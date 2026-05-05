@@ -712,6 +712,8 @@ void App::requestPickDateForDue(const QString &taskId)
 
 void App::toggleWindow() { Q_EMIT windowToggleRequested(); }
 
+void App::activateWindow() { Q_EMIT windowActivateRequested(); }
+
 void App::setColorScheme(const QString &scheme)
 {
     if (scheme == m_colorScheme) return;

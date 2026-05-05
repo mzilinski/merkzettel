@@ -8,6 +8,7 @@
 #include <QStandardPaths>
 #include <QTranslator>
 #include <KAboutData>
+#include <KDBusService>
 #include <KLocalizedContext>
 #include <KLocalizedString>
 
@@ -79,9 +80,20 @@ int main(int argc, char *argv[])
     parser.process(app);
     about.processCommandLine(&parser);
 
+    // Single-instance: a second `merkzettel` invocation hands off to the
+    // running process via D-Bus instead of spawning another tray icon, sync
+    // loop, and SQLite writer (the cache + delta-link + token refresh would
+    // race). The running instance raises its window in response.
+    KDBusService service(KDBusService::Unique);
+
     Merkzettel::App controller;
     controller.setStartMinimized(parser.isSet(trayOption));
     controller.setDemoMode(parser.isSet(demoOption));
+
+    QObject::connect(&service, &KDBusService::activateRequested,
+                     &controller, [&controller](const QStringList &, const QString &) {
+                         controller.activateWindow();
+                     });
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));

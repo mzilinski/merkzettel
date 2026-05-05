@@ -88,6 +88,9 @@ public Q_SLOTS:
     void closeTaskDetails();
     void requestPickDateForDue(const QString &taskId);
     void toggleWindow();
+    // Always bring the window to the front — used by the second-instance
+    // hand-off so launching merkzettel again never hides a visible window.
+    void activateWindow();
     // Color scheme picker — "auto"/"light"/"dark" only. KColorSchemeManager
     // auto-saves; the choice survives across launches.
     void setColorScheme(const QString &scheme);
@@ -99,6 +102,7 @@ Q_SIGNALS:
     void detailTaskChanged();
     void errorOccurred(const QString &message);
     void windowToggleRequested();
+    void windowActivateRequested();
     void pickDateRequested(const QString &taskId, const QDateTime &initial);
     void colorSchemeChanged();
 
