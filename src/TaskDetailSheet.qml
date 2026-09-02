@@ -357,12 +357,57 @@ Kirigami.OverlaySheet {
                 }
             }
         }
+
+        Kirigami.Separator { Layout.fillWidth: true }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 0
+
+            component MetaLabel: QQC2.Label {
+                Layout.fillWidth: true
+                color: Kirigami.Theme.disabledTextColor
+                font: Kirigami.Theme.smallFont
+                elide: Text.ElideRight
+                visible: text.length > 0
+            }
+
+            MetaLabel {
+                text: hasTask && (task.listName || "").length > 0
+                      ? i18n("List: %1", task.listName) : ""
+            }
+            MetaLabel {
+                text: hasTask && task.createdDate && !isNaN(task.createdDate.getTime())
+                      ? i18n("Created: %1",
+                             Qt.formatDateTime(task.createdDate, "ddd d. MMM yyyy, HH:mm"))
+                      : ""
+            }
+            MetaLabel {
+                text: hasTask && task.lastModified && !isNaN(task.lastModified.getTime())
+                      ? i18n("Last modified: %1",
+                             Qt.formatDateTime(task.lastModified, "ddd d. MMM yyyy, HH:mm"))
+                      : ""
+            }
+        }
     }
 
     footer: RowLayout {
+        // Safe default on the left: habitual bottom-left clicks must never
+        // complete or delete anything, only dismiss the sheet.
+        QQC2.Button {
+            text: i18n("OK")
+            icon.name: "dialog-ok"
+            highlighted: true
+            onClicked: sheet.close()
+        }
+        Item { Layout.fillWidth: true }
         QQC2.Button {
             text: hasTask && task.completed ? i18n("Reopen") : i18n("Mark done")
             icon.name: hasTask && task.completed ? "edit-undo" : "checkmark"
+            icon.color: hasTask && task.completed ? Kirigami.Theme.textColor
+                                                  : Kirigami.Theme.positiveTextColor
+            palette.buttonText: hasTask && task.completed ? Kirigami.Theme.textColor
+                                                          : Kirigami.Theme.positiveTextColor
             onClicked: {
                 if (!hasTask) return;
                 if (task.completed) app.uncompleteTask(task.taskId);
@@ -370,10 +415,11 @@ Kirigami.OverlaySheet {
                 sheet.close();
             }
         }
-        Item { Layout.fillWidth: true }
         QQC2.Button {
             text: i18n("Delete")
             icon.name: "edit-delete"
+            icon.color: Kirigami.Theme.negativeTextColor
+            palette.buttonText: Kirigami.Theme.negativeTextColor
             onClicked: {
                 if (!hasTask) return;
                 app.deleteTask(task.taskId);

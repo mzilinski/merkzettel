@@ -240,6 +240,8 @@ QVariantMap TasksModel::taskAt(int row) const
         {QStringLiteral("dueDate"), t.dueDate},
         {QStringLiteral("hasReminder"), t.hasReminder},
         {QStringLiteral("reminderDate"), t.reminderDate},
+        {QStringLiteral("createdDate"), t.createdDate},
+        {QStringLiteral("lastModified"), t.lastModified},
         {QStringLiteral("checklistItems"), items},
         {QStringLiteral("openChecklistCount"), t.openChecklistCount},
         {QStringLiteral("totalChecklistCount"), t.totalChecklistCount},

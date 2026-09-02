@@ -42,6 +42,7 @@ struct Task {
     QString body;
     QDateTime dueDate;        // UTC, may be invalid
     QDateTime reminderDate;   // UTC, valid only if hasReminder
+    QDateTime createdDate;    // UTC; invalid for cache rows written pre-migration
     QDateTime lastModified;
     bool hasReminder = false;
     // Microsoft Graph patternedRecurrence as a JSON string (or empty if none).

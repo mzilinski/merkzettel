@@ -82,6 +82,11 @@ Task parseTask(const QJsonObject &obj)
     t.reminderDate = parseGraphDateTime(obj.value(QStringLiteral("reminderDateTime")).toObject());
     t.hasReminder = obj.value(QStringLiteral("isReminderOn")).toBool();
 
+    const QString created = obj.value(QStringLiteral("createdDateTime")).toString();
+    if (!created.isEmpty()) {
+        t.createdDate = QDateTime::fromString(created, Qt::ISODate);
+    }
+
     const QString lm = obj.value(QStringLiteral("lastModifiedDateTime")).toString();
     if (!lm.isEmpty()) {
         t.lastModified = QDateTime::fromString(lm, Qt::ISODate);
