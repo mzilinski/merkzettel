@@ -17,6 +17,11 @@
 #include <QApplication>
 #include <QDate>
 #include <QDesktopServices>
+#include <QStandardPaths>
+#include <QMimeDatabase>
+#include <QDir>
+#include <QFileInfo>
+#include <QFile>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QLocale>
@@ -200,6 +205,20 @@ App::App(QObject *parent)
     connect(m_tray.get(), &TrayIcon::activated, this, &App::toggleWindow);
     connect(m_tray.get(), &TrayIcon::quitRequested, this, [] { qApp->quit(); });
     connect(m_tray.get(), &TrayIcon::syncRequested, this, &App::refresh);
+
+    connect(m_todo.get(), &TodoApi::attachmentsReceived, this,
+            [this](const QString &, const QString &taskId, const QList<Attachment> &atts) {
+        m_attachments.insert(taskId, atts);
+        if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
+            setDetailTask(m_detailTask);
+        }
+    });
+    connect(m_todo.get(), &TodoApi::attachmentMutated, this,
+            [this](const QString &listId, const QString &taskId) {
+        m_todo->fetchAttachments(listId, taskId);
+        m_todo->fetchTasks(listId);  // hasAttachments flag for the list icon
+        setStatus(i18n("Attachments updated"));
+    });
 
     m_commitTimer = new QTimer(this);
     m_commitTimer->setSingleShot(true);
@@ -393,8 +412,7 @@ void App::refreshDetailTaskFromModel()
     for (int i = 0; i < n; ++i) {
         const auto idx = m_tasksModel->index(i, 0);
         if (m_tasksModel->data(idx, TasksModel::IdRole).toString() == openId) {
-            m_detailTask = m_tasksModel->taskAt(i);
-            Q_EMIT detailTaskChanged();
+            setDetailTask(m_tasksModel->taskAt(i));
             return;
         }
     }
@@ -928,8 +946,118 @@ void App::openLinkedResource(const QString &webUrl)
 
 void App::openTaskDetails(int row)
 {
-    m_detailTask = m_tasksModel->taskAt(row);
+    const QVariantMap task = m_tasksModel->taskAt(row);
+    setDetailTask(task);
+    if (!m_demoMode && task.value(QStringLiteral("hasAttachments")).toBool()) {
+        m_todo->fetchAttachments(task.value(QStringLiteral("listId")).toString(),
+                                 task.value(QStringLiteral("taskId")).toString());
+    }
+}
+
+void App::setDetailTask(const QVariantMap &task)
+{
+    m_detailTask = task;
+    const QString id = task.value(QStringLiteral("taskId")).toString();
+    if (!id.isEmpty()) {
+        QMimeDatabase mimes;
+        QVariantList list;
+        for (const auto &a : m_attachments.value(id)) {
+            list.append(QVariantMap{
+                {QStringLiteral("id"), a.id},
+                {QStringLiteral("name"), a.name},
+                {QStringLiteral("sizeLabel"), QLocale().formattedDataSize(a.size, 1)},
+                {QStringLiteral("iconName"), mimes.mimeTypeForName(a.contentType).iconName()},
+            });
+        }
+        m_detailTask.insert(QStringLiteral("attachments"), list);
+    }
     Q_EMIT detailTaskChanged();
+}
+
+Attachment App::findAttachment(const QString &taskId, const QString &attachmentId) const
+{
+    for (const auto &a : m_attachments.value(taskId)) {
+        if (a.id == attachmentId) return a;
+    }
+    return {};
+}
+
+void App::addAttachments(const QString &taskId, const QList<QUrl> &fileUrls)
+{
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty() || fileUrls.isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    QMimeDatabase mimes;
+    int started = 0;
+    for (const QUrl &url : fileUrls) {
+        QFile file(url.toLocalFile());
+        if (!url.isLocalFile() || !file.open(QIODevice::ReadOnly)) {
+            Q_EMIT errorOccurred(i18n("Could not read \"%1\".", url.toDisplayString()));
+            continue;
+        }
+        const QString name = QFileInfo(file).fileName();
+        if (file.size() > TodoApi::kMaxAttachmentSize) {
+            Q_EMIT errorOccurred(i18n("\"%1\" is larger than 25 MB, the Microsoft To Do limit.",
+                                      name));
+            continue;
+        }
+        m_todo->uploadAttachment(lid, taskId, name, mimes.mimeTypeForFile(name).name(),
+                                 file.readAll());
+        ++started;
+    }
+    if (started > 0) setStatus(i18np("Uploading %1 file ...", "Uploading %1 files ...", started));
+}
+
+void App::openAttachment(const QString &taskId, const QString &attachmentId)
+{
+    const QString lid = listIdForTask(taskId);
+    const Attachment att = findAttachment(taskId, attachmentId);
+    if (lid.isEmpty() || att.id.isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — files are not available")); return; }
+    setStatus(i18n("Downloading \"%1\" ...", att.name));
+    m_todo->downloadAttachment(lid, taskId, attachmentId,
+                               [this, att](const QByteArray &data, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        // One directory per attachment id keeps the original file name
+        // (which the opening application shows) without collisions.
+        const QString dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
+                          + QStringLiteral("/attachments/")
+                          + QString(att.id).replace(QLatin1Char('/'), QLatin1Char('_'));
+        QDir().mkpath(dir);
+        QFile out(dir + QLatin1Char('/') + QFileInfo(att.name).fileName());
+        if (!out.open(QIODevice::WriteOnly) || out.write(data) != data.size()) {
+            Q_EMIT errorOccurred(i18n("Could not write \"%1\".", out.fileName()));
+            return;
+        }
+        out.close();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(out.fileName()));
+    });
+}
+
+void App::saveAttachment(const QString &taskId, const QString &attachmentId, const QUrl &target)
+{
+    const QString lid = listIdForTask(taskId);
+    const Attachment att = findAttachment(taskId, attachmentId);
+    if (lid.isEmpty() || att.id.isEmpty() || !target.isLocalFile()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — files are not available")); return; }
+    m_todo->downloadAttachment(lid, taskId, attachmentId,
+                               [this, target](const QByteArray &data, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        QFile out(target.toLocalFile());
+        if (!out.open(QIODevice::WriteOnly) || out.write(data) != data.size()) {
+            Q_EMIT errorOccurred(i18n("Could not write \"%1\".", target.toLocalFile()));
+            return;
+        }
+        setStatus(i18n("Saved \"%1\"", QFileInfo(out).fileName()));
+    });
+}
+
+void App::deleteAttachment(const QString &taskId, const QString &attachmentId)
+{
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty()) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    m_todo->deleteAttachment(lid, taskId, attachmentId);
 }
 
 void App::closeTaskDetails()
@@ -1144,6 +1272,14 @@ void App::loadDemoData()
     for (auto &tasks : m_demoTasks)
         for (auto &t : tasks)
             t.categories = demoCategories.value(t.id);
+
+    // Fake attachment metadata so the Files section can be shown.
+    m_attachments.insert(QStringLiteral("d6"), {
+        {QStringLiteral("a1"), i18n("Hotel receipt.pdf"), QStringLiteral("application/pdf"), 245760},
+        {QStringLiteral("a2"), i18n("Train ticket.png"), QStringLiteral("image/png"), 1258291},
+    });
+    for (auto &t : m_demoTasks[QStringLiteral("demo-tasks")])
+        if (t.id == QLatin1String("d6")) t.hasAttachments = true;
 
     setCurrentListId(QStringLiteral("demo-tasks"));
 }

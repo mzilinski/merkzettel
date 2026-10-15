@@ -17,7 +17,8 @@ Native KDE/Kirigami client for **Microsoft To Do**. Written in C++/Qt6, talks Mi
 - Refresh token stored in **KWallet** (via QtKeychain)
 - Lists and tasks fetched from Microsoft Graph
 - Create, complete, delete tasks; importance (star), due date, reminder, notes
-- **Move tasks between lists** (context menu or selection bar; Graph has no move, so tasks are copied with steps and links, then the original is deleted)
+- **Move tasks between lists** (context menu or selection bar; Graph has no move, so tasks are copied with steps, links and files, then the original is deleted)
+- **File attachments** (up to 25 MB, upload sessions above 3 MB): add via dialog or drag & drop, open, save as, delete; paperclip icon in the list
 - **Multi-selection** (Ctrl/Shift+click, Space, Ctrl+A) with bulk complete / star / move / delete
 - **Undo** (Ctrl+Z or the notification button) for delete, move and bulk complete
 - **Categories** (Outlook categories on `todoTask.categories`): chips in the list and detail sheet, autocompletion from categories already in use, searchable
@@ -114,7 +115,6 @@ cmake --install build --prefix ~/.local
 
 **v0.4 — ideas**
 - Drag & drop between lists
-- Attachments + linked resources
 - Plasmoid variant for direct panel access
 
 ## Contributing

@@ -544,8 +544,6 @@ msgid_plural "%1 tasks completed"
 msgstr[0] "Aufgabe erledigt"
 msgstr[1] "%1 Aufgaben erledigt"
 
-msgid "Tasks with file attachments can't be moved yet."
-msgstr "Aufgaben mit Dateianhängen können noch nicht verschoben werden."
 
 # --- categories, custom recurrence ---
 msgid "Categories:"
@@ -633,3 +631,66 @@ msgid "year"
 msgid_plural "years"
 msgstr[0] "Jahr"
 msgstr[1] "Jahre"
+
+# --- file attachments ---
+msgid "Files"
+msgstr "Dateien"
+
+msgid "Add file ..."
+msgstr "Datei hinzufügen ..."
+
+msgid "or drop files here (max. 25 MB each)"
+msgstr "oder Dateien hierher ziehen (max. 25 MB pro Datei)"
+
+msgid "Attach files"
+msgstr "Dateien anhängen"
+
+msgid "Open"
+msgstr "Öffnen"
+
+msgid "Save as ..."
+msgstr "Speichern unter ..."
+
+msgid "Save file"
+msgstr "Datei speichern"
+
+msgid "Delete file"
+msgstr "Datei löschen"
+
+msgid "Delete file?"
+msgstr "Datei löschen?"
+
+msgid "\"%1\" will be removed from the task. This cannot be undone."
+msgstr "„%1“ wird von der Aufgabe entfernt. Das kann nicht rückgängig gemacht werden."
+
+msgid "\"%1\" is larger than 25 MB, the Microsoft To Do limit."
+msgstr "„%1“ ist größer als 25 MB, die Obergrenze von Microsoft To Do."
+
+msgid "Could not read \"%1\"."
+msgstr "„%1“ konnte nicht gelesen werden."
+
+msgid "Could not write \"%1\"."
+msgstr "„%1“ konnte nicht geschrieben werden."
+
+msgid "Uploading %1 file ..."
+msgid_plural "Uploading %1 files ..."
+msgstr[0] "%1 Datei wird hochgeladen ..."
+msgstr[1] "%1 Dateien werden hochgeladen ..."
+
+msgid "Downloading \"%1\" ..."
+msgstr "„%1“ wird heruntergeladen ..."
+
+msgid "Saved \"%1\""
+msgstr "„%1“ gespeichert"
+
+msgid "Attachments updated"
+msgstr "Anhänge aktualisiert"
+
+msgid "Demo mode — files are not available"
+msgstr "Demo-Modus — Dateien sind nicht verfügbar"
+
+msgid "Hotel receipt.pdf"
+msgstr "Hotelrechnung.pdf"
+
+msgid "Train ticket.png"
+msgstr "Bahnticket.png"

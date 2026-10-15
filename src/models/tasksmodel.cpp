@@ -162,6 +162,7 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
     case ListIdRole:       return t.listId;
     case ListNameRole:     return m_listNames.value(t.listId);
     case CategoriesRole:   return t.categories;
+    case HasAttachmentsRole: return t.hasAttachments;
     case ChecklistProgressRole: {
         if (t.totalChecklistCount <= 0) return QString();
         const int done = t.totalChecklistCount - t.openChecklistCount;
@@ -203,6 +204,7 @@ QHash<int, QByteArray> TasksModel::roleNames() const
         {ListIdRole, "listId"},
         {ListNameRole, "listName"},
         {CategoriesRole, "categories"},
+        {HasAttachmentsRole, "hasAttachments"},
     };
 }
 
@@ -478,6 +480,7 @@ QVariantMap TasksModel::taskAt(int row) const
         {QStringLiteral("totalChecklistCount"), t.totalChecklistCount},
         {QStringLiteral("recurrence"), rec},
         {QStringLiteral("categories"), t.categories},
+        {QStringLiteral("hasAttachments"), t.hasAttachments},
         {QStringLiteral("linkedResources"), links},
         {QStringLiteral("linkedResourceCount"), int(t.linkedResources.size())},
         {QStringLiteral("listId"), t.listId},

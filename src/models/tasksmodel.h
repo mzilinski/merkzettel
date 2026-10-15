@@ -43,6 +43,7 @@ public:
         ListIdRole,
         ListNameRole,
         CategoriesRole,
+        HasAttachmentsRole,
     };
 
     explicit TasksModel(QObject *parent = nullptr);

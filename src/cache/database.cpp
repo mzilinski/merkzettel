@@ -81,9 +81,13 @@ void Database::createSchema()
         "  recurrence_json TEXT"
         ")"));
     q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN recurrence_json TEXT"));
-    if (q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN categories_json TEXT"))) {
+    const bool addedCategories =
+        q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN categories_json TEXT"));
+    const bool addedAttachments =
+        q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN has_attachments INTEGER NOT NULL DEFAULT 0"));
+    if (addedCategories || addedAttachments) {
         // Same as created_utc below: force one full re-fetch so existing
-        // rows get their categories backfilled.
+        // rows get the new columns backfilled.
         q.exec(QStringLiteral("UPDATE lists SET delta_link = NULL"));
     }
     if (q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN created_utc TEXT"))) {
@@ -220,8 +224,8 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
     q.prepare(QStringLiteral(
         "INSERT INTO tasks(id, list_id, title, status, importance, body, due_utc, "
         "reminder_utc, has_reminder, created_utc, last_modified, recurrence_json, "
-        "categories_json) "
-        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+        "categories_json, has_attachments) "
+        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
     QSqlQuery chk(db);
     chk.prepare(QStringLiteral(
         "INSERT INTO checklist_items(id, task_id, list_id, display_name, is_checked, "
@@ -248,6 +252,7 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
         q.bindValue(10, t.lastModified.isValid() ? t.lastModified.toUTC().toString(Qt::ISODate) : QVariant());
         q.bindValue(11, t.recurrenceJson.isEmpty() ? QVariant() : t.recurrenceJson);
         q.bindValue(12, categoriesToJson(t.categories));
+        q.bindValue(13, t.hasAttachments ? 1 : 0);
         q.exec();
 
         int order = 0;
@@ -300,15 +305,16 @@ void Database::applyTaskDelta(const QString &listId,
     upsert.prepare(QStringLiteral(
         "INSERT INTO tasks(id, list_id, title, status, importance, body, due_utc, "
         "reminder_utc, has_reminder, created_utc, last_modified, recurrence_json, "
-        "categories_json) "
-        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+        "categories_json, has_attachments) "
+        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
         "ON CONFLICT(id) DO UPDATE SET "
         "title=excluded.title, status=excluded.status, importance=excluded.importance, "
         "body=excluded.body, due_utc=excluded.due_utc, reminder_utc=excluded.reminder_utc, "
         "has_reminder=excluded.has_reminder, created_utc=excluded.created_utc, "
         "last_modified=excluded.last_modified, "
         "recurrence_json=excluded.recurrence_json, "
-        "categories_json=excluded.categories_json"));
+        "categories_json=excluded.categories_json, "
+        "has_attachments=excluded.has_attachments"));
     for (const auto &t : changed) {
         upsert.bindValue(0, t.id);
         upsert.bindValue(1, listId);
@@ -323,6 +329,7 @@ void Database::applyTaskDelta(const QString &listId,
         upsert.bindValue(10, t.lastModified.isValid() ? t.lastModified.toUTC().toString(Qt::ISODate) : QVariant());
         upsert.bindValue(11, t.recurrenceJson.isEmpty() ? QVariant() : t.recurrenceJson);
         upsert.bindValue(12, categoriesToJson(t.categories));
+        upsert.bindValue(13, t.hasAttachments ? 1 : 0);
         upsert.exec();
     }
     db.commit();
@@ -407,7 +414,7 @@ QList<Task> Database::tasks(const QString &listId) const
     QSqlQuery q(db);
     q.prepare(QStringLiteral(
         "SELECT id, title, status, importance, body, due_utc, reminder_utc, has_reminder, "
-        "created_utc, last_modified, recurrence_json, categories_json "
+        "created_utc, last_modified, recurrence_json, categories_json, has_attachments "
         "FROM tasks WHERE list_id = ? "
         "ORDER BY (status = 'completed') ASC, due_utc ASC NULLS LAST, "
         "(importance = 'high') DESC, title ASC"));
@@ -432,6 +439,7 @@ QList<Task> Database::tasks(const QString &listId) const
         if (!lm.isEmpty()) t.lastModified = QDateTime::fromString(lm, Qt::ISODate);
         t.recurrenceJson = q.value(10).toString();
         t.categories = categoriesFromJson(q.value(11).toString());
+        t.hasAttachments = q.value(12).toInt() != 0;
         result.append(t);
     }
 
@@ -456,7 +464,8 @@ QList<Task> Database::allTasks() const
     QSqlQuery q(db);
     q.exec(QStringLiteral(
         "SELECT id, list_id, title, status, importance, body, due_utc, reminder_utc, "
-        "has_reminder, created_utc, last_modified, recurrence_json, categories_json "
+        "has_reminder, created_utc, last_modified, recurrence_json, categories_json, "
+        "has_attachments "
         "FROM tasks "
         "ORDER BY (status = 'completed') ASC, due_utc ASC NULLS LAST, "
         "(importance = 'high') DESC, title ASC"));
@@ -479,6 +488,7 @@ QList<Task> Database::allTasks() const
         if (!lm.isEmpty()) t.lastModified = QDateTime::fromString(lm, Qt::ISODate);
         t.recurrenceJson = q.value(11).toString();
         t.categories = categoriesFromJson(q.value(12).toString());
+        t.hasAttachments = q.value(13).toInt() != 0;
         result.append(t);
     }
 

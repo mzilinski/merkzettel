@@ -65,6 +65,7 @@ QQC2.ItemDelegate {
                 spacing: Kirigami.Units.smallSpacing
                 visible: listLbl.visible || dueLbl.text.length > 0 || bodyHint.visible
                          || progressLbl.visible || delegate.categories.length > 0
+                         || model.hasAttachments
 
                 Kirigami.Icon {
                     visible: listLbl.visible
@@ -130,6 +131,13 @@ QQC2.ItemDelegate {
                 Item {
                     visible: linkIcon.visible && (dueLbl.visible || bodyHint.visible || recurrenceIcon.visible)
                     Layout.preferredWidth: Kirigami.Units.smallSpacing
+                }
+                Kirigami.Icon {
+                    visible: model.hasAttachments
+                    source: "mail-attachment"
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                    color: Kirigami.Theme.disabledTextColor
                 }
                 Kirigami.Icon {
                     id: linkIcon

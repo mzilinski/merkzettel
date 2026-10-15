@@ -1,4 +1,6 @@
 import QtQuick
+import QtCore
+import QtQuick.Dialogs
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
@@ -409,6 +411,118 @@ Kirigami.OverlaySheet {
 
         Kirigami.Separator { Layout.fillWidth: true }
 
+        Kirigami.Heading {
+            level: 4
+            text: i18n("Files")
+        }
+
+        // Drop zone around the whole Files section; highlights while files
+        // are dragged over it from a file manager.
+        Item {
+            Layout.fillWidth: true
+            implicitHeight: filesColumn.implicitHeight
+
+            ColumnLayout {
+                id: filesColumn
+                anchors.left: parent.left
+                anchors.right: parent.right
+                spacing: Kirigami.Units.smallSpacing
+
+                Repeater {
+                    model: hasTask && task.attachments ? task.attachments : []
+                    delegate: RowLayout {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: Kirigami.Units.smallSpacing
+                        Kirigami.Icon {
+                            source: modelData.iconName || "mail-attachment"
+                            fallback: "mail-attachment"
+                            Layout.preferredWidth: Kirigami.Units.iconSizes.smallMedium
+                            Layout.preferredHeight: Kirigami.Units.iconSizes.smallMedium
+                        }
+                        QQC2.Label {
+                            Layout.fillWidth: true
+                            text: modelData.name
+                            elide: Text.ElideMiddle
+                        }
+                        QQC2.Label {
+                            text: modelData.sizeLabel
+                            color: Kirigami.Theme.disabledTextColor
+                            font: Kirigami.Theme.smallFont
+                        }
+                        QQC2.ToolButton {
+                            icon.name: "document-open"
+                            QQC2.ToolTip.text: i18n("Open")
+                            QQC2.ToolTip.visible: hovered
+                            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                            onClicked: app.openAttachment(task.taskId, modelData.id)
+                        }
+                        QQC2.ToolButton {
+                            icon.name: "document-save-as"
+                            QQC2.ToolTip.text: i18n("Save as ...")
+                            QQC2.ToolTip.visible: hovered
+                            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                            onClicked: {
+                                saveDialog.attachmentId = modelData.id;
+                                saveDialog.selectedFile = StandardPaths.writableLocation(
+                                    StandardPaths.DownloadLocation) + "/" + modelData.name;
+                                saveDialog.open();
+                            }
+                        }
+                        QQC2.ToolButton {
+                            icon.name: "edit-delete"
+                            QQC2.ToolTip.text: i18n("Delete file")
+                            QQC2.ToolTip.visible: hovered
+                            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                            onClicked: {
+                                deleteFileDialog.attachmentId = modelData.id;
+                                deleteFileDialog.fileName = modelData.name;
+                                deleteFileDialog.open();
+                            }
+                        }
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    QQC2.Button {
+                        text: i18n("Add file ...")
+                        icon.name: "mail-attachment"
+                        onClicked: openDialog.open()
+                    }
+                    QQC2.Label {
+                        Layout.fillWidth: true
+                        text: i18n("or drop files here (max. 25 MB each)")
+                        color: Kirigami.Theme.disabledTextColor
+                        font: Kirigami.Theme.smallFont
+                        elide: Text.ElideRight
+                    }
+                }
+            }
+
+            DropArea {
+                id: fileDrop
+                anchors.fill: parent
+                onEntered: drag => drag.accepted = drag.hasUrls
+                onDropped: drop => {
+                    if (hasTask && drop.hasUrls) {
+                        app.addAttachments(task.taskId, drop.urls);
+                        drop.accept();
+                    }
+                }
+            }
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: -Kirigami.Units.smallSpacing
+                visible: fileDrop.containsDrag
+                radius: Kirigami.Units.cornerRadius
+                color: Qt.alpha(Kirigami.Theme.highlightColor, 0.12)
+                border.color: Kirigami.Theme.highlightColor
+            }
+        }
+
+        Kirigami.Separator { Layout.fillWidth: true }
+
         QQC2.TextArea {
             id: bodyArea
             Layout.fillWidth: true
@@ -491,5 +605,45 @@ Kirigami.OverlaySheet {
                 sheet.close();
             }
         }
+    }
+
+    FileDialog {
+        id: openDialog
+        title: i18n("Attach files")
+        fileMode: FileDialog.OpenFiles
+        onAccepted: if (hasTask) app.addAttachments(task.taskId, selectedFiles)
+    }
+
+    FileDialog {
+        id: saveDialog
+        property string attachmentId: ""
+        title: i18n("Save file")
+        fileMode: FileDialog.SaveFile
+        onAccepted: if (hasTask) app.saveAttachment(task.taskId, attachmentId, selectedFile)
+    }
+
+    Kirigami.PromptDialog {
+        id: deleteFileDialog
+        property string attachmentId: ""
+        property string fileName: ""
+        parent: QQC2.Overlay.overlay
+        title: i18n("Delete file?")
+        subtitle: i18n("\"%1\" will be removed from the task. This cannot be undone.", fileName)
+        standardButtons: Kirigami.PromptDialog.NoButton
+        customFooterActions: [
+            Kirigami.Action {
+                text: i18n("Cancel")
+                icon.name: "dialog-cancel"
+                onTriggered: deleteFileDialog.close()
+            },
+            Kirigami.Action {
+                text: i18n("Delete")
+                icon.name: "edit-delete"
+                onTriggered: {
+                    if (hasTask) app.deleteAttachment(task.taskId, deleteFileDialog.attachmentId);
+                    deleteFileDialog.close();
+                }
+            }
+        ]
     }
 }

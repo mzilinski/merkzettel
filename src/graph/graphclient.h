@@ -15,6 +15,7 @@ namespace Merkzettel {
 class AuthManager;
 
 using GraphCallback = std::function<void(const QJsonValue &result, const QString &error)>;
+using GraphBytesCallback = std::function<void(const QByteArray &data, const QString &error)>;
 
 class GraphClient : public QObject
 {
@@ -31,6 +32,15 @@ public:
     // @odata.deltaLink, which Graph returns as fully-qualified URLs that
     // already encode any cursor/token.
     void getAbsolute(const QString &absoluteUrl, GraphCallback cb);
+
+    // Authenticated GET returning the raw body (e.g. attachments/{id}/$value).
+    void getBytes(const QString &path, GraphBytesCallback cb, int retries = 1);
+
+    // One chunk of a Graph upload session. uploadUrl is pre-authenticated,
+    // so no Authorization header is sent. The callback gets the JSON reply
+    // (nextExpectedRanges while incomplete, empty/attachment when done).
+    void putUploadChunk(const QUrl &uploadUrl, const QByteArray &chunk,
+                        qint64 offset, qint64 totalSize, GraphCallback cb);
 
 private:
     enum class Method { Get, Post, Patch, Delete };

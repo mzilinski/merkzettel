@@ -117,6 +117,8 @@ Task parseTask(const QJsonObject &obj)
         if (!c.isChecked) ++t.openChecklistCount;
     }
 
+    t.hasAttachments = obj.value(QStringLiteral("hasAttachments")).toBool();
+
     const auto links = obj.value(QStringLiteral("linkedResources")).toArray();
     for (const auto &v : links) {
         t.linkedResources.append(parseLinkedResource(v.toObject()));
@@ -415,11 +417,6 @@ void TodoApi::moveTask(const QString &srcListId, const QString &taskId,
                                                                           const QString &err) {
         if (!err.isEmpty()) { Q_EMIT taskMoveFailed(srcListId, taskId, err); return; }
         const QJsonObject src = v.toObject();
-        if (src.value(QStringLiteral("hasAttachments")).toBool()) {
-            Q_EMIT taskMoveFailed(srcListId, taskId,
-                                  i18n("Tasks with file attachments can't be moved yet."));
-            return;
-        }
 
         // Whitelist of writable fields; everything else (ids, timestamps,
         // etags, hasAttachments) is server-owned. completedDateTime is left to
@@ -437,64 +434,215 @@ void TodoApi::moveTask(const QString &srcListId, const QString &taskId,
             if (!val.isUndefined() && !val.isNull()) body.insert(key, val);
         }
 
-        // Sub-requests run one after another so steps keep their order.
-        auto pending = std::make_shared<QList<QPair<QString, QJsonObject>>>();
+        // Copy steps run one after another (keeps step order, avoids
+        // throttling). Each gets the new task's path and reports back.
+        using Done = std::function<void(const QString &)>;
+        using Step = std::function<void(const QString &dstTaskId, Done)>;
+        auto steps = std::make_shared<QList<Step>>();
+        const auto postTo = [this, dstListId](const QString &collection, const QJsonObject &payload) {
+            return Step([this, dstListId, collection, payload](const QString &dstTaskId, Done done) {
+                m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks/%2/%3")
+                                  .arg(dstListId, dstTaskId, collection),
+                              payload, [done](const QJsonValue &, const QString &e) { done(e); });
+            });
+        };
         for (const auto &c : src.value(QStringLiteral("checklistItems")).toArray()) {
             const auto o = c.toObject();
-            pending->append({QStringLiteral("checklistItems"), QJsonObject{
+            steps->append(postTo(QStringLiteral("checklistItems"), QJsonObject{
                 {QStringLiteral("displayName"), o.value(QStringLiteral("displayName"))},
                 {QStringLiteral("isChecked"), o.value(QStringLiteral("isChecked"))},
-            }});
+            }));
         }
         for (const auto &r : src.value(QStringLiteral("linkedResources")).toArray()) {
-            QJsonObject o = r.toObject();
+            const QJsonObject o = r.toObject();
             QJsonObject copy;
             for (const char *key : {"webUrl", "applicationName", "displayName", "externalId"}) {
                 const QJsonValue val = o.value(QLatin1String(key));
                 if (val.isString() && !val.toString().isEmpty()) copy.insert(QLatin1String(key), val);
             }
-            pending->append({QStringLiteral("linkedResources"), copy});
+            steps->append(postTo(QStringLiteral("linkedResources"), copy));
         }
 
-        m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks").arg(dstListId), body,
-                      [this, srcListId, taskId, dstListId, srcPath, pending](const QJsonValue &created,
-                                                                           const QString &err) {
-            if (!err.isEmpty()) { Q_EMIT taskMoveFailed(srcListId, taskId, err); return; }
-            const QString newId = created.toObject().value(QStringLiteral("id")).toString();
-            const QString dstPath = QStringLiteral("/me/todo/lists/%1/tasks/%2").arg(dstListId, newId);
+        const auto run = [this, srcListId, taskId, dstListId, srcPath, body, steps] {
+            m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks").arg(dstListId), body,
+                          [this, srcListId, taskId, dstListId, srcPath, steps](const QJsonValue &created,
+                                                                              const QString &err) {
+                if (!err.isEmpty()) { Q_EMIT taskMoveFailed(srcListId, taskId, err); return; }
+                const QString newId = created.toObject().value(QStringLiteral("id")).toString();
 
-            auto step = std::make_shared<std::function<void()>>();
-            *step = [this, srcListId, taskId, dstListId, srcPath, dstPath, newId, pending, step] {
-                if (pending->isEmpty()) {
-                    m_graph->del(srcPath, [this, srcListId, taskId, dstListId, newId, step](
-                                              const QJsonValue &, const QString &err) {
-                        *step = nullptr;  // break the self-reference
+                auto next = std::make_shared<std::function<void()>>();
+                *next = [this, srcListId, taskId, dstListId, srcPath, newId, steps, next] {
+                    if (steps->isEmpty()) {
+                        *next = nullptr;  // break the self-reference
+                        m_graph->del(srcPath, [this, srcListId, taskId, dstListId, newId](
+                                                  const QJsonValue &, const QString &err) {
+                            if (!err.isEmpty()) {
+                                // Copy exists, original still there: report it
+                                // so the caller refreshes both lists.
+                                Q_EMIT taskMoveFailed(srcListId, taskId, err);
+                                Q_EMIT taskMutated(dstListId);
+                                return;
+                            }
+                            Q_EMIT taskMoved(srcListId, taskId, dstListId, newId);
+                        });
+                        return;
+                    }
+                    const Step step = steps->takeFirst();
+                    step(newId, [this, srcListId, taskId, dstListId, next](const QString &err) {
                         if (!err.isEmpty()) {
-                            // Copy exists, original still there: surface it as a
-                            // failure so the caller refreshes both lists.
+                            *next = nullptr;
                             Q_EMIT taskMoveFailed(srcListId, taskId, err);
                             Q_EMIT taskMutated(dstListId);
                             return;
                         }
-                        Q_EMIT taskMoved(srcListId, taskId, dstListId, newId);
+                        (*next)();
                     });
+                };
+                (*next)();
+            });
+        };
+
+        if (!src.value(QStringLiteral("hasAttachments")).toBool()) {
+            run();
+            return;
+        }
+        // Attachments: list them first, then download + re-upload each one
+        // as part of the copy steps.
+        m_graph->get(srcPath + QStringLiteral("/attachments"), {},
+                     [this, srcListId, taskId, dstListId, srcPath, steps, run](const QJsonValue &v,
+                                                                             const QString &err) {
+            if (!err.isEmpty()) { Q_EMIT taskMoveFailed(srcListId, taskId, err); return; }
+            for (const auto &a : v.toObject().value(QStringLiteral("value")).toArray()) {
+                const QJsonObject o = a.toObject();
+                const QString id = o.value(QStringLiteral("id")).toString();
+                const QString name = o.value(QStringLiteral("name")).toString();
+                const QString type = o.value(QStringLiteral("contentType")).toString();
+                steps->append([this, srcPath, dstListId, id, name, type](const QString &dstTaskId,
+                                                                        Done done) {
+                    m_graph->getBytes(srcPath + QStringLiteral("/attachments/%1/$value").arg(id),
+                                      [this, dstListId, dstTaskId, name, type, done](
+                                          const QByteArray &data, const QString &e) {
+                        if (!e.isEmpty()) { done(e); return; }
+                        uploadAttachmentImpl(dstListId, dstTaskId, name, type, data, done);
+                    });
+                });
+            }
+            run();
+        });
+    });
+}
+
+namespace {
+QList<Attachment> parseAttachments(const QJsonValue &v)
+{
+    QList<Attachment> out;
+    for (const auto &a : v.toObject().value(QStringLiteral("value")).toArray()) {
+        const QJsonObject o = a.toObject();
+        Attachment att;
+        att.id = o.value(QStringLiteral("id")).toString();
+        att.name = o.value(QStringLiteral("name")).toString();
+        att.contentType = o.value(QStringLiteral("contentType")).toString();
+        att.size = o.value(QStringLiteral("size")).toInteger();
+        out.append(att);
+    }
+    return out;
+}
+} // namespace
+
+void TodoApi::fetchAttachments(const QString &listId, const QString &taskId)
+{
+    m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/%2/attachments").arg(listId, taskId), {},
+                 [this, listId, taskId](const QJsonValue &v, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT attachmentsReceived(listId, taskId, parseAttachments(v));
+    });
+}
+
+void TodoApi::uploadAttachment(const QString &listId, const QString &taskId, const QString &name,
+                               const QString &contentType, const QByteArray &data)
+{
+    uploadAttachmentImpl(listId, taskId, name, contentType, data,
+                         [this, listId, taskId](const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT attachmentMutated(listId, taskId);
+    });
+}
+
+void TodoApi::uploadAttachmentImpl(const QString &listId, const QString &taskId,
+                                   const QString &name, const QString &contentType,
+                                   const QByteArray &data,
+                                   std::function<void(const QString &)> done)
+{
+    if (data.size() > kMaxAttachmentSize) {
+        done(i18n("\"%1\" is larger than 25 MB, the Microsoft To Do limit.", name));
+        return;
+    }
+    const QString base = QStringLiteral("/me/todo/lists/%1/tasks/%2/attachments").arg(listId, taskId);
+    const QString type = contentType.isEmpty() ? QStringLiteral("application/octet-stream")
+                                               : contentType;
+
+    // Small files go inline as base64 (Graph's limit for this is 3 MB).
+    constexpr qint64 kInlineLimit = 3 * 1024 * 1024;
+    if (data.size() < kInlineLimit) {
+        const QJsonObject body{
+            {QStringLiteral("@odata.type"), QStringLiteral("#microsoft.graph.taskFileAttachment")},
+            {QStringLiteral("name"), name},
+            {QStringLiteral("contentType"), type},
+            {QStringLiteral("contentBytes"), QString::fromLatin1(data.toBase64())},
+        };
+        m_graph->post(base, body, [done](const QJsonValue &, const QString &err) { done(err); });
+        return;
+    }
+
+    const QJsonObject session{
+        {QStringLiteral("attachmentInfo"), QJsonObject{
+            {QStringLiteral("attachmentType"), QStringLiteral("file")},
+            {QStringLiteral("name"), name},
+            {QStringLiteral("size"), data.size()},
+        }},
+    };
+    m_graph->post(base + QStringLiteral("/createUploadSession"), session,
+                  [this, data, done](const QJsonValue &v, const QString &err) {
+        if (!err.isEmpty()) { done(err); return; }
+        const QUrl uploadUrl(v.toObject().value(QStringLiteral("uploadUrl")).toString());
+        // Chunks must be multiples of 320 KiB (Graph upload-session rule).
+        constexpr qint64 kChunk = 10 * 320 * 1024;
+        auto sendFrom = std::make_shared<std::function<void(qint64)>>();
+        *sendFrom = [this, uploadUrl, data, done, sendFrom](qint64 offset) {
+            const QByteArray chunk = data.mid(offset, kChunk);
+            m_graph->putUploadChunk(uploadUrl, chunk, offset, data.size(),
+                                    [done, sendFrom, offset, size = chunk.size(),
+                                     total = data.size()](const QJsonValue &, const QString &err) {
+                const qint64 nextOffset = offset + size;
+                if (!err.isEmpty() || nextOffset >= total) {
+                    *sendFrom = nullptr;
+                    done(err);
                     return;
                 }
-                const auto next = pending->takeFirst();
-                m_graph->post(dstPath + QLatin1Char('/') + next.first, next.second,
-                              [this, srcListId, taskId, dstListId, step](const QJsonValue &,
-                                                                         const QString &err) {
-                    if (!err.isEmpty()) {
-                        *step = nullptr;
-                        Q_EMIT taskMoveFailed(srcListId, taskId, err);
-                        Q_EMIT taskMutated(dstListId);
-                        return;
-                    }
-                    (*step)();
-                });
-            };
-            (*step)();
-        });
+                (*sendFrom)(nextOffset);
+            });
+        };
+        (*sendFrom)(0);
+    });
+}
+
+void TodoApi::downloadAttachment(const QString &listId, const QString &taskId,
+                                 const QString &attachmentId,
+                                 std::function<void(const QByteArray &, const QString &)> cb)
+{
+    m_graph->getBytes(QStringLiteral("/me/todo/lists/%1/tasks/%2/attachments/%3/$value")
+                          .arg(listId, taskId, attachmentId),
+                      std::move(cb));
+}
+
+void TodoApi::deleteAttachment(const QString &listId, const QString &taskId,
+                               const QString &attachmentId)
+{
+    m_graph->del(QStringLiteral("/me/todo/lists/%1/tasks/%2/attachments/%3")
+                     .arg(listId, taskId, attachmentId),
+                 [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT attachmentMutated(listId, taskId);
     });
 }
 

@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QJsonObject>
 #include <QStringList>
+#include <functional>
 
 namespace Merkzettel {
 
@@ -34,6 +35,13 @@ struct LinkedResource {
     QString externalId;       // opaque external-system id, pass-through
 };
 
+struct Attachment {
+    QString id;
+    QString name;
+    QString contentType;
+    qint64 size = 0;
+};
+
 struct Task {
     QString id;
     QString listId;        // Parent list this task belongs to.
@@ -57,6 +65,7 @@ struct Task {
     int openChecklistCount = 0;
     int totalChecklistCount = 0;
     QList<LinkedResource> linkedResources;  // empty unless populated by $expand or cache
+    bool hasAttachments = false;  // attachments themselves are fetched on demand
     bool completed() const { return status == QLatin1String("completed"); }
     bool isImportant() const { return importance == QLatin1String("high"); }
 };
@@ -88,10 +97,9 @@ public:
     void updateTask(const QString &listId, const QString &taskId, const QJsonObject &patch);
     void deleteTask(const QString &listId, const QString &taskId);
     // Graph has no move endpoint: copy the task (fields, steps, linked
-    // resources) into dstListId, then delete the original. The original is
-    // only deleted once every copy step succeeded, so a failure can leave a
-    // duplicate but never loses data. Tasks with file attachments are
-    // refused (attachments aren't copied yet).
+    // resources, file attachments) into dstListId, then delete the original.
+    // The original is only deleted once every copy step succeeded, so a
+    // failure can leave a duplicate but never loses data.
     void moveTask(const QString &srcListId, const QString &taskId, const QString &dstListId);
 
     // Delta sync. If deltaLink is empty: starts a full delta walk against
@@ -116,6 +124,18 @@ public:
     void deleteChecklistItem(const QString &listId, const QString &taskId,
                              const QString &itemId);
 
+    // File attachments (taskFileAttachment). Graph caps them at 25 MB;
+    // anything above 3 MB goes through an upload session.
+    static constexpr qint64 kMaxAttachmentSize = 25 * 1024 * 1024;
+    void fetchAttachments(const QString &listId, const QString &taskId);
+    void uploadAttachment(const QString &listId, const QString &taskId, const QString &name,
+                          const QString &contentType, const QByteArray &data);
+    void downloadAttachment(const QString &listId, const QString &taskId,
+                            const QString &attachmentId,
+                            std::function<void(const QByteArray &, const QString &)> cb);
+    void deleteAttachment(const QString &listId, const QString &taskId,
+                          const QString &attachmentId);
+
     void fetchLinkedResources(const QString &listId, const QString &taskId);
     void addLinkedResource(const QString &listId, const QString &taskId,
                            const QString &applicationName,
@@ -139,6 +159,9 @@ Q_SIGNALS:
     void linkedResourcesReceived(const QString &listId, const QString &taskId,
                                  const QList<Merkzettel::LinkedResource> &items);
     void linkedResourceMutated(const QString &listId, const QString &taskId);
+    void attachmentsReceived(const QString &listId, const QString &taskId,
+                             const QList<Merkzettel::Attachment> &attachments);
+    void attachmentMutated(const QString &listId, const QString &taskId);
     void tasksDelta(const QString &listId,
                     const QList<Merkzettel::Task> &changed,
                     const QStringList &deletedIds,
@@ -147,6 +170,9 @@ Q_SIGNALS:
     void errorOccurred(const QString &message);
 
 private:
+    void uploadAttachmentImpl(const QString &listId, const QString &taskId, const QString &name,
+                              const QString &contentType, const QByteArray &data,
+                              std::function<void(const QString &error)> done);
     GraphClient *m_graph;
 };
 

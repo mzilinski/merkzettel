@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QVariantMap>
 #include <QSet>
+#include <QUrl>
 #include <memory>
 
 #include "models/tasksmodel.h"
@@ -103,6 +104,13 @@ public Q_SLOTS:
     void removeLinkedResource(const QString &taskId, const QString &resourceId);
     void openLinkedResource(const QString &webUrl);
     void openTaskDetails(int row);
+    // File attachments of the task open in the detail sheet. Upload reads
+    // local files (≤ 25 MB each); open downloads into the cache dir and hands
+    // the file to the default application.
+    void addAttachments(const QString &taskId, const QList<QUrl> &fileUrls);
+    void openAttachment(const QString &taskId, const QString &attachmentId);
+    void saveAttachment(const QString &taskId, const QString &attachmentId, const QUrl &target);
+    void deleteAttachment(const QString &taskId, const QString &attachmentId);
     void closeTaskDetails();
     void requestPickDateForDue(const QString &taskId);
     void toggleWindow();
@@ -163,6 +171,10 @@ private:
     // After m_tasksModel is replaced, re-resolve the open detail-sheet task
     // by id from the new model contents.
     void refreshDetailTaskFromModel();
+    // Set m_detailTask from a TasksModel::taskAt() map, adding the cached
+    // attachment list, and notify QML.
+    void setDetailTask(const QVariantMap &task);
+    Attachment findAttachment(const QString &taskId, const QString &attachmentId) const;
 
     void checkReminders();
 
@@ -187,6 +199,7 @@ private:
         QString targetListId;                  // Move only
         bool pending = false;                  // Delete/Move not yet sent
     };
+    QHash<QString, QList<Attachment>> m_attachments;  // taskId -> attachments
     UndoState m_undo;
     QTimer *m_commitTimer = nullptr;
     int m_movesInFlight = 0;

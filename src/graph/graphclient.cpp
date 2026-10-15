@@ -14,6 +14,21 @@ namespace Merkzettel {
 
 namespace {
 constexpr auto kGraphBase = "https://graph.microsoft.com/v1.0";
+
+// "HTTP <status>[: <Graph error message>]" — callers match on the prefix.
+QString errorMessage(int status, const QByteArray &data, QNetworkReply *reply)
+{
+    QString errMsg = QStringLiteral("HTTP %1").arg(status);
+    const auto errDoc = QJsonDocument::fromJson(data);
+    if (errDoc.isObject()) {
+        const auto err = errDoc.object().value(QStringLiteral("error")).toObject();
+        const QString msg = err.value(QStringLiteral("message")).toString();
+        if (!msg.isEmpty()) errMsg = QStringLiteral("HTTP %1: %2").arg(status).arg(msg);
+    } else if (reply->error() != QNetworkReply::NoError) {
+        errMsg = QStringLiteral("HTTP %1: %2").arg(status).arg(reply->errorString());
+    }
+    return errMsg;
+}
 }
 
 GraphClient::GraphClient(AuthManager *auth, QObject *parent)
@@ -112,16 +127,55 @@ void GraphClient::handleReply(QNetworkReply *reply, GraphCallback cb,
 
     // Always prefix with "HTTP <status>" so callers can detect specific codes
     // (e.g. 410 for expired delta tokens) without changing the callback shape.
-    QString errMsg = QStringLiteral("HTTP %1").arg(status);
-    const auto errDoc = QJsonDocument::fromJson(data);
-    if (errDoc.isObject()) {
-        const auto err = errDoc.object().value(QStringLiteral("error")).toObject();
-        const QString msg = err.value(QStringLiteral("message")).toString();
-        if (!msg.isEmpty()) errMsg = QStringLiteral("HTTP %1: %2").arg(status).arg(msg);
-    } else if (reply->error() != QNetworkReply::NoError) {
-        errMsg = QStringLiteral("HTTP %1: %2").arg(status).arg(reply->errorString());
-    }
-    cb(QJsonValue(), errMsg);
+    cb(QJsonValue(), errorMessage(status, data, reply));
+}
+
+void GraphClient::getBytes(const QString &path, GraphBytesCallback cb, int retries)
+{
+    QNetworkRequest req(QUrl(QString::fromLatin1(kGraphBase) + path));
+    req.setRawHeader("Authorization",
+                     QByteArray("Bearer ") + m_auth->accessToken().toUtf8());
+    QNetworkReply *reply = m_nam->get(req);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, path, cb, retries] {
+        reply->deleteLater();
+        const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        const QByteArray data = reply->readAll();
+        if (status == 401 && retries > 0) {
+            connect(m_auth, &AuthManager::accessTokenChanged, this,
+                    [this, path, cb] { getBytes(path, cb, 0); }, Qt::SingleShotConnection);
+            m_auth->requestFreshToken();
+            return;
+        }
+        if (status >= 200 && status < 300) {
+            cb(data, QString());
+        } else {
+            cb(QByteArray(), errorMessage(status, data, reply));
+        }
+    });
+}
+
+void GraphClient::putUploadChunk(const QUrl &uploadUrl, const QByteArray &chunk,
+                                 qint64 offset, qint64 totalSize, GraphCallback cb)
+{
+    QNetworkRequest req(uploadUrl);
+    req.setHeader(QNetworkRequest::ContentTypeHeader, QByteArrayLiteral("application/octet-stream"));
+    req.setRawHeader("Content-Range", QStringLiteral("bytes %1-%2/%3")
+                                          .arg(offset)
+                                          .arg(offset + chunk.size() - 1)
+                                          .arg(totalSize)
+                                          .toLatin1());
+    QNetworkReply *reply = m_nam->put(req, chunk);
+    connect(reply, &QNetworkReply::finished, this, [reply, cb] {
+        reply->deleteLater();
+        const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        const QByteArray data = reply->readAll();
+        if (status >= 200 && status < 300) {
+            const auto doc = QJsonDocument::fromJson(data);
+            cb(doc.isObject() ? QJsonValue(doc.object()) : QJsonValue(), QString());
+        } else {
+            cb(QJsonValue(), errorMessage(status, data, reply));
+        }
+    });
 }
 
 } // namespace Merkzettel
