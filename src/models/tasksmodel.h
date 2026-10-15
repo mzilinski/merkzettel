@@ -42,6 +42,7 @@ public:
         LinkedResourceCountRole,
         ListIdRole,
         ListNameRole,
+        CategoriesRole,
     };
 
     explicit TasksModel(QObject *parent = nullptr);
@@ -79,6 +80,9 @@ public:
 
     Q_INVOKABLE QVariantMap taskAt(int row) const;
     Q_INVOKABLE QString listIdForTask(const QString &taskId) const;
+    // Copy of the task with that id from the unfiltered set; default-constructed
+    // (empty id) when unknown.
+    Task taskById(const QString &taskId) const;
 
 Q_SIGNALS:
     void countChanged();
@@ -89,6 +93,7 @@ Q_SIGNALS:
 
 private:
     static int sectionRank(const Task &t);
+    static QVariantMap recurrenceInfo(const QString &recurrenceJson);
     int effectiveSectionRank(const Task &t) const;
     QString sectionLabel(const Task &t) const;
     bool lessThan(const Task &a, const Task &b) const;

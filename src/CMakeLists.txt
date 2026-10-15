@@ -52,6 +52,7 @@ ecm_add_qml_module(merkzettel
         TaskDelegate.qml
         TaskDetailSheet.qml
         MoveToListMenu.qml
+        CustomRecurrenceDialog.qml
 )
 
 install(TARGETS merkzettel ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})

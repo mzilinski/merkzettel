@@ -18,6 +18,9 @@ QQC2.ItemDelegate {
 
     // Set by the view; drives the highlight together with keyboard focus.
     property bool selected: false
+    // Hoisted out of `model` so the category Repeater (whose own `model`
+    // shadows ours) can reach it.
+    readonly property var categories: model.categories || []
 
     // Plain clicks open the details; modifier clicks only select. Separate
     // handlers because ItemDelegate.clicked carries no modifier state.
@@ -60,7 +63,8 @@ QQC2.ItemDelegate {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Kirigami.Units.smallSpacing
-                visible: listLbl.visible || dueLbl.text.length > 0 || bodyHint.visible || progressLbl.visible
+                visible: listLbl.visible || dueLbl.text.length > 0 || bodyHint.visible
+                         || progressLbl.visible || delegate.categories.length > 0
 
                 Kirigami.Icon {
                     visible: listLbl.visible
@@ -153,6 +157,24 @@ QQC2.ItemDelegate {
                     visible: text.length > 0
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
                     color: Kirigami.Theme.disabledTextColor
+                }
+                Repeater {
+                    model: delegate.categories
+                    // Compact category tag; colours would need Outlook master categories.
+                    Rectangle {
+                        required property string modelData
+                        Layout.leftMargin: Kirigami.Units.smallSpacing
+                        implicitWidth: catLbl.implicitWidth + Kirigami.Units.smallSpacing * 2
+                        implicitHeight: catLbl.implicitHeight
+                        radius: height / 2
+                        color: Qt.alpha(Kirigami.Theme.highlightColor, 0.18)
+                        QQC2.Label {
+                            id: catLbl
+                            anchors.centerIn: parent
+                            text: parent.modelData
+                            font.pointSize: Kirigami.Theme.smallFont.pointSize
+                        }
+                    }
                 }
                 Item { Layout.fillWidth: true }
             }

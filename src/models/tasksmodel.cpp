@@ -2,6 +2,7 @@
 
 #include <QDateTime>
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QLocale>
 #include <QUrl>
@@ -160,6 +161,7 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
     case LinkedResourceCountRole: return int(t.linkedResources.size());
     case ListIdRole:       return t.listId;
     case ListNameRole:     return m_listNames.value(t.listId);
+    case CategoriesRole:   return t.categories;
     case ChecklistProgressRole: {
         if (t.totalChecklistCount <= 0) return QString();
         const int done = t.totalChecklistCount - t.openChecklistCount;
@@ -200,6 +202,7 @@ QHash<int, QByteArray> TasksModel::roleNames() const
         {LinkedResourceCountRole, "linkedResourceCount"},
         {ListIdRole, "listId"},
         {ListNameRole, "listName"},
+        {CategoriesRole, "categories"},
     };
 }
 
@@ -340,8 +343,14 @@ bool TasksModel::matchesFilter(const Task &t) const
         return false;
     }
     if (m_filterText.isEmpty()) return true;
-    return t.title.contains(m_filterText, Qt::CaseInsensitive)
-        || t.body.contains(m_filterText, Qt::CaseInsensitive);
+    if (t.title.contains(m_filterText, Qt::CaseInsensitive)
+        || t.body.contains(m_filterText, Qt::CaseInsensitive)) {
+        return true;
+    }
+    for (const auto &c : t.categories) {
+        if (c.contains(m_filterText, Qt::CaseInsensitive)) return true;
+    }
+    return false;
 }
 
 void TasksModel::applyFilter()
@@ -356,6 +365,77 @@ void TasksModel::applyFilter()
               [this](const Task &a, const Task &b) { return lessThan(a, b); });
     endResetModel();
     Q_EMIT countChanged();
+}
+
+// Decode Graph's patternedRecurrence into what the editor needs:
+//   preset   "" / "daily" / "weekdays" / "weekly" / "monthly" / "yearly" /
+//            "custom" (anything the presets don't cover)
+//   unit     "day" / "week" / "month" / "year" ("" for relative patterns)
+//   interval every N units
+//   days     Graph weekday names for weekly patterns
+//   summary  human-readable text, e.g. "Every 2 weeks on Mon, Thu"
+QVariantMap TasksModel::recurrenceInfo(const QString &recurrenceJson)
+{
+    if (recurrenceJson.isEmpty()) return {{QStringLiteral("preset"), QString()}};
+    const auto pat = QJsonDocument::fromJson(recurrenceJson.toUtf8()).object()
+                         .value(QStringLiteral("pattern")).toObject();
+    const QString type = pat.value(QStringLiteral("type")).toString();
+    const int interval = qMax(1, pat.value(QStringLiteral("interval")).toInt(1));
+    QStringList days;
+    for (const auto &d : pat.value(QStringLiteral("daysOfWeek")).toArray()) days.append(d.toString());
+
+    static const QStringList kWeekdays = {
+        QStringLiteral("monday"), QStringLiteral("tuesday"), QStringLiteral("wednesday"),
+        QStringLiteral("thursday"), QStringLiteral("friday"), QStringLiteral("saturday"),
+        QStringLiteral("sunday"),
+    };
+    QString unit;
+    if (type == QLatin1String("daily")) unit = QStringLiteral("day");
+    else if (type == QLatin1String("weekly")) unit = QStringLiteral("week");
+    else if (type == QLatin1String("absoluteMonthly")) unit = QStringLiteral("month");
+    else if (type == QLatin1String("absoluteYearly")) unit = QStringLiteral("year");
+
+    QStringList sortedDays;
+    for (const auto &d : kWeekdays) if (days.contains(d)) sortedDays.append(d);
+    const bool workweek = sortedDays == kWeekdays.mid(0, 5);
+
+    QString preset = QStringLiteral("custom");
+    if (interval == 1) {
+        if (unit == QLatin1String("day")) preset = QStringLiteral("daily");
+        else if (unit == QLatin1String("week") && workweek) preset = QStringLiteral("weekdays");
+        else if (unit == QLatin1String("week") && sortedDays.size() <= 1) preset = QStringLiteral("weekly");
+        else if (unit == QLatin1String("month")) preset = QStringLiteral("monthly");
+        else if (unit == QLatin1String("year")) preset = QStringLiteral("yearly");
+    }
+
+    QString summary;
+    if (unit == QLatin1String("day")) {
+        summary = i18np("Every day", "Every %1 days", interval);
+    } else if (unit == QLatin1String("week")) {
+        QStringList names;
+        for (const auto &d : sortedDays) {
+            names.append(QLocale().dayName(kWeekdays.indexOf(d) + 1, QLocale::ShortFormat));
+        }
+        summary = workweek && interval == 1
+            ? i18n("Weekdays")
+            : (names.isEmpty() ? i18np("Every week", "Every %1 weeks", interval)
+                               : i18np("Every week on %2", "Every %1 weeks on %2", interval,
+                                       names.join(QStringLiteral(", "))));
+    } else if (unit == QLatin1String("month")) {
+        summary = i18np("Every month", "Every %1 months", interval);
+    } else if (unit == QLatin1String("year")) {
+        summary = i18np("Every year", "Every %1 years", interval);
+    } else {
+        summary = i18n("Custom");  // relative monthly/yearly — not editable here
+    }
+
+    return {
+        {QStringLiteral("preset"), preset},
+        {QStringLiteral("unit"), unit},
+        {QStringLiteral("interval"), interval},
+        {QStringLiteral("days"), sortedDays},
+        {QStringLiteral("summary"), summary},
+    };
 }
 
 QVariantMap TasksModel::taskAt(int row) const
@@ -379,23 +459,7 @@ QVariantMap TasksModel::taskAt(int row) const
             {QStringLiteral("applicationName"), r.applicationName},
         });
     }
-    // Surface a coarse pattern string for the UI ComboBox: "" / "daily" /
-    // "weekly" / "monthly" / "yearly". Anything else (custom interval,
-    // weekly with specific weekdays, ...) becomes "custom" — the UI then
-    // shows it as read-only because we don't have a designer for it.
-    QString patternKind;
-    bool patternCustom = false;
-    if (!t.recurrenceJson.isEmpty()) {
-        const auto doc = QJsonDocument::fromJson(t.recurrenceJson.toUtf8());
-        const auto pat = doc.object().value(QStringLiteral("pattern")).toObject();
-        const QString type = pat.value(QStringLiteral("type")).toString();
-        const int interval = pat.value(QStringLiteral("interval")).toInt(1);
-        if (type == QLatin1String("daily") && interval == 1) patternKind = QStringLiteral("daily");
-        else if (type == QLatin1String("weekly") && interval == 1) patternKind = QStringLiteral("weekly");
-        else if (type == QLatin1String("absoluteMonthly") && interval == 1) patternKind = QStringLiteral("monthly");
-        else if (type == QLatin1String("absoluteYearly") && interval == 1) patternKind = QStringLiteral("yearly");
-        else { patternKind = QStringLiteral("custom"); patternCustom = true; }
-    }
+    const QVariantMap rec = recurrenceInfo(t.recurrenceJson);
     return {
         {QStringLiteral("taskId"), t.id},
         {QStringLiteral("title"), t.title},
@@ -412,13 +476,21 @@ QVariantMap TasksModel::taskAt(int row) const
         {QStringLiteral("checklistItems"), items},
         {QStringLiteral("openChecklistCount"), t.openChecklistCount},
         {QStringLiteral("totalChecklistCount"), t.totalChecklistCount},
-        {QStringLiteral("recurrencePattern"), patternKind},
-        {QStringLiteral("recurrenceCustom"), patternCustom},
+        {QStringLiteral("recurrence"), rec},
+        {QStringLiteral("categories"), t.categories},
         {QStringLiteral("linkedResources"), links},
         {QStringLiteral("linkedResourceCount"), int(t.linkedResources.size())},
         {QStringLiteral("listId"), t.listId},
         {QStringLiteral("listName"), m_listNames.value(t.listId)},
     };
+}
+
+Task TasksModel::taskById(const QString &taskId) const
+{
+    for (const auto &t : m_allTasks) {
+        if (t.id == taskId) return t;
+    }
+    return {};
 }
 
 QString TasksModel::listIdForTask(const QString &taskId) const

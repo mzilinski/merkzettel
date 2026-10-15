@@ -387,10 +387,18 @@ Kirigami.ApplicationWindow {
             datePopup.value = initialDate;
             datePopup.open();
         }
+        onCustomRecurrenceRequested: function(taskId, info) {
+            customRecurrenceDialog.openFor(taskId, info);
+        }
         onReminderTimePickerRequested: function(initialDate) {
             timePopup.value = initialDate;
             timePopup.open();
         }
+    }
+
+    CustomRecurrenceDialog {
+        id: customRecurrenceDialog
+        parent: root.overlay
     }
 
     KDA.DatePopup {

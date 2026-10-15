@@ -12,6 +12,7 @@ Kirigami.OverlaySheet {
     signal datePickerRequested(var initialDate)
     signal reminderDatePickerRequested(var initialDate)
     signal reminderTimePickerRequested(var initialDate)
+    signal customRecurrenceRequested(string taskId, var info)
 
     function openDatePicker(initial) {
         datePickerRequested(initial);
@@ -104,36 +105,100 @@ Kirigami.OverlaySheet {
                 QQC2.ComboBox {
                     id: recurrenceCombo
                     Layout.fillWidth: true
-                    enabled: hasTask && !task.recurrenceCustom
                     textRole: "label"
                     valueRole: "value"
+                    readonly property var info: hasTask && task.recurrence ? task.recurrence : ({})
                     model: [
-                        { value: "",        label: i18n("Never") },
-                        { value: "daily",   label: i18n("Daily") },
-                        { value: "weekly",  label: i18n("Weekly") },
-                        { value: "monthly", label: i18n("Monthly") },
-                        { value: "yearly",  label: i18n("Yearly") },
+                        { value: "",         label: i18n("Never") },
+                        { value: "daily",    label: i18n("Daily") },
+                        { value: "weekdays", label: i18n("Weekdays") },
+                        { value: "weekly",   label: i18n("Weekly") },
+                        { value: "monthly",  label: i18n("Monthly") },
+                        { value: "yearly",   label: i18n("Yearly") },
+                        // Shows the current custom rule; picking it opens the editor.
+                        { value: "custom",   label: info.preset === "custom"
+                                                    ? info.summary : i18n("Custom ...") },
                     ]
-                    currentIndex: {
-                        if (!hasTask) return 0;
-                        const p = task.recurrencePattern || "";
-                        for (let i = 0; i < model.length; ++i) {
-                            if (model[i].value === p) return i;
-                        }
-                        return 0;  // "custom" falls back to "Never" in the picker
-                    }
+                    currentIndex: Math.max(0, indexOfValue(info.preset || ""))
                     onActivated: {
                         if (!hasTask) return;
-                        const value = model[currentIndex].value;
-                        if (value === (task.recurrencePattern || "")) return;
-                        app.setTaskRecurrencePattern(task.taskId, value);
+                        if (currentValue === "custom") {
+                            sheet.customRecurrenceRequested(task.taskId, info);
+                            // Snap back until the dialog actually saves something.
+                            currentIndex = Qt.binding(() => Math.max(0, indexOfValue(info.preset || "")));
+                            return;
+                        }
+                        if (currentValue === (info.preset || "")) return;
+                        app.setTaskRecurrencePattern(task.taskId, currentValue);
                     }
                 }
-                QQC2.Label {
-                    visible: hasTask && task.recurrenceCustom
-                    text: i18n("(custom)")
-                    color: Kirigami.Theme.disabledTextColor
-                    font.italic: true
+                QQC2.Button {
+                    icon.name: "document-edit"
+                    visible: hasTask && recurrenceCombo.info.preset === "custom"
+                    QQC2.ToolTip.text: i18n("Edit repeat ...")
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: sheet.customRecurrenceRequested(task.taskId, recurrenceCombo.info)
+                }
+            }
+
+            ColumnLayout {
+                Kirigami.FormData.label: i18n("Categories:")
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.smallSpacing
+
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
+                    visible: hasTask && (task.categories || []).length > 0
+                    Repeater {
+                        model: hasTask ? (task.categories || []) : []
+                        Kirigami.Chip {
+                            required property string modelData
+                            text: modelData
+                            closable: true
+                            checkable: false
+                            onRemoved: app.setTaskCategories(task.taskId,
+                                task.categories.filter(c => c !== modelData))
+                        }
+                    }
+                }
+
+                // Editable combo: type a new name or pick one already used on
+                // another task. Graph has no category picker without the
+                // Outlook master-category scope, so suggestions come from the cache.
+                QQC2.ComboBox {
+                    id: categoryInput
+                    Layout.fillWidth: true
+                    editable: true
+                    model: []
+                    function refreshSuggestions() {
+                        const used = hasTask ? (task.categories || []) : [];
+                        model = app.knownCategories().filter(c => used.indexOf(c) < 0);
+                        currentIndex = -1;
+                        editText = "";
+                    }
+                    function addCategory(name) {
+                        const n = (name || "").trim();
+                        if (!hasTask || n.length === 0) return;
+                        app.setTaskCategories(task.taskId, (task.categories || []).concat([n]));
+                        refreshSuggestions();
+                    }
+                    Component.onCompleted: refreshSuggestions()
+                    Connections {
+                        target: sheet
+                        function onTaskChanged() { categoryInput.refreshSuggestions(); }
+                    }
+                    onAccepted: addCategory(editText)
+                    onActivated: addCategory(currentText)
+                    QQC2.Label {
+                        anchors.fill: parent.contentItem
+                        leftPadding: Kirigami.Units.smallSpacing
+                        verticalAlignment: Text.AlignVCenter
+                        visible: categoryInput.editText.length === 0 && !categoryInput.activeFocus
+                        text: i18n("Add category ...")
+                        color: Kirigami.Theme.disabledTextColor
+                    }
                 }
             }
 

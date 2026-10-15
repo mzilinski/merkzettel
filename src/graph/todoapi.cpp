@@ -100,6 +100,11 @@ Task parseTask(const QJsonObject &obj)
         t.recurrenceJson = QString::fromUtf8(QJsonDocument(rec).toJson(QJsonDocument::Compact));
     }
 
+    for (const auto &c : obj.value(QStringLiteral("categories")).toArray()) {
+        const QString name = c.toString();
+        if (!name.isEmpty()) t.categories.append(name);
+    }
+
     // checklistItems comes via $expand on the tasks collection. Server orders
     // ascending by createdDateTime; we keep that order.
     const auto items = obj.value(QStringLiteral("checklistItems")).toArray();
@@ -236,6 +241,14 @@ void TodoApi::setTaskBody(const QString &listId, const QString &taskId, const QS
         {QStringLiteral("content"), body},
     };
     updateTask(listId, taskId, {{QStringLiteral("body"), bodyObj}});
+}
+
+void TodoApi::setTaskCategories(const QString &listId, const QString &taskId,
+                                const QStringList &categories)
+{
+    updateTask(listId, taskId, QJsonObject{
+        {QStringLiteral("categories"), QJsonArray::fromStringList(categories)},
+    });
 }
 
 void TodoApi::setTaskRecurrence(const QString &listId, const QString &taskId,

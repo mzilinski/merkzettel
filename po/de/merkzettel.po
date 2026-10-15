@@ -546,3 +546,90 @@ msgstr[1] "%1 Aufgaben erledigt"
 
 msgid "Tasks with file attachments can't be moved yet."
 msgstr "Aufgaben mit Dateianhängen können noch nicht verschoben werden."
+
+# --- categories, custom recurrence ---
+msgid "Categories:"
+msgstr "Kategorien:"
+
+msgid "Add category ..."
+msgstr "Kategorie hinzufügen ..."
+
+msgid "Finance"
+msgstr "Finanzen"
+
+msgid "Family"
+msgstr "Familie"
+
+msgid "Weekdays"
+msgstr "Werktags"
+
+msgid "Custom"
+msgstr "Benutzerdefiniert"
+
+msgid "Custom ..."
+msgstr "Benutzerdefiniert ..."
+
+msgid "Custom repeat"
+msgstr "Benutzerdefinierte Wiederholung"
+
+msgid "Edit repeat ..."
+msgstr "Wiederholung bearbeiten ..."
+
+msgid "Save"
+msgstr "Speichern"
+
+msgid "Anchored on the task's due date (or today if it has none)."
+msgstr "Bezogen auf das Fälligkeitsdatum der Aufgabe (oder heute, falls keines gesetzt ist)."
+
+msgid "Every day"
+msgid_plural "Every %1 days"
+msgstr[0] "Jeden Tag"
+msgstr[1] "Alle %1 Tage"
+
+msgid "Every week"
+msgid_plural "Every %1 weeks"
+msgstr[0] "Jede Woche"
+msgstr[1] "Alle %1 Wochen"
+
+msgid "Every week on %2"
+msgid_plural "Every %1 weeks on %2"
+msgstr[0] "Jede Woche am %2"
+msgstr[1] "Alle %1 Wochen am %2"
+
+msgid "Every month"
+msgid_plural "Every %1 months"
+msgstr[0] "Jeden Monat"
+msgstr[1] "Alle %1 Monate"
+
+msgid "Every year"
+msgid_plural "Every %1 years"
+msgstr[0] "Jedes Jahr"
+msgstr[1] "Alle %1 Jahre"
+
+msgctxt "Repeat every [N] [weeks]"
+msgid "Every"
+msgstr "Alle"
+
+msgctxt "Repeat every N ..."
+msgid "day"
+msgid_plural "days"
+msgstr[0] "Tag"
+msgstr[1] "Tage"
+
+msgctxt "Repeat every N ..."
+msgid "week"
+msgid_plural "weeks"
+msgstr[0] "Woche"
+msgstr[1] "Wochen"
+
+msgctxt "Repeat every N ..."
+msgid "month"
+msgid_plural "months"
+msgstr[0] "Monat"
+msgstr[1] "Monate"
+
+msgctxt "Repeat every N ..."
+msgid "year"
+msgid_plural "years"
+msgstr[0] "Jahr"
+msgstr[1] "Jahre"

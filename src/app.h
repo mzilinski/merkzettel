@@ -87,9 +87,17 @@ public Q_SLOTS:
     void renameChecklistItem(const QString &taskId, const QString &itemId,
                              const QString &displayName);
     void deleteChecklistItem(const QString &taskId, const QString &itemId);
-    // pattern: "" (clear) / "daily" / "weekly" / "monthly" / "yearly".
-    // Unknown values are no-ops.
+    // pattern: "" (clear) / "daily" / "weekdays" / "weekly" / "monthly" /
+    // "yearly". Unknown values are no-ops.
     void setTaskRecurrencePattern(const QString &taskId, const QString &pattern);
+    // Custom recurrence like MS To Do's "Repeat every N days/weeks/months/
+    // years". days (Graph weekday names) only applies to "week"; weekly,
+    // monthly and yearly anchor on the task's due date, else today.
+    void setTaskRecurrence(const QString &taskId, const QString &unit, int interval,
+                           const QStringList &days);
+    void setTaskCategories(const QString &taskId, const QStringList &categories);
+    // Every category name used on any cached task, for autocompletion.
+    QStringList knownCategories() const;
     void addLinkedResource(const QString &taskId, const QString &webUrl,
                            const QString &displayName);
     void removeLinkedResource(const QString &taskId, const QString &resourceId);

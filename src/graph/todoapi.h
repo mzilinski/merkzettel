@@ -5,6 +5,7 @@
 #include <QList>
 #include <QDateTime>
 #include <QJsonObject>
+#include <QStringList>
 
 namespace Merkzettel {
 
@@ -49,6 +50,9 @@ struct Task {
     // Stored verbatim so the API and cache stay schema-compatible if Graph
     // adds new pattern types in the future.
     QString recurrenceJson;
+    // Outlook category names (todoTask.categories). Colours live in the
+    // user's Outlook master categories, which need an extra scope.
+    QStringList categories;
     QList<ChecklistItem> checklistItems;  // empty unless populated by $expand or cache
     int openChecklistCount = 0;
     int totalChecklistCount = 0;
@@ -77,6 +81,8 @@ public:
     void clearTaskReminder(const QString &listId, const QString &taskId);
     void setTaskTitle(const QString &listId, const QString &taskId, const QString &title);
     void setTaskBody(const QString &listId, const QString &taskId, const QString &body);
+    void setTaskCategories(const QString &listId, const QString &taskId,
+                           const QStringList &categories);
     void setTaskRecurrence(const QString &listId, const QString &taskId,
                            const QJsonObject &recurrence);  // empty = clear
     void updateTask(const QString &listId, const QString &taskId, const QJsonObject &patch);

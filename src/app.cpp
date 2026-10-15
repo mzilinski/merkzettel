@@ -19,6 +19,7 @@
 #include <QDesktopServices>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QLocale>
 #include <QTimer>
 #include <QTimeZone>
 #include <QRegularExpression>
@@ -798,51 +799,102 @@ void App::deleteChecklistItem(const QString &taskId, const QString &itemId)
 
 void App::setTaskRecurrencePattern(const QString &taskId, const QString &pattern)
 {
+    if (pattern.isEmpty()) {
+        const QString lid = listIdForTask(taskId);
+        if (lid.isEmpty()) return;
+        if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+        m_todo->setTaskRecurrence(lid, taskId, {});
+    } else if (pattern == QLatin1String("daily")) {
+        setTaskRecurrence(taskId, QStringLiteral("day"), 1, {});
+    } else if (pattern == QLatin1String("weekdays")) {
+        setTaskRecurrence(taskId, QStringLiteral("week"), 1,
+                          {QStringLiteral("monday"), QStringLiteral("tuesday"),
+                           QStringLiteral("wednesday"), QStringLiteral("thursday"),
+                           QStringLiteral("friday")});
+    } else if (pattern == QLatin1String("weekly")) {
+        setTaskRecurrence(taskId, QStringLiteral("week"), 1, {});
+    } else if (pattern == QLatin1String("monthly")) {
+        setTaskRecurrence(taskId, QStringLiteral("month"), 1, {});
+    } else if (pattern == QLatin1String("yearly")) {
+        setTaskRecurrence(taskId, QStringLiteral("year"), 1, {});
+    }
+}
+
+void App::setTaskRecurrence(const QString &taskId, const QString &unit, int interval,
+                            const QStringList &days)
+{
+    const QString lid = listIdForTask(taskId);
+    if (lid.isEmpty() || interval < 1) return;
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+
+    static const QStringList kWeekdays = {
+        QStringLiteral("monday"), QStringLiteral("tuesday"), QStringLiteral("wednesday"),
+        QStringLiteral("thursday"), QStringLiteral("friday"), QStringLiteral("saturday"),
+        QStringLiteral("sunday"),
+    };
+    const Task task = m_tasksModel->taskById(taskId);
+    const QDate anchor = task.dueDate.isValid() ? task.dueDate.toLocalTime().date()
+                                                : QDate::currentDate();
+
+    QJsonObject pattern{{QStringLiteral("interval"), interval}};
+    if (unit == QLatin1String("day")) {
+        pattern.insert(QStringLiteral("type"), QStringLiteral("daily"));
+    } else if (unit == QLatin1String("week")) {
+        QStringList valid;
+        for (const auto &d : kWeekdays) if (days.contains(d)) valid.append(d);
+        if (valid.isEmpty()) valid.append(kWeekdays.at(anchor.dayOfWeek() - 1));  // Qt: 1=Mon
+        pattern.insert(QStringLiteral("type"), QStringLiteral("weekly"));
+        pattern.insert(QStringLiteral("daysOfWeek"), QJsonArray::fromStringList(valid));
+        pattern.insert(QStringLiteral("firstDayOfWeek"),
+                       kWeekdays.at(QLocale().firstDayOfWeek() - 1));
+    } else if (unit == QLatin1String("month")) {
+        pattern.insert(QStringLiteral("type"), QStringLiteral("absoluteMonthly"));
+        pattern.insert(QStringLiteral("dayOfMonth"), anchor.day());
+    } else if (unit == QLatin1String("year")) {
+        pattern.insert(QStringLiteral("type"), QStringLiteral("absoluteYearly"));
+        pattern.insert(QStringLiteral("dayOfMonth"), anchor.day());
+        pattern.insert(QStringLiteral("month"), anchor.month());
+    } else {
+        return;
+    }
+    const QJsonObject rec{
+        {QStringLiteral("pattern"), pattern},
+        {QStringLiteral("range"), QJsonObject{
+            {QStringLiteral("type"), QStringLiteral("noEnd")},
+            {QStringLiteral("startDate"), anchor.toString(Qt::ISODate)},
+        }},
+    };
+    m_todo->setTaskRecurrence(lid, taskId, rec);
+}
+
+void App::setTaskCategories(const QString &taskId, const QStringList &categories)
+{
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    QStringList cleaned;
+    for (const auto &c : categories) {
+        const QString name = c.trimmed();
+        if (!name.isEmpty() && !cleaned.contains(name, Qt::CaseInsensitive)) cleaned.append(name);
+    }
+    m_todo->setTaskCategories(lid, taskId, cleaned);
+}
 
-    QJsonObject rec;
-    if (pattern == QLatin1String("daily")) {
-        rec.insert(QStringLiteral("pattern"), QJsonObject{
-            {QStringLiteral("type"), QStringLiteral("daily")},
-            {QStringLiteral("interval"), 1},
-        });
-    } else if (pattern == QLatin1String("weekly")) {
-        // Default to today's weekday so the recurrence anchors on a sensible day.
-        const QStringList weekdayNames = {
-            QStringLiteral("monday"), QStringLiteral("tuesday"), QStringLiteral("wednesday"),
-            QStringLiteral("thursday"), QStringLiteral("friday"), QStringLiteral("saturday"),
-            QStringLiteral("sunday"),
-        };
-        const int idx = QDate::currentDate().dayOfWeek() - 1;  // Qt: 1=Mon..7=Sun
-        rec.insert(QStringLiteral("pattern"), QJsonObject{
-            {QStringLiteral("type"), QStringLiteral("weekly")},
-            {QStringLiteral("interval"), 1},
-            {QStringLiteral("daysOfWeek"), QJsonArray{weekdayNames.at(idx)}},
-        });
-    } else if (pattern == QLatin1String("monthly")) {
-        rec.insert(QStringLiteral("pattern"), QJsonObject{
-            {QStringLiteral("type"), QStringLiteral("absoluteMonthly")},
-            {QStringLiteral("interval"), 1},
-            {QStringLiteral("dayOfMonth"), QDate::currentDate().day()},
-        });
-    } else if (pattern == QLatin1String("yearly")) {
-        rec.insert(QStringLiteral("pattern"), QJsonObject{
-            {QStringLiteral("type"), QStringLiteral("absoluteYearly")},
-            {QStringLiteral("interval"), 1},
-            {QStringLiteral("month"), QDate::currentDate().month()},
-            {QStringLiteral("dayOfMonth"), QDate::currentDate().day()},
-        });
-    } else if (!pattern.isEmpty()) {
-        return;  // Unknown — refuse silently.
+QStringList App::knownCategories() const
+{
+    QStringList all;
+    const auto collect = [&all](const QList<Task> &tasks) {
+        for (const auto &t : tasks)
+            for (const auto &c : t.categories)
+                if (!all.contains(c, Qt::CaseInsensitive)) all.append(c);
+    };
+    if (m_demoMode) {
+        for (const auto &tasks : m_demoTasks) collect(tasks);
+    } else {
+        collect(m_db->allTasks());
     }
-    if (!rec.isEmpty()) {
-        rec.insert(QStringLiteral("range"), QJsonObject{
-            {QStringLiteral("type"), QStringLiteral("noEnd")},
-        });
-    }
-    m_todo->setTaskRecurrence(lid, taskId, rec);
+    all.sort(Qt::CaseInsensitive);
+    return all;
 }
 
 void App::addLinkedResource(const QString &taskId, const QString &webUrl,
@@ -1081,6 +1133,17 @@ void App::loadDemoData()
         mk("l1", i18n("Finish KDE Frameworks 6 tutorial"),  "notStarted", "normal", QString(), QDateTime()),
         mk("l2", i18n("Watch Qt 6.6 release video"),        "completed",  "normal", QString(), QDateTime()),
     };
+
+    // A few categories so the chips and the category search show up.
+    const QHash<QString, QStringList> demoCategories = {
+        {QStringLiteral("d1"), {i18n("Finance")}},
+        {QStringLiteral("d6"), {i18n("Finance"), i18n("Work")}},
+        {QStringLiteral("w1"), {i18n("Work")}},
+        {QStringLiteral("s2"), {i18n("Family")}},
+    };
+    for (auto &tasks : m_demoTasks)
+        for (auto &t : tasks)
+            t.categories = demoCategories.value(t.id);
 
     setCurrentListId(QStringLiteral("demo-tasks"));
 }

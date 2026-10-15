@@ -20,6 +20,8 @@ Native KDE/Kirigami client for **Microsoft To Do**. Written in C++/Qt6, talks Mi
 - **Move tasks between lists** (context menu or selection bar; Graph has no move, so tasks are copied with steps and links, then the original is deleted)
 - **Multi-selection** (Ctrl/Shift+click, Space, Ctrl+A) with bulk complete / star / move / delete
 - **Undo** (Ctrl+Z or the notification button) for delete, move and bulk complete
+- **Categories** (Outlook categories on `todoTask.categories`): chips in the list and detail sheet, autocompletion from categories already in use, searchable
+- **Recurrence**: daily / weekdays / weekly / monthly / yearly presets plus a custom editor (every N days/weeks/months/years, weekday picker)
 - Date+time picker via [kirigami-addons](https://invent.kde.org/libraries/kirigami-addons) `DatePopup`/`TimePopup`
 - **Sectioned task view**: Overdue / Today / Tomorrow / This week / Later / No date / Completed
 - **Smart lists** across all lists: All / Important / Planned / Completed
@@ -112,7 +114,6 @@ cmake --install build --prefix ~/.local
 
 **v0.4 — ideas**
 - Drag & drop between lists
-- Recurring tasks (`recurrence`)
 - Attachments + linked resources
 - Plasmoid variant for direct panel access
 
