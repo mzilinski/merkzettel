@@ -59,7 +59,7 @@ private Q_SLOTS:
         QTRY_COMPARE_WITH_TIMEOUT(done, 10, 5000);
         QCOMPARE(server.requestCount(), 10);
         QVERIFY(server.maxConcurrent() <= 4);
-        QVERIFY(server.maxConcurrent() >= 2);  // the queue does run in parallel
+        QVERIFY(server.maxConcurrent() >= 2); // the queue does run in parallel
     }
 
     void retriesAfterThrottling()
@@ -93,7 +93,7 @@ private Q_SLOTS:
         QVERIFY2(error.isEmpty(), qPrintable(error));
         QVERIFY(ok);
         QCOMPARE(server.requestCount(), 3);
-        QVERIFY(timer.elapsed() >= 1900);  // waited Retry-After twice
+        QVERIFY(timer.elapsed() >= 1900); // waited Retry-After twice
     }
 
     void givesUpAfterBoundedRetries()
@@ -110,12 +110,11 @@ private Q_SLOTS:
         graph.setBaseUrl(server.baseUrl());
 
         QString error;
-        graph.get(QStringLiteral("/x"), {}, [&error](const QJsonValue &, const QString &err) {
-            error = err;
-        });
+        graph.get(QStringLiteral("/x"), {},
+                  [&error](const QJsonValue &, const QString &err) { error = err; });
         QTRY_VERIFY_WITH_TIMEOUT(!error.isEmpty(), 20000);
         QVERIFY(error.startsWith(QStringLiteral("HTTP 503")));
-        QCOMPARE(server.requestCount(), 6);  // first try + 5 retries
+        QCOMPARE(server.requestCount(), 6); // first try + 5 retries
     }
 
     void fetchTasksFollowsNextLink()
@@ -125,10 +124,12 @@ private Q_SLOTS:
             MockHttpServer::Response r;
             QJsonArray value;
             if (req.path.contains("page=2")) {
-                for (int i = 200; i < 250; ++i) value.append(task(i));
+                for (int i = 200; i < 250; ++i)
+                    value.append(task(i));
                 r.body = json({{QStringLiteral("value"), value}});
             } else {
-                for (int i = 0; i < 200; ++i) value.append(task(i));
+                for (int i = 0; i < 200; ++i)
+                    value.append(task(i));
                 r.body = json({
                     {QStringLiteral("value"), value},
                     {QStringLiteral("@odata.nextLink"),
@@ -146,7 +147,7 @@ private Q_SLOTS:
         QSignalSpy spy(&api, &TodoApi::tasksReceived);
         api.fetchTasks(QStringLiteral("L"));
         QVERIFY(spy.wait(5000));
-        QCOMPARE(spy.count(), 1);  // one emission with everything, not per page
+        QCOMPARE(spy.count(), 1); // one emission with everything, not per page
         const auto tasks = spy.at(0).at(1).value<QList<Task>>();
         QCOMPARE(tasks.size(), 250);
         QCOMPARE(tasks.last().id, QStringLiteral("t249"));
@@ -160,16 +161,20 @@ private Q_SLOTS:
             MockHttpServer::Response r;
             if (req.path.contains("page=2")) {
                 r.body = json({
-                    {QStringLiteral("value"), QJsonArray{QJsonObject{
-                        {QStringLiteral("id"), QStringLiteral("gone")},
-                        {QStringLiteral("@removed"), QJsonObject{{QStringLiteral("reason"), QStringLiteral("deleted")}}},
-                    }}},
-                    {QStringLiteral("@odata.deltaLink"), QString(base + QStringLiteral("/delta?token=next"))},
+                    {QStringLiteral("value"),
+                     QJsonArray {QJsonObject {
+                         {QStringLiteral("id"), QStringLiteral("gone")},
+                         {QStringLiteral("@removed"),
+                          QJsonObject {{QStringLiteral("reason"), QStringLiteral("deleted")}}},
+                     }}},
+                    {QStringLiteral("@odata.deltaLink"),
+                     QString(base + QStringLiteral("/delta?token=next"))},
                 });
             } else {
                 r.body = json({
-                    {QStringLiteral("value"), QJsonArray{task(1)}},
-                    {QStringLiteral("@odata.nextLink"), QString(base + QStringLiteral("/delta?page=2"))},
+                    {QStringLiteral("value"), QJsonArray {task(1)}},
+                    {QStringLiteral("@odata.nextLink"),
+                     QString(base + QStringLiteral("/delta?page=2"))},
                 });
             }
             return r;
@@ -187,7 +192,7 @@ private Q_SLOTS:
         const auto removed = spy.at(0).at(2).toStringList();
         QCOMPARE(changed.size(), 1);
         QCOMPARE(changed.first().id, QStringLiteral("t1"));
-        QCOMPARE(removed, QStringList{QStringLiteral("gone")});
+        QCOMPARE(removed, QStringList {QStringLiteral("gone")});
         QVERIFY(spy.at(0).at(3).toString().endsWith(QStringLiteral("token=next")));
     }
 

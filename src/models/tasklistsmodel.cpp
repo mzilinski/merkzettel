@@ -4,14 +4,15 @@
 
 namespace Merkzettel {
 
-TaskListsModel::TaskListsModel(QObject *parent) : QAbstractListModel(parent) {}
+TaskListsModel::TaskListsModel(QObject *parent)
+    : QAbstractListModel(parent)
+{
+}
 
 bool TaskListsModel::isVirtualId(const QString &id)
 {
-    return id == QLatin1String(kVirtualMyDayId)
-        || id == QLatin1String(kVirtualAllId)
-        || id == QLatin1String(kVirtualImportantId)
-        || id == QLatin1String(kVirtualPlannedId)
+    return id == QLatin1String(kVirtualMyDayId) || id == QLatin1String(kVirtualAllId)
+        || id == QLatin1String(kVirtualImportantId) || id == QLatin1String(kVirtualPlannedId)
         || id == QLatin1String(kVirtualCompletedId);
 }
 
@@ -27,16 +28,16 @@ QVariant TaskListsModel::data(const QModelIndex &index, int role) const
     }
     const TaskList &l = m_lists.at(index.row());
     switch (role) {
-    case IdRole:          return l.id;
+    case IdRole: return l.id;
     case DisplayNameRole: return l.displayName;
-    case IsDefaultRole:   return l.isDefault;
-    case IsSharedRole:    return l.isShared;
-    case IsVirtualRole:   return l.isVirtual;
+    case IsDefaultRole: return l.isDefault;
+    case IsSharedRole: return l.isShared;
+    case IsVirtualRole: return l.isVirtual;
     case IconNameRole:
-        if (l.id == QLatin1String(kVirtualMyDayId))     return QStringLiteral("weather-clear-symbolic");
-        if (l.id == QLatin1String(kVirtualAllId))       return QStringLiteral("view-list-icons");
+        if (l.id == QLatin1String(kVirtualMyDayId)) return QStringLiteral("weather-clear-symbolic");
+        if (l.id == QLatin1String(kVirtualAllId)) return QStringLiteral("view-list-icons");
         if (l.id == QLatin1String(kVirtualImportantId)) return QStringLiteral("starred-symbolic");
-        if (l.id == QLatin1String(kVirtualPlannedId))   return QStringLiteral("view-calendar");
+        if (l.id == QLatin1String(kVirtualPlannedId)) return QStringLiteral("view-calendar");
         if (l.id == QLatin1String(kVirtualCompletedId)) return QStringLiteral("checkmark");
         return l.isDefault ? QStringLiteral("go-home") : QStringLiteral("view-list-text");
     }
@@ -46,12 +47,8 @@ QVariant TaskListsModel::data(const QModelIndex &index, int role) const
 QHash<int, QByteArray> TaskListsModel::roleNames() const
 {
     return {
-        {IdRole, "listId"},
-        {DisplayNameRole, "displayName"},
-        {IsDefaultRole, "isDefault"},
-        {IsSharedRole, "isShared"},
-        {IsVirtualRole, "isVirtual"},
-        {IconNameRole, "iconName"},
+        {IdRole, "listId"},         {DisplayNameRole, "displayName"}, {IsDefaultRole, "isDefault"},
+        {IsSharedRole, "isShared"}, {IsVirtualRole, "isVirtual"},     {IconNameRole, "iconName"},
     };
 }
 

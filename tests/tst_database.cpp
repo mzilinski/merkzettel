@@ -48,7 +48,8 @@ private Q_SLOTS:
         t.dueDate = QDateTime(QDate(2026, 10, 20), QTime(9, 0), QTimeZone::UTC);
         t.recurrenceJson = QStringLiteral(R"({"pattern":{"type":"daily","interval":2}})");
         t.checklistItems = {{QStringLiteral("c1"), QStringLiteral("Step"), {}, true}};
-        db.upsertTasks(QStringLiteral("L"), {t, makeTask(QStringLiteral("b"), QStringLiteral("Beta"))});
+        db.upsertTasks(QStringLiteral("L"),
+                       {t, makeTask(QStringLiteral("b"), QStringLiteral("Beta"))});
 
         const auto tasks = db.tasks(QStringLiteral("L"));
         QCOMPARE(tasks.size(), 2);
@@ -58,7 +59,7 @@ private Q_SLOTS:
         QCOMPARE(it->title, QStringLiteral("Alpha"));
         QCOMPARE(it->importance, QStringLiteral("high"));
         QCOMPARE(it->body, QStringLiteral("notes"));
-        QCOMPARE(it->categories, (QStringList{QStringLiteral("Work"), QStringLiteral("Finance")}));
+        QCOMPARE(it->categories, (QStringList {QStringLiteral("Work"), QStringLiteral("Finance")}));
         QVERIFY(it->hasAttachments);
         QCOMPARE(it->dueDate, t.dueDate);
         QCOMPARE(it->recurrenceJson, t.recurrenceJson);
@@ -71,7 +72,8 @@ private Q_SLOTS:
     {
         Database db;
         QVERIFY(db.open());
-        db.upsertTasks(QStringLiteral("L"), {makeTask(QStringLiteral("only"), QStringLiteral("Only"))});
+        db.upsertTasks(QStringLiteral("L"),
+                       {makeTask(QStringLiteral("only"), QStringLiteral("Only"))});
         const auto tasks = db.tasks(QStringLiteral("L"));
         QCOMPARE(tasks.size(), 1);
         QCOMPARE(tasks.first().id, QStringLiteral("only"));
@@ -81,16 +83,18 @@ private Q_SLOTS:
     {
         Database db;
         QVERIFY(db.open());
-        db.upsertTasks(QStringLiteral("L"), {makeTask(QStringLiteral("x"), QStringLiteral("Old")),
-                                            makeTask(QStringLiteral("y"), QStringLiteral("Gone"))});
+        db.upsertTasks(QStringLiteral("L"),
+                       {makeTask(QStringLiteral("x"), QStringLiteral("Old")),
+                        makeTask(QStringLiteral("y"), QStringLiteral("Gone"))});
         db.applyTaskDelta(QStringLiteral("L"),
                           {makeTask(QStringLiteral("x"), QStringLiteral("New")),
                            makeTask(QStringLiteral("z"), QStringLiteral("Added"))},
                           {QStringLiteral("y")});
         QStringList titles;
-        for (const auto &t : db.tasks(QStringLiteral("L"))) titles.append(t.title);
+        for (const auto &t : db.tasks(QStringLiteral("L")))
+            titles.append(t.title);
         titles.sort();
-        QCOMPARE(titles, (QStringList{QStringLiteral("Added"), QStringLiteral("New")}));
+        QCOMPARE(titles, (QStringList {QStringLiteral("Added"), QStringLiteral("New")}));
 
         db.setDeltaLink(QStringLiteral("L"), QStringLiteral("https://delta"));
         QCOMPARE(db.deltaLink(QStringLiteral("L")), QStringLiteral("https://delta"));
@@ -118,11 +122,11 @@ private Q_SLOTS:
         QVERIFY(db.open());
         const QDate day1(2026, 10, 15);
         db.setInMyDay({QStringLiteral("a"), QStringLiteral("b")}, true, day1);
-        QCOMPARE(db.myDayTaskIds(day1), (QSet<QString>{QStringLiteral("a"), QStringLiteral("b")}));
+        QCOMPARE(db.myDayTaskIds(day1), (QSet<QString> {QStringLiteral("a"), QStringLiteral("b")}));
 
         db.setInMyDay({QStringLiteral("b")}, false, day1);
         db.renameMyDayTask(QStringLiteral("a"), QStringLiteral("a2"));
-        QCOMPARE(db.myDayTaskIds(day1), QSet<QString>{QStringLiteral("a2")});
+        QCOMPARE(db.myDayTaskIds(day1), QSet<QString> {QStringLiteral("a2")});
 
         // Next day: yesterday's entries are pruned.
         QVERIFY(db.myDayTaskIds(day1.addDays(1)).isEmpty());

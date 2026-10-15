@@ -47,18 +47,16 @@ public:
     // One chunk of a Graph upload session. uploadUrl is pre-authenticated,
     // so no Authorization header is sent. The callback gets the JSON reply
     // (nextExpectedRanges while incomplete, empty/attachment when done).
-    void putUploadChunk(const QUrl &uploadUrl, const QByteArray &chunk,
-                        qint64 offset, qint64 totalSize, GraphCallback cb,
-                        int throttleAttempt = 0);
+    void putUploadChunk(const QUrl &uploadUrl, const QByteArray &chunk, qint64 offset,
+                        qint64 totalSize, GraphCallback cb, int throttleAttempt = 0);
 
 private:
     enum class Method { Get, Post, Patch, Delete };
-    void send(Method method, const QString &path, const QUrlQuery &query,
-              const QJsonObject &body, GraphCallback cb, int retries = 1);
-    void sendUrl(Method method, const QUrl &url, const QJsonObject &body,
-                 GraphCallback cb, int retries = 1, int throttleAttempt = 0);
-    void handleReply(QNetworkReply *reply, GraphCallback cb,
-                     Method method, const QUrl &url,
+    void send(Method method, const QString &path, const QUrlQuery &query, const QJsonObject &body,
+              GraphCallback cb, int retries = 1);
+    void sendUrl(Method method, const QUrl &url, const QJsonObject &body, GraphCallback cb,
+                 int retries = 1, int throttleAttempt = 0);
+    void handleReply(QNetworkReply *reply, GraphCallback cb, Method method, const QUrl &url,
                      const QJsonObject &body, int retries, int throttleAttempt);
 
     // Request scheduling. Microsoft throttles To Do per mailbox (a handful

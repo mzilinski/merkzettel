@@ -24,8 +24,7 @@ public:
     // Apply a delta-sync result: upsert changed tasks (preserving cached
     // checklist items if the delta payload doesn't carry them — the delta
     // endpoint doesn't support $expand) and remove deleted ones.
-    void applyTaskDelta(const QString &listId,
-                        const QList<Task> &changed,
+    void applyTaskDelta(const QString &listId, const QList<Task> &changed,
                         const QStringList &deletedIds);
     // Replace the cached checklist items for a single task. Used by the
     // dedicated /checklistItems fetch after delta detects a changed task.

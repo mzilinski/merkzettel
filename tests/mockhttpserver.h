@@ -19,8 +19,8 @@ class MockHttpServer : public QTcpServer
 public:
     struct Request {
         QByteArray method;
-        QByteArray path;  // includes the query string
-        QHash<QByteArray, QByteArray> headers;  // lower-case names
+        QByteArray path;                       // includes the query string
+        QHash<QByteArray, QByteArray> headers; // lower-case names
         QByteArray body;
     };
     struct Response {
@@ -67,7 +67,7 @@ private:
                                    lines[i].mid(colon + 1).trimmed());
         }
         const int length = req.headers.value("content-length").toInt();
-        if (buf.size() < headerEnd + 4 + length) return;  // wait for the body
+        if (buf.size() < headerEnd + 4 + length) return; // wait for the body
         req.body = buf.mid(headerEnd + 4, length);
         m_buffers.remove(s);
 

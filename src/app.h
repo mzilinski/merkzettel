@@ -29,7 +29,8 @@ class App : public QObject
     // False while Microsoft can't be reached; the UI shows cached data.
     Q_PROPERTY(bool online READ online NOTIFY onlineChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
-    Q_PROPERTY(QString currentListId READ currentListId WRITE setCurrentListId NOTIFY currentListIdChanged)
+    Q_PROPERTY(
+        QString currentListId READ currentListId WRITE setCurrentListId NOTIFY currentListIdChanged)
     // True for the synthetic smart-lists (All/Important/Planned/Completed).
     Q_PROPERTY(bool currentListVirtual READ isVirtualList NOTIFY currentListIdChanged)
     // Display name of the selected list (page title when the sidebar is folded).
@@ -47,8 +48,8 @@ class App : public QObject
     // "auto" / "light" / "dark" — drives the color-scheme menu's checked state.
     Q_PROPERTY(QString colorScheme READ colorScheme NOTIFY colorSchemeChanged)
     // "Sharing happens in the web app" banner acknowledged (merkzettelrc).
-    Q_PROPERTY(bool shareExplainerSeen READ shareExplainerSeen WRITE setShareExplainerSeen
-               NOTIFY shareExplainerSeenChanged)
+    Q_PROPERTY(bool shareExplainerSeen READ shareExplainerSeen WRITE setShareExplainerSeen NOTIFY
+                   shareExplainerSeenChanged)
 
 public:
     explicit App(QObject *parent = nullptr);
@@ -58,7 +59,11 @@ public:
     void setStartMinimized(bool minimized) { m_startMinimized = minimized; }
     bool startMinimized() const { return m_startMinimized; }
     // --demo on the command line: no account handling at all this session.
-    void setDemoMode(bool on) { m_demoMode = on; m_demoFromCommandLine = on; }
+    void setDemoMode(bool on)
+    {
+        m_demoMode = on;
+        m_demoFromCommandLine = on;
+    }
     bool demoMode() const { return m_demoMode; }
     bool signInAvailable() const;
     bool canLeaveDemo() const { return m_demoMode && !m_demoFromCommandLine; }
@@ -230,13 +235,13 @@ private:
 
     struct UndoState {
         enum Kind { None, Delete, Move, Complete } kind = None;
-        QList<QPair<QString, QString>> tasks;  // (listId, taskId)
-        QString targetListId;                  // Move only
-        bool pending = false;                  // Delete/Move not yet sent
+        QList<QPair<QString, QString>> tasks; // (listId, taskId)
+        QString targetListId;                 // Move only
+        bool pending = false;                 // Delete/Move not yet sent
     };
-    QHash<QString, QList<Attachment>> m_attachments;  // taskId -> attachments
+    QHash<QString, QList<Attachment>> m_attachments; // taskId -> attachments
     QSet<QString> m_demoMyDay;
-    QDate m_myDayDate;  // day the loaded My Day set belongs to
+    QDate m_myDayDate; // day the loaded My Day set belongs to
     UndoState m_undo;
     QTimer *m_commitTimer = nullptr;
     QTimer *m_authRetryTimer = nullptr;

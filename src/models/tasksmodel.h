@@ -12,12 +12,14 @@ class TasksModel : public QAbstractListModel
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(QString filterText READ filterText WRITE setFilterText NOTIFY filterTextChanged)
     // Global view option, persisted in merkzettelrc [View].
-    Q_PROPERTY(bool showCompleted READ showCompleted WRITE setShowCompleted NOTIFY showCompletedChanged)
+    Q_PROPERTY(
+        bool showCompleted READ showCompleted WRITE setShowCompleted NOTIFY showCompletedChanged)
     // Per-list sort order like MS To Do, persisted in merkzettelrc [ListSort]
     // (Graph doesn't sync it). "default" = sectioned by due date; otherwise
     // "importance" / "dueDate" / "title" / "created".
     Q_PROPERTY(QString sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
-    Q_PROPERTY(bool sortDescending READ sortDescending WRITE setSortDescending NOTIFY sortDescendingChanged)
+    Q_PROPERTY(bool sortDescending READ sortDescending WRITE setSortDescending NOTIFY
+                   sortDescendingChanged)
 public:
     // Local filter applied on top of the task set, driven by the smart-lists.
     enum class SmartFilter { None, MyDay, Important, Planned, Completed };

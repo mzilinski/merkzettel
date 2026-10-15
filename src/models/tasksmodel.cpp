@@ -14,12 +14,12 @@
 namespace Merkzettel {
 
 namespace {
-constexpr int kSectionOverdue   = 0;
-constexpr int kSectionToday     = 1;
-constexpr int kSectionTomorrow  = 2;
-constexpr int kSectionThisWeek  = 3;
-constexpr int kSectionLater     = 4;
-constexpr int kSectionNoDate    = 5;
+constexpr int kSectionOverdue = 0;
+constexpr int kSectionToday = 1;
+constexpr int kSectionTomorrow = 2;
+constexpr int kSectionThisWeek = 3;
+constexpr int kSectionLater = 4;
+constexpr int kSectionNoDate = 5;
 constexpr int kSectionCompleted = 9;
 
 QDate toLocalDate(const QDateTime &dt)
@@ -29,7 +29,7 @@ QDate toLocalDate(const QDateTime &dt)
 
 const QStringList kSortModes = {
     QStringLiteral("default"), QStringLiteral("importance"), QStringLiteral("dueDate"),
-    QStringLiteral("title"), QStringLiteral("created"),
+    QStringLiteral("title"),   QStringLiteral("created"),
 };
 
 // Direction a sort mode starts out with when picked, matching MS To Do:
@@ -57,7 +57,8 @@ QString sortKey(const QString &listId)
 }
 } // namespace
 
-TasksModel::TasksModel(QObject *parent) : QAbstractListModel(parent)
+TasksModel::TasksModel(QObject *parent)
+    : QAbstractListModel(parent)
 {
     m_showCompleted = viewConfig().readEntry("ShowCompleted", true);
 }
@@ -69,9 +70,10 @@ void TasksModel::saveSortConfig() const
     if (m_sortMode == QLatin1String("default")) {
         cfg.deleteEntry(sortKey(m_sortScope));
     } else {
-        cfg.writeEntry(sortKey(m_sortScope),
-                       QStringList{m_sortMode, m_sortDescending ? QStringLiteral("desc")
-                                                                : QStringLiteral("asc")});
+        cfg.writeEntry(
+            sortKey(m_sortScope),
+            QStringList {m_sortMode,
+                         m_sortDescending ? QStringLiteral("desc") : QStringLiteral("asc")});
     }
     cfg.sync();
 }
@@ -123,15 +125,15 @@ int TasksModel::effectiveSectionRank(const Task &t) const
 QString TasksModel::sectionLabel(const Task &t) const
 {
     if (m_sortMode != QLatin1String("default") && !t.completed()) {
-        return QString();  // single unlabeled bucket; the view hides empty headers
+        return QString(); // single unlabeled bucket; the view hides empty headers
     }
     switch (sectionRank(t)) {
-    case kSectionOverdue:   return i18n("Overdue");
-    case kSectionToday:     return i18n("Today");
-    case kSectionTomorrow:  return i18n("Tomorrow");
-    case kSectionThisWeek:  return i18n("This week");
-    case kSectionLater:     return i18n("Later");
-    case kSectionNoDate:    return i18n("No date");
+    case kSectionOverdue: return i18n("Overdue");
+    case kSectionToday: return i18n("Today");
+    case kSectionTomorrow: return i18n("Tomorrow");
+    case kSectionThisWeek: return i18n("This week");
+    case kSectionLater: return i18n("Later");
+    case kSectionNoDate: return i18n("No date");
     case kSectionCompleted: return i18n("Completed");
     }
     return {};
@@ -144,26 +146,26 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
     }
     const Task &t = m_tasks.at(index.row());
     switch (role) {
-    case IdRole:           return t.id;
-    case TitleRole:        return t.title;
-    case StatusRole:       return t.status;
-    case CompletedRole:    return t.completed();
-    case ImportanceRole:   return t.importance.isEmpty() ? QStringLiteral("normal") : t.importance;
-    case IsImportantRole:  return t.isImportant();
-    case DueDateRole:      return t.dueDate;
-    case BodyRole:         return t.body;
+    case IdRole: return t.id;
+    case TitleRole: return t.title;
+    case StatusRole: return t.status;
+    case CompletedRole: return t.completed();
+    case ImportanceRole: return t.importance.isEmpty() ? QStringLiteral("normal") : t.importance;
+    case IsImportantRole: return t.isImportant();
+    case DueDateRole: return t.dueDate;
+    case BodyRole: return t.body;
     case ReminderDateRole: return t.reminderDate;
-    case HasReminderRole:  return t.hasReminder;
-    case SectionKeyRole:   return QString::number(effectiveSectionRank(t));
+    case HasReminderRole: return t.hasReminder;
+    case SectionKeyRole: return QString::number(effectiveSectionRank(t));
     case SectionLabelRole: return sectionLabel(t);
     case ChecklistTotalRole: return t.totalChecklistCount;
     case HasRecurrenceRole: return !t.recurrenceJson.isEmpty();
     case LinkedResourceCountRole: return int(t.linkedResources.size());
-    case ListIdRole:       return t.listId;
-    case ListNameRole:     return m_listNames.value(t.listId);
-    case CategoriesRole:   return t.categories;
+    case ListIdRole: return t.listId;
+    case ListNameRole: return m_listNames.value(t.listId);
+    case CategoriesRole: return t.categories;
     case HasAttachmentsRole: return t.hasAttachments;
-    case InMyDayRole:      return m_myDayIds.contains(t.id);
+    case InMyDayRole: return m_myDayIds.contains(t.id);
     case ChecklistProgressRole: {
         if (t.totalChecklistCount <= 0) return QString();
         const int done = t.totalChecklistCount - t.openChecklistCount;
@@ -173,9 +175,9 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
         if (!t.dueDate.isValid()) return QString();
         const QDate d = toLocalDate(t.dueDate);
         const QDate today = QDate::currentDate();
-        if (d == today)               return i18n("Today");
-        if (d == today.addDays(1))    return i18n("Tomorrow");
-        if (d == today.addDays(-1))   return i18n("Yesterday");
+        if (d == today) return i18n("Today");
+        if (d == today.addDays(1)) return i18n("Tomorrow");
+        if (d == today.addDays(-1)) return i18n("Yesterday");
         return QLocale().toString(d, QLocale::ShortFormat);
     }
     }
@@ -244,7 +246,8 @@ void TasksModel::setTasks(const QList<Task> &tasks)
     m_allTasks = tasks;
     if (!m_hiddenIds.isEmpty()) {
         QSet<QString> present;
-        for (const auto &t : tasks) present.insert(t.id);
+        for (const auto &t : tasks)
+            present.insert(t.id);
         m_hiddenIds.intersect(present);
     }
     applyFilter();
@@ -259,13 +262,15 @@ void TasksModel::setMyDayIds(const QSet<QString> &ids)
 
 void TasksModel::hideTasks(const QStringList &taskIds)
 {
-    for (const auto &id : taskIds) m_hiddenIds.insert(id);
+    for (const auto &id : taskIds)
+        m_hiddenIds.insert(id);
     applyFilter();
 }
 
 void TasksModel::unhideTasks(const QStringList &taskIds)
 {
-    for (const auto &id : taskIds) m_hiddenIds.remove(id);
+    for (const auto &id : taskIds)
+        m_hiddenIds.remove(id);
     applyFilter();
 }
 
@@ -337,8 +342,7 @@ bool TasksModel::matchesFilter(const Task &t) const
 {
     if (m_hiddenIds.contains(t.id)) return false;
     switch (m_smartFilter) {
-    case SmartFilter::None:
-        break;
+    case SmartFilter::None: break;
     case SmartFilter::MyDay:
         if (!m_myDayIds.contains(t.id)) return false;
         break;
@@ -391,35 +395,48 @@ void TasksModel::applyFilter()
 QVariantMap TasksModel::recurrenceInfo(const QString &recurrenceJson)
 {
     if (recurrenceJson.isEmpty()) return {{QStringLiteral("preset"), QString()}};
-    const auto pat = QJsonDocument::fromJson(recurrenceJson.toUtf8()).object()
-                         .value(QStringLiteral("pattern")).toObject();
+    const auto pat = QJsonDocument::fromJson(recurrenceJson.toUtf8())
+                         .object()
+                         .value(QStringLiteral("pattern"))
+                         .toObject();
     const QString type = pat.value(QStringLiteral("type")).toString();
     const int interval = qMax(1, pat.value(QStringLiteral("interval")).toInt(1));
     QStringList days;
-    for (const auto &d : pat.value(QStringLiteral("daysOfWeek")).toArray()) days.append(d.toString());
+    for (const auto &d : pat.value(QStringLiteral("daysOfWeek")).toArray())
+        days.append(d.toString());
 
     static const QStringList kWeekdays = {
-        QStringLiteral("monday"), QStringLiteral("tuesday"), QStringLiteral("wednesday"),
-        QStringLiteral("thursday"), QStringLiteral("friday"), QStringLiteral("saturday"),
+        QStringLiteral("monday"),   QStringLiteral("tuesday"), QStringLiteral("wednesday"),
+        QStringLiteral("thursday"), QStringLiteral("friday"),  QStringLiteral("saturday"),
         QStringLiteral("sunday"),
     };
     QString unit;
-    if (type == QLatin1String("daily")) unit = QStringLiteral("day");
-    else if (type == QLatin1String("weekly")) unit = QStringLiteral("week");
-    else if (type == QLatin1String("absoluteMonthly")) unit = QStringLiteral("month");
-    else if (type == QLatin1String("absoluteYearly")) unit = QStringLiteral("year");
+    if (type == QLatin1String("daily"))
+        unit = QStringLiteral("day");
+    else if (type == QLatin1String("weekly"))
+        unit = QStringLiteral("week");
+    else if (type == QLatin1String("absoluteMonthly"))
+        unit = QStringLiteral("month");
+    else if (type == QLatin1String("absoluteYearly"))
+        unit = QStringLiteral("year");
 
     QStringList sortedDays;
-    for (const auto &d : kWeekdays) if (days.contains(d)) sortedDays.append(d);
+    for (const auto &d : kWeekdays)
+        if (days.contains(d)) sortedDays.append(d);
     const bool workweek = sortedDays == kWeekdays.mid(0, 5);
 
     QString preset = QStringLiteral("custom");
     if (interval == 1) {
-        if (unit == QLatin1String("day")) preset = QStringLiteral("daily");
-        else if (unit == QLatin1String("week") && workweek) preset = QStringLiteral("weekdays");
-        else if (unit == QLatin1String("week") && sortedDays.size() <= 1) preset = QStringLiteral("weekly");
-        else if (unit == QLatin1String("month")) preset = QStringLiteral("monthly");
-        else if (unit == QLatin1String("year")) preset = QStringLiteral("yearly");
+        if (unit == QLatin1String("day"))
+            preset = QStringLiteral("daily");
+        else if (unit == QLatin1String("week") && workweek)
+            preset = QStringLiteral("weekdays");
+        else if (unit == QLatin1String("week") && sortedDays.size() <= 1)
+            preset = QStringLiteral("weekly");
+        else if (unit == QLatin1String("month"))
+            preset = QStringLiteral("monthly");
+        else if (unit == QLatin1String("year"))
+            preset = QStringLiteral("yearly");
     }
 
     QString summary;
@@ -440,14 +457,12 @@ QVariantMap TasksModel::recurrenceInfo(const QString &recurrenceJson)
     } else if (unit == QLatin1String("year")) {
         summary = i18np("Every year", "Every %1 years", interval);
     } else {
-        summary = i18n("Custom");  // relative monthly/yearly — not editable here
+        summary = i18n("Custom"); // relative monthly/yearly — not editable here
     }
 
     return {
-        {QStringLiteral("preset"), preset},
-        {QStringLiteral("unit"), unit},
-        {QStringLiteral("interval"), interval},
-        {QStringLiteral("days"), sortedDays},
+        {QStringLiteral("preset"), preset},     {QStringLiteral("unit"), unit},
+        {QStringLiteral("interval"), interval}, {QStringLiteral("days"), sortedDays},
         {QStringLiteral("summary"), summary},
     };
 }
@@ -458,7 +473,7 @@ QVariantMap TasksModel::taskAt(int row) const
     const Task &t = m_tasks.at(row);
     QVariantList items;
     for (const auto &c : t.checklistItems) {
-        items.append(QVariantMap{
+        items.append(QVariantMap {
             {QStringLiteral("id"), c.id},
             {QStringLiteral("displayName"), c.displayName},
             {QStringLiteral("isChecked"), c.isChecked},
@@ -466,7 +481,7 @@ QVariantMap TasksModel::taskAt(int row) const
     }
     QVariantList links;
     for (const auto &r : t.linkedResources) {
-        links.append(QVariantMap{
+        links.append(QVariantMap {
             {QStringLiteral("id"), r.id},
             {QStringLiteral("displayName"), r.displayName},
             {QStringLiteral("webUrl"), r.webUrl},
@@ -480,7 +495,8 @@ QVariantMap TasksModel::taskAt(int row) const
         {QStringLiteral("body"), t.body},
         {QStringLiteral("status"), t.status},
         {QStringLiteral("completed"), t.completed()},
-        {QStringLiteral("importance"), t.importance.isEmpty() ? QStringLiteral("normal") : t.importance},
+        {QStringLiteral("importance"),
+         t.importance.isEmpty() ? QStringLiteral("normal") : t.importance},
         {QStringLiteral("important"), t.isImportant()},
         {QStringLiteral("dueDate"), t.dueDate},
         {QStringLiteral("hasReminder"), t.hasReminder},
@@ -524,8 +540,7 @@ void TasksModel::setListNames(const QHash<QString, QString> &names)
     if (!m_tasks.isEmpty()) {
         // Re-emit dataChanged for ListNameRole so existing rows pick up the
         // resolved names immediately.
-        Q_EMIT dataChanged(index(0, 0), index(m_tasks.size() - 1, 0),
-                           {ListNameRole});
+        Q_EMIT dataChanged(index(0, 0), index(m_tasks.size() - 1, 0), {ListNameRole});
     }
 }
 

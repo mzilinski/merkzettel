@@ -25,13 +25,15 @@ QStringList categoriesFromJson(const QString &json)
 {
     QStringList out;
     if (json.isEmpty()) return out;
-    for (const auto &v : QJsonDocument::fromJson(json.toUtf8()).array()) out.append(v.toString());
+    for (const auto &v : QJsonDocument::fromJson(json.toUtf8()).array())
+        out.append(v.toString());
     return out;
 }
 } // namespace
 
 Database::Database(QObject *parent)
-    : QObject(parent), m_connectionName(QStringLiteral("merkzettel-cache"))
+    : QObject(parent)
+    , m_connectionName(QStringLiteral("merkzettel-cache"))
 {
 }
 
@@ -55,36 +57,34 @@ void Database::createSchema()
 {
     auto db = QSqlDatabase::database(m_connectionName);
     QSqlQuery q(db);
-    q.exec(QStringLiteral(
-        "CREATE TABLE IF NOT EXISTS lists ("
-        "  id TEXT PRIMARY KEY,"
-        "  display_name TEXT NOT NULL,"
-        "  is_default INTEGER NOT NULL DEFAULT 0,"
-        "  delta_link TEXT,"
-        "  is_shared INTEGER NOT NULL DEFAULT 0"
-        ")"));
+    q.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS lists ("
+                          "  id TEXT PRIMARY KEY,"
+                          "  display_name TEXT NOT NULL,"
+                          "  is_default INTEGER NOT NULL DEFAULT 0,"
+                          "  delta_link TEXT,"
+                          "  is_shared INTEGER NOT NULL DEFAULT 0"
+                          ")"));
     q.exec(QStringLiteral("ALTER TABLE lists ADD COLUMN delta_link TEXT"));
     q.exec(QStringLiteral("ALTER TABLE lists ADD COLUMN is_shared INTEGER NOT NULL DEFAULT 0"));
-    q.exec(QStringLiteral(
-        "CREATE TABLE IF NOT EXISTS tasks ("
-        "  id TEXT PRIMARY KEY,"
-        "  list_id TEXT NOT NULL,"
-        "  title TEXT NOT NULL,"
-        "  status TEXT NOT NULL,"
-        "  importance TEXT NOT NULL DEFAULT 'normal',"
-        "  body TEXT,"
-        "  due_utc TEXT,"
-        "  reminder_utc TEXT,"
-        "  has_reminder INTEGER NOT NULL DEFAULT 0,"
-        "  created_utc TEXT,"
-        "  last_modified TEXT,"
-        "  recurrence_json TEXT"
-        ")"));
+    q.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS tasks ("
+                          "  id TEXT PRIMARY KEY,"
+                          "  list_id TEXT NOT NULL,"
+                          "  title TEXT NOT NULL,"
+                          "  status TEXT NOT NULL,"
+                          "  importance TEXT NOT NULL DEFAULT 'normal',"
+                          "  body TEXT,"
+                          "  due_utc TEXT,"
+                          "  reminder_utc TEXT,"
+                          "  has_reminder INTEGER NOT NULL DEFAULT 0,"
+                          "  created_utc TEXT,"
+                          "  last_modified TEXT,"
+                          "  recurrence_json TEXT"
+                          ")"));
     q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN recurrence_json TEXT"));
-    const bool addedCategories =
-        q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN categories_json TEXT"));
-    const bool addedAttachments =
-        q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN has_attachments INTEGER NOT NULL DEFAULT 0"));
+    const bool addedCategories
+        = q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN categories_json TEXT"));
+    const bool addedAttachments = q.exec(
+        QStringLiteral("ALTER TABLE tasks ADD COLUMN has_attachments INTEGER NOT NULL DEFAULT 0"));
     if (addedCategories || addedAttachments) {
         // Same as created_utc below: force one full re-fetch so existing
         // rows get the new columns backfilled.
@@ -97,40 +97,40 @@ void Database::createSchema()
         q.exec(QStringLiteral("UPDATE lists SET delta_link = NULL"));
     }
     q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_tasks_list ON tasks(list_id)"));
-    q.exec(QStringLiteral(
-        "CREATE TABLE IF NOT EXISTS checklist_items ("
-        "  id TEXT PRIMARY KEY,"
-        "  task_id TEXT NOT NULL,"
-        "  list_id TEXT NOT NULL,"
-        "  display_name TEXT NOT NULL,"
-        "  is_checked INTEGER NOT NULL DEFAULT 0,"
-        "  created_utc TEXT,"
-        "  sort_order INTEGER NOT NULL DEFAULT 0"
-        ")"));
+    q.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS checklist_items ("
+                          "  id TEXT PRIMARY KEY,"
+                          "  task_id TEXT NOT NULL,"
+                          "  list_id TEXT NOT NULL,"
+                          "  display_name TEXT NOT NULL,"
+                          "  is_checked INTEGER NOT NULL DEFAULT 0,"
+                          "  created_utc TEXT,"
+                          "  sort_order INTEGER NOT NULL DEFAULT 0"
+                          ")"));
     q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_check_task ON checklist_items(task_id)"));
     q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_check_list ON checklist_items(list_id)"));
-    q.exec(QStringLiteral(
-        "CREATE TABLE IF NOT EXISTS linked_resources ("
-        "  id TEXT PRIMARY KEY,"
-        "  task_id TEXT NOT NULL,"
-        "  list_id TEXT NOT NULL,"
-        "  application_name TEXT,"
-        "  web_url TEXT,"
-        "  display_name TEXT,"
-        "  external_id TEXT,"
-        "  sort_order INTEGER NOT NULL DEFAULT 0"
-        ")"));
-    q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_linkres_task ON linked_resources(task_id)"));
-    q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_linkres_list ON linked_resources(list_id)"));
+    q.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS linked_resources ("
+                          "  id TEXT PRIMARY KEY,"
+                          "  task_id TEXT NOT NULL,"
+                          "  list_id TEXT NOT NULL,"
+                          "  application_name TEXT,"
+                          "  web_url TEXT,"
+                          "  display_name TEXT,"
+                          "  external_id TEXT,"
+                          "  sort_order INTEGER NOT NULL DEFAULT 0"
+                          ")"));
+    q.exec(
+        QStringLiteral("CREATE INDEX IF NOT EXISTS idx_linkres_task ON linked_resources(task_id)"));
+    q.exec(
+        QStringLiteral("CREATE INDEX IF NOT EXISTS idx_linkres_list ON linked_resources(list_id)"));
 
-    q.exec(QStringLiteral(
-        "CREATE TABLE IF NOT EXISTS my_day ("
-        "  task_id TEXT PRIMARY KEY,"
-        "  day TEXT NOT NULL"
-        ")"));
+    q.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS my_day ("
+                          "  task_id TEXT PRIMARY KEY,"
+                          "  day TEXT NOT NULL"
+                          ")"));
 
     // Migrate older schemas: add columns if missing.
-    q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN importance TEXT NOT NULL DEFAULT 'normal'"));
+    q.exec(
+        QStringLiteral("ALTER TABLE tasks ADD COLUMN importance TEXT NOT NULL DEFAULT 'normal'"));
     q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN reminder_utc TEXT"));
     q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN has_reminder INTEGER NOT NULL DEFAULT 0"));
 }
@@ -141,11 +141,10 @@ void Database::upsertLists(const QList<TaskList> &lists)
     db.transaction();
     QSqlQuery q(db);
     // Preserve delta_link across list refreshes by not touching it here.
-    q.prepare(QStringLiteral(
-        "INSERT INTO lists(id, display_name, is_default, is_shared) "
-        "VALUES(?, ?, ?, ?) "
-        "ON CONFLICT(id) DO UPDATE SET display_name=excluded.display_name, "
-        "is_default=excluded.is_default, is_shared=excluded.is_shared"));
+    q.prepare(QStringLiteral("INSERT INTO lists(id, display_name, is_default, is_shared) "
+                             "VALUES(?, ?, ?, ?) "
+                             "ON CONFLICT(id) DO UPDATE SET display_name=excluded.display_name, "
+                             "is_default=excluded.is_default, is_shared=excluded.is_shared"));
     for (const auto &l : lists) {
         q.bindValue(0, l.id);
         q.bindValue(1, l.displayName);
@@ -161,11 +160,10 @@ QList<Database::ReminderHit> Database::reminderHitsBefore(const QDateTime &cutof
     QList<ReminderHit> result;
     auto db = QSqlDatabase::database(m_connectionName);
     QSqlQuery q(db);
-    q.prepare(QStringLiteral(
-        "SELECT list_id, id, title, reminder_utc FROM tasks "
-        "WHERE has_reminder = 1 AND status != 'completed' "
-        "AND reminder_utc IS NOT NULL AND reminder_utc <= ? "
-        "ORDER BY reminder_utc ASC"));
+    q.prepare(QStringLiteral("SELECT list_id, id, title, reminder_utc FROM tasks "
+                             "WHERE has_reminder = 1 AND status != 'completed' "
+                             "AND reminder_utc IS NOT NULL AND reminder_utc <= ? "
+                             "ORDER BY reminder_utc ASC"));
     q.bindValue(0, cutoff.toUTC().toString(Qt::ISODate));
     q.exec();
     while (q.next()) {
@@ -194,7 +192,8 @@ QSet<QString> Database::myDayTaskIds(const QDate &today)
     q.prepare(QStringLiteral("SELECT task_id FROM my_day WHERE day = ?"));
     q.bindValue(0, day);
     q.exec();
-    while (q.next()) ids.insert(q.value(0).toString());
+    while (q.next())
+        ids.insert(q.value(0).toString());
     return ids;
 }
 
@@ -271,11 +270,11 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
     delLinks.exec();
 
     QSqlQuery q(db);
-    q.prepare(QStringLiteral(
-        "INSERT INTO tasks(id, list_id, title, status, importance, body, due_utc, "
-        "reminder_utc, has_reminder, created_utc, last_modified, recurrence_json, "
-        "categories_json, has_attachments) "
-        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+    q.prepare(
+        QStringLiteral("INSERT INTO tasks(id, list_id, title, status, importance, body, due_utc, "
+                       "reminder_utc, has_reminder, created_utc, last_modified, recurrence_json, "
+                       "categories_json, has_attachments) "
+                       "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
     QSqlQuery chk(db);
     chk.prepare(QStringLiteral(
         "INSERT INTO checklist_items(id, task_id, list_id, display_name, is_checked, "
@@ -283,10 +282,10 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
         "VALUES(?, ?, ?, ?, ?, ?, ?)"));
 
     QSqlQuery lnk(db);
-    lnk.prepare(QStringLiteral(
-        "INSERT INTO linked_resources(id, task_id, list_id, application_name, "
-        "web_url, display_name, external_id, sort_order) "
-        "VALUES(?, ?, ?, ?, ?, ?, ?, ?)"));
+    lnk.prepare(
+        QStringLiteral("INSERT INTO linked_resources(id, task_id, list_id, application_name, "
+                       "web_url, display_name, external_id, sort_order) "
+                       "VALUES(?, ?, ?, ?, ?, ?, ?, ?)"));
 
     for (const auto &t : tasks) {
         q.bindValue(0, t.id);
@@ -296,10 +295,15 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
         q.bindValue(4, t.importance.isEmpty() ? QStringLiteral("normal") : t.importance);
         q.bindValue(5, t.body);
         q.bindValue(6, t.dueDate.isValid() ? t.dueDate.toUTC().toString(Qt::ISODate) : QVariant());
-        q.bindValue(7, t.reminderDate.isValid() ? t.reminderDate.toUTC().toString(Qt::ISODate) : QVariant());
+        q.bindValue(7,
+                    t.reminderDate.isValid() ? t.reminderDate.toUTC().toString(Qt::ISODate)
+                                             : QVariant());
         q.bindValue(8, t.hasReminder ? 1 : 0);
-        q.bindValue(9, t.createdDate.isValid() ? t.createdDate.toUTC().toString(Qt::ISODate) : QVariant());
-        q.bindValue(10, t.lastModified.isValid() ? t.lastModified.toUTC().toString(Qt::ISODate) : QVariant());
+        q.bindValue(
+            9, t.createdDate.isValid() ? t.createdDate.toUTC().toString(Qt::ISODate) : QVariant());
+        q.bindValue(10,
+                    t.lastModified.isValid() ? t.lastModified.toUTC().toString(Qt::ISODate)
+                                             : QVariant());
         q.bindValue(11, t.recurrenceJson.isEmpty() ? QVariant() : t.recurrenceJson);
         q.bindValue(12, categoriesToJson(t.categories));
         q.bindValue(13, t.hasAttachments ? 1 : 0);
@@ -312,8 +316,10 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
             chk.bindValue(2, listId);
             chk.bindValue(3, c.displayName);
             chk.bindValue(4, c.isChecked ? 1 : 0);
-            chk.bindValue(5, c.createdDateTime.isValid()
-                              ? c.createdDateTime.toUTC().toString(Qt::ISODate) : QVariant());
+            chk.bindValue(5,
+                          c.createdDateTime.isValid()
+                              ? c.createdDateTime.toUTC().toString(Qt::ISODate)
+                              : QVariant());
             chk.bindValue(6, order++);
             chk.exec();
         }
@@ -333,8 +339,7 @@ void Database::upsertTasks(const QString &listId, const QList<Task> &tasks)
     db.commit();
 }
 
-void Database::applyTaskDelta(const QString &listId,
-                              const QList<Task> &changed,
+void Database::applyTaskDelta(const QString &listId, const QList<Task> &changed,
                               const QStringList &deletedIds)
 {
     auto db = QSqlDatabase::database(m_connectionName);
@@ -372,11 +377,17 @@ void Database::applyTaskDelta(const QString &listId,
         upsert.bindValue(3, t.status);
         upsert.bindValue(4, t.importance.isEmpty() ? QStringLiteral("normal") : t.importance);
         upsert.bindValue(5, t.body);
-        upsert.bindValue(6, t.dueDate.isValid() ? t.dueDate.toUTC().toString(Qt::ISODate) : QVariant());
-        upsert.bindValue(7, t.reminderDate.isValid() ? t.reminderDate.toUTC().toString(Qt::ISODate) : QVariant());
+        upsert.bindValue(
+            6, t.dueDate.isValid() ? t.dueDate.toUTC().toString(Qt::ISODate) : QVariant());
+        upsert.bindValue(7,
+                         t.reminderDate.isValid() ? t.reminderDate.toUTC().toString(Qt::ISODate)
+                                                  : QVariant());
         upsert.bindValue(8, t.hasReminder ? 1 : 0);
-        upsert.bindValue(9, t.createdDate.isValid() ? t.createdDate.toUTC().toString(Qt::ISODate) : QVariant());
-        upsert.bindValue(10, t.lastModified.isValid() ? t.lastModified.toUTC().toString(Qt::ISODate) : QVariant());
+        upsert.bindValue(
+            9, t.createdDate.isValid() ? t.createdDate.toUTC().toString(Qt::ISODate) : QVariant());
+        upsert.bindValue(10,
+                         t.lastModified.isValid() ? t.lastModified.toUTC().toString(Qt::ISODate)
+                                                  : QVariant());
         upsert.bindValue(11, t.recurrenceJson.isEmpty() ? QVariant() : t.recurrenceJson);
         upsert.bindValue(12, categoriesToJson(t.categories));
         upsert.bindValue(13, t.hasAttachments ? 1 : 0);
@@ -407,8 +418,9 @@ void Database::upsertChecklistItems(const QString &listId, const QString &taskId
         ins.bindValue(2, listId);
         ins.bindValue(3, c.displayName);
         ins.bindValue(4, c.isChecked ? 1 : 0);
-        ins.bindValue(5, c.createdDateTime.isValid()
-                          ? c.createdDateTime.toUTC().toString(Qt::ISODate) : QVariant());
+        ins.bindValue(5,
+                      c.createdDateTime.isValid() ? c.createdDateTime.toUTC().toString(Qt::ISODate)
+                                                  : QVariant());
         ins.bindValue(6, order++);
         ins.exec();
     }
@@ -420,10 +432,9 @@ QHash<QString, QList<ChecklistItem>> Database::checklistItemsByTask(const QStrin
     QHash<QString, QList<ChecklistItem>> result;
     auto db = QSqlDatabase::database(m_connectionName);
     QSqlQuery q(db);
-    q.prepare(QStringLiteral(
-        "SELECT id, task_id, display_name, is_checked, created_utc "
-        "FROM checklist_items WHERE list_id = ? "
-        "ORDER BY task_id ASC, sort_order ASC"));
+    q.prepare(QStringLiteral("SELECT id, task_id, display_name, is_checked, created_utc "
+                             "FROM checklist_items WHERE list_id = ? "
+                             "ORDER BY task_id ASC, sort_order ASC"));
     q.bindValue(0, listId);
     q.exec();
     while (q.next()) {
@@ -547,9 +558,8 @@ QList<Task> Database::allTasks() const
     QHash<QString, QList<ChecklistItem>> itemsByTask;
     {
         QSqlQuery cq(db);
-        cq.exec(QStringLiteral(
-            "SELECT id, task_id, display_name, is_checked, created_utc "
-            "FROM checklist_items ORDER BY task_id ASC, sort_order ASC"));
+        cq.exec(QStringLiteral("SELECT id, task_id, display_name, is_checked, created_utc "
+                               "FROM checklist_items ORDER BY task_id ASC, sort_order ASC"));
         while (cq.next()) {
             ChecklistItem c;
             c.id = cq.value(0).toString();
@@ -595,10 +605,10 @@ QHash<QString, QList<LinkedResource>> Database::linkedResourcesByTask(const QStr
     QHash<QString, QList<LinkedResource>> result;
     auto db = QSqlDatabase::database(m_connectionName);
     QSqlQuery q(db);
-    q.prepare(QStringLiteral(
-        "SELECT id, task_id, application_name, web_url, display_name, external_id "
-        "FROM linked_resources WHERE list_id = ? "
-        "ORDER BY task_id ASC, sort_order ASC"));
+    q.prepare(
+        QStringLiteral("SELECT id, task_id, application_name, web_url, display_name, external_id "
+                       "FROM linked_resources WHERE list_id = ? "
+                       "ORDER BY task_id ASC, sort_order ASC"));
     q.bindValue(0, listId);
     q.exec();
     while (q.next()) {
@@ -626,10 +636,10 @@ void Database::upsertLinkedResources(const QString &listId, const QString &taskI
     del.exec();
 
     QSqlQuery ins(db);
-    ins.prepare(QStringLiteral(
-        "INSERT INTO linked_resources(id, task_id, list_id, application_name, "
-        "web_url, display_name, external_id, sort_order) "
-        "VALUES(?, ?, ?, ?, ?, ?, ?, ?)"));
+    ins.prepare(
+        QStringLiteral("INSERT INTO linked_resources(id, task_id, list_id, application_name, "
+                       "web_url, display_name, external_id, sort_order) "
+                       "VALUES(?, ?, ?, ?, ?, ?, ?, ?)"));
     int order = 0;
     for (const auto &r : items) {
         ins.bindValue(0, r.id);
@@ -650,8 +660,8 @@ int Database::openTaskCountForToday() const
     auto db = QSqlDatabase::database(m_connectionName);
     const QDateTime endOfToday = QDateTime(QDate::currentDate(), QTime(23, 59, 59), QTimeZone::UTC);
     QSqlQuery q(db);
-    q.prepare(QStringLiteral(
-        "SELECT COUNT(*) FROM tasks WHERE status != 'completed' AND due_utc IS NOT NULL AND due_utc <= ?"));
+    q.prepare(QStringLiteral("SELECT COUNT(*) FROM tasks WHERE status != 'completed' AND due_utc "
+                             "IS NOT NULL AND due_utc <= ?"));
     q.bindValue(0, endOfToday.toString(Qt::ISODate));
     q.exec();
     if (q.next()) return q.value(0).toInt();

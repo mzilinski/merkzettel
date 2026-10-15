@@ -17,8 +17,8 @@ namespace Merkzettel {
 
 namespace {
 constexpr auto kGraphBase = "https://graph.microsoft.com/v1.0";
-constexpr int kMaxConcurrent = 4;       // Outlook/To Do per-mailbox concurrency
-constexpr int kMaxThrottleRetries = 5;  // then surface the 429 as an error
+constexpr int kMaxConcurrent = 4;      // Outlook/To Do per-mailbox concurrency
+constexpr int kMaxThrottleRetries = 5; // then surface the 429 as an error
 
 // "HTTP <status>[: <Graph error message>]" — callers match on the prefix.
 QString errorMessage(int status, const QByteArray &data, QNetworkReply *reply)
@@ -38,10 +38,12 @@ QString errorMessage(int status, const QByteArray &data, QNetworkReply *reply)
     }
     return errMsg;
 }
-}
+} // namespace
 
 GraphClient::GraphClient(AuthManager *auth, QObject *parent)
-    : QObject(parent), m_auth(auth), m_nam(new QNetworkAccessManager(this))
+    : QObject(parent)
+    , m_auth(auth)
+    , m_nam(new QNetworkAccessManager(this))
     , m_baseUrl(QString::fromLatin1(kGraphBase))
 {
 }
@@ -84,23 +86,22 @@ void GraphClient::send(Method method, const QString &path, const QUrlQuery &quer
     sendUrl(method, url(path, query), body, std::move(cb), retries);
 }
 
-void GraphClient::sendUrl(Method method, const QUrl &url, const QJsonObject &body,
-                          GraphCallback cb, int retries, int throttleAttempt)
+void GraphClient::sendUrl(Method method, const QUrl &url, const QJsonObject &body, GraphCallback cb,
+                          int retries, int throttleAttempt)
 {
-    const QByteArray payload = body.isEmpty() ? QByteArray()
-                                              : QJsonDocument(body).toJson(QJsonDocument::Compact);
+    const QByteArray payload
+        = body.isEmpty() ? QByteArray() : QJsonDocument(body).toJson(QJsonDocument::Compact);
     dispatch([this, method, url, payload]() -> QNetworkReply * {
         // Built when the job starts so a token refreshed while it was queued
         // is picked up.
         QNetworkRequest req(url);
-        req.setRawHeader("Authorization",
-                         QByteArray("Bearer ") + m_auth->accessToken().toUtf8());
+        req.setRawHeader("Authorization", QByteArray("Bearer ") + m_auth->accessToken().toUtf8());
         req.setHeader(QNetworkRequest::ContentTypeHeader, QByteArrayLiteral("application/json"));
         req.setRawHeader("Accept", "application/json");
         switch (method) {
-        case Method::Get:    return m_nam->get(req);
-        case Method::Post:   return m_nam->post(req, payload);
-        case Method::Patch:  return m_nam->sendCustomRequest(req, "PATCH", payload);
+        case Method::Get: return m_nam->get(req);
+        case Method::Post: return m_nam->post(req, payload);
+        case Method::Patch: return m_nam->sendCustomRequest(req, "PATCH", payload);
         case Method::Delete: return m_nam->deleteResource(req);
         }
         return nullptr;
@@ -179,16 +180,16 @@ bool GraphClient::retryIfThrottled(QNetworkReply *reply, int throttleAttempt,
     return true;
 }
 
-void GraphClient::handleReply(QNetworkReply *reply, GraphCallback cb,
-                              Method method, const QUrl &url,
-                              const QJsonObject &body, int retries, int throttleAttempt)
+void GraphClient::handleReply(QNetworkReply *reply, GraphCallback cb, Method method,
+                              const QUrl &url, const QJsonObject &body, int retries,
+                              int throttleAttempt)
 {
     reply->deleteLater();
 
-    if (retryIfThrottled(reply, throttleAttempt, [this, method, url, body, cb, retries,
-                                                   throttleAttempt] {
-            sendUrl(method, url, body, cb, retries, throttleAttempt + 1);
-        })) {
+    if (retryIfThrottled(reply, throttleAttempt,
+                         [this, method, url, body, cb, retries, throttleAttempt] {
+        sendUrl(method, url, body, cb, retries, throttleAttempt + 1);
+    })) {
         return;
     }
 
@@ -223,14 +224,13 @@ void GraphClient::getBytes(const QString &path, GraphBytesCallback cb, int retri
 {
     dispatch([this, path]() -> QNetworkReply * {
         QNetworkRequest req(url(path));
-        req.setRawHeader("Authorization",
-                         QByteArray("Bearer ") + m_auth->accessToken().toUtf8());
+        req.setRawHeader("Authorization", QByteArray("Bearer ") + m_auth->accessToken().toUtf8());
         return m_nam->get(req);
     }, [this, path, cb, retries, throttleAttempt](QNetworkReply *reply) {
         reply->deleteLater();
         if (retryIfThrottled(reply, throttleAttempt, [this, path, cb, retries, throttleAttempt] {
-                getBytes(path, cb, retries, throttleAttempt + 1);
-            })) {
+            getBytes(path, cb, retries, throttleAttempt + 1);
+        })) {
             return;
         }
         const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -249,26 +249,26 @@ void GraphClient::getBytes(const QString &path, GraphBytesCallback cb, int retri
     });
 }
 
-void GraphClient::putUploadChunk(const QUrl &uploadUrl, const QByteArray &chunk,
-                                 qint64 offset, qint64 totalSize, GraphCallback cb,
-                                 int throttleAttempt)
+void GraphClient::putUploadChunk(const QUrl &uploadUrl, const QByteArray &chunk, qint64 offset,
+                                 qint64 totalSize, GraphCallback cb, int throttleAttempt)
 {
     dispatch([this, uploadUrl, chunk, offset, totalSize]() -> QNetworkReply * {
         QNetworkRequest req(uploadUrl);
         req.setHeader(QNetworkRequest::ContentTypeHeader,
                       QByteArrayLiteral("application/octet-stream"));
-        req.setRawHeader("Content-Range", QStringLiteral("bytes %1-%2/%3")
-                                              .arg(offset)
-                                              .arg(offset + chunk.size() - 1)
-                                              .arg(totalSize)
-                                              .toLatin1());
+        req.setRawHeader("Content-Range",
+                         QStringLiteral("bytes %1-%2/%3")
+                             .arg(offset)
+                             .arg(offset + chunk.size() - 1)
+                             .arg(totalSize)
+                             .toLatin1());
         return m_nam->put(req, chunk);
     }, [this, uploadUrl, chunk, offset, totalSize, cb, throttleAttempt](QNetworkReply *reply) {
         reply->deleteLater();
         if (retryIfThrottled(reply, throttleAttempt,
                              [this, uploadUrl, chunk, offset, totalSize, cb, throttleAttempt] {
-                putUploadChunk(uploadUrl, chunk, offset, totalSize, cb, throttleAttempt + 1);
-            })) {
+            putUploadChunk(uploadUrl, chunk, offset, totalSize, cb, throttleAttempt + 1);
+        })) {
             return;
         }
         const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();

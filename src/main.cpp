@@ -56,8 +56,8 @@ void migrateLegacyLocations()
         {QStandardPaths::GenericCacheLocation, QStandardPaths::CacheLocation},
     };
     for (const auto &d : dirs) {
-        const QString legacy = QStandardPaths::writableLocation(d.generic)
-                             + QStringLiteral("/KDE/merkzettel");
+        const QString legacy
+            = QStandardPaths::writableLocation(d.generic) + QStringLiteral("/KDE/merkzettel");
         const QString current = QStandardPaths::writableLocation(d.app);
         if (QFileInfo::exists(legacy) && !QFileInfo::exists(current)) {
             QDir().mkpath(QFileInfo(current).absolutePath());
@@ -65,8 +65,9 @@ void migrateLegacyLocations()
         }
     }
 
-    const QString legacyConf = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
-                             + QStringLiteral("/KDE/merkzettel.conf");
+    const QString legacyConf
+        = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
+        + QStringLiteral("/KDE/merkzettel.conf");
     if (QFileInfo::exists(legacyConf)) {
         QSettings legacy(legacyConf, QSettings::IniFormat);
         if (legacy.value(QStringLiteral("Share/explainerSeen")).toBool()) {
@@ -98,14 +99,11 @@ int main(int argc, char *argv[])
     KLocalizedString::setApplicationDomain("merkzettel");
 #ifdef MERKZETTEL_BUILD_LOCALE_DIR
     // Pick up translations from the build dir when running uninstalled.
-    KLocalizedString::addDomainLocaleDir("merkzettel",
-                                         QStringLiteral(MERKZETTEL_BUILD_LOCALE_DIR));
+    KLocalizedString::addDomainLocaleDir("merkzettel", QStringLiteral(MERKZETTEL_BUILD_LOCALE_DIR));
 #endif
 
-    KAboutData about(QStringLiteral("merkzettel"),
-                     i18n("Merkzettel"),
-                     QStringLiteral(MERKZETTEL_VERSION),
-                     i18n("Microsoft To Do client for KDE"),
+    KAboutData about(QStringLiteral("merkzettel"), i18n("Merkzettel"),
+                     QStringLiteral(MERKZETTEL_VERSION), i18n("Microsoft To Do client for KDE"),
                      KAboutLicense::GPL_V3);
     about.setLicense(KAboutLicense::GPL_V3, KAboutLicense::OrLaterVersions);
     about.setCopyrightStatement(QStringLiteral("© 2026 Malte Zilinski"));
@@ -119,12 +117,10 @@ int main(int argc, char *argv[])
 
     QCommandLineParser parser;
     about.setupCommandLine(&parser);
-    QCommandLineOption trayOption(
-        {QStringLiteral("t"), QStringLiteral("tray")},
-        i18n("Start hidden in the system tray"));
+    QCommandLineOption trayOption({QStringLiteral("t"), QStringLiteral("tray")},
+                                  i18n("Start hidden in the system tray"));
     QCommandLineOption demoOption(
-        QStringLiteral("demo"),
-        i18n("Run with built-in demo data, no sign-in or network access"));
+        QStringLiteral("demo"), i18n("Run with built-in demo data, no sign-in or network access"));
     parser.addOption(trayOption);
     parser.addOption(demoOption);
     parser.process(app);
@@ -140,10 +136,9 @@ int main(int argc, char *argv[])
     controller.setStartMinimized(parser.isSet(trayOption));
     controller.setDemoMode(parser.isSet(demoOption));
 
-    QObject::connect(&service, &KDBusService::activateRequested,
-                     &controller, [&controller](const QStringList &, const QString &) {
-                         controller.activateWindow();
-                     });
+    QObject::connect(
+        &service, &KDBusService::activateRequested, &controller,
+        [&controller](const QStringList &, const QString &) { controller.activateWindow(); });
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));

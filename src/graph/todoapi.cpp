@@ -30,8 +30,10 @@ QDateTime parseGraphDateTime(const QJsonObject &obj)
             parsed.setTimeZone(QTimeZone::UTC);
         } else {
             QTimeZone zone(tz.toUtf8());
-            if (zone.isValid()) parsed.setTimeZone(zone);
-            else parsed.setTimeZone(QTimeZone::UTC);
+            if (zone.isValid())
+                parsed.setTimeZone(zone);
+            else
+                parsed.setTimeZone(QTimeZone::UTC);
         }
     }
     return parsed.toUTC();
@@ -40,7 +42,8 @@ QDateTime parseGraphDateTime(const QJsonObject &obj)
 QJsonObject toGraphDateTime(const QDateTime &dt)
 {
     return {
-        {QStringLiteral("dateTime"), dt.toUTC().toString(QStringLiteral("yyyy-MM-ddTHH:mm:ss.000000"))},
+        {QStringLiteral("dateTime"),
+         dt.toUTC().toString(QStringLiteral("yyyy-MM-ddTHH:mm:ss.000000"))},
         {QStringLiteral("timeZone"), QStringLiteral("UTC")},
     };
 }
@@ -76,8 +79,8 @@ Task parseTask(const QJsonObject &obj)
     t.title = obj.value(QStringLiteral("title")).toString();
     t.status = obj.value(QStringLiteral("status")).toString();
     t.importance = obj.value(QStringLiteral("importance")).toString();
-    t.body = obj.value(QStringLiteral("body")).toObject()
-                .value(QStringLiteral("content")).toString();
+    t.body
+        = obj.value(QStringLiteral("body")).toObject().value(QStringLiteral("content")).toString();
 
     t.dueDate = parseGraphDateTime(obj.value(QStringLiteral("dueDateTime")).toObject());
     t.reminderDate = parseGraphDateTime(obj.value(QStringLiteral("reminderDateTime")).toObject());
@@ -131,8 +134,8 @@ TaskList parseList(const QJsonObject &obj)
     TaskList l;
     l.id = obj.value(QStringLiteral("id")).toString();
     l.displayName = obj.value(QStringLiteral("displayName")).toString();
-    l.isDefault = obj.value(QStringLiteral("wellknownListName")).toString()
-                  == QLatin1String("defaultList");
+    l.isDefault
+        = obj.value(QStringLiteral("wellknownListName")).toString() == QLatin1String("defaultList");
     l.isShared = obj.value(QStringLiteral("isShared")).toBool();
     return l;
 }
@@ -140,15 +143,20 @@ TaskList parseList(const QJsonObject &obj)
 } // namespace
 
 TodoApi::TodoApi(GraphClient *graph, QObject *parent)
-    : QObject(parent), m_graph(graph) {}
+    : QObject(parent)
+    , m_graph(graph)
+{
+}
 
-void TodoApi::fetchAllPages(const QUrl &url,
-                            std::function<void(const QJsonObject &)> pageDone,
+void TodoApi::fetchAllPages(const QUrl &url, std::function<void(const QJsonObject &)> pageDone,
                             std::function<void(const QJsonObject &, const QString &)> finished)
 {
     m_graph->getAbsolute(url.toString(QUrl::FullyEncoded),
                          [this, pageDone, finished](const QJsonValue &val, const QString &err) {
-        if (!err.isEmpty()) { finished({}, err); return; }
+        if (!err.isEmpty()) {
+            finished({}, err);
+            return;
+        }
         const QJsonObject page = val.toObject();
         pageDone(page);
         const QString next = page.value(QStringLiteral("@odata.nextLink")).toString();
@@ -163,12 +171,14 @@ void TodoApi::fetchAllPages(const QUrl &url,
 void TodoApi::fetchLists()
 {
     auto lists = std::make_shared<QList<TaskList>>();
-    fetchAllPages(m_graph->url(QStringLiteral("/me/todo/lists")),
-                  [lists](const QJsonObject &page) {
+    fetchAllPages(m_graph->url(QStringLiteral("/me/todo/lists")), [lists](const QJsonObject &page) {
         for (const auto &v : page.value(QStringLiteral("value")).toArray())
             lists->append(parseList(v.toObject()));
     }, [this, lists](const QJsonObject &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT listsReceived(*lists);
     });
 }
@@ -180,8 +190,7 @@ void TodoApi::fetchTasks(const QString &listId)
     q.addQueryItem(QStringLiteral("$orderby"), QStringLiteral("createdDateTime desc"));
     // $expand keeps subtasks in the same roundtrip. Worst case is 200 tasks * 20
     // checklist items = 4000 sub-objects per page, which is acceptable.
-    q.addQueryItem(QStringLiteral("$expand"),
-                   QStringLiteral("checklistItems,linkedResources"));
+    q.addQueryItem(QStringLiteral("$expand"), QStringLiteral("checklistItems,linkedResources"));
 
     // All pages must be collected before emitting: the cache replaces the
     // whole list with what it receives, so a partial result would drop tasks.
@@ -194,7 +203,10 @@ void TodoApi::fetchTasks(const QString &listId)
             tasks->append(std::move(t));
         }
     }, [this, tasks, listId](const QJsonObject &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT tasksReceived(listId, *tasks);
     });
 }
@@ -212,7 +224,10 @@ void TodoApi::addTask(const QString &listId, const QString &title, const QDateTi
     }
     m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks").arg(listId), body,
                   [this, listId, onCreated](const QJsonValue &created, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         if (onCreated) onCreated(created.toObject().value(QStringLiteral("id")).toString());
         Q_EMIT taskMutated(listId);
     });
@@ -223,7 +238,8 @@ void TodoApi::setTaskStatus(const QString &listId, const QString &taskId, const 
     updateTask(listId, taskId, {{QStringLiteral("status"), status}});
 }
 
-void TodoApi::setTaskImportance(const QString &listId, const QString &taskId, const QString &importance)
+void TodoApi::setTaskImportance(const QString &listId, const QString &taskId,
+                                const QString &importance)
 {
     updateTask(listId, taskId, {{QStringLiteral("importance"), importance}});
 }
@@ -259,7 +275,7 @@ void TodoApi::setTaskTitle(const QString &listId, const QString &taskId, const Q
 
 void TodoApi::setTaskBody(const QString &listId, const QString &taskId, const QString &body)
 {
-    QJsonObject bodyObj{
+    QJsonObject bodyObj {
         {QStringLiteral("contentType"), QStringLiteral("text")},
         {QStringLiteral("content"), body},
     };
@@ -269,9 +285,10 @@ void TodoApi::setTaskBody(const QString &listId, const QString &taskId, const QS
 void TodoApi::setTaskCategories(const QString &listId, const QString &taskId,
                                 const QStringList &categories)
 {
-    updateTask(listId, taskId, QJsonObject{
-        {QStringLiteral("categories"), QJsonArray::fromStringList(categories)},
-    });
+    updateTask(listId, taskId,
+               QJsonObject {
+                   {QStringLiteral("categories"), QJsonArray::fromStringList(categories)},
+               });
 }
 
 void TodoApi::setTaskRecurrence(const QString &listId, const QString &taskId,
@@ -288,8 +305,7 @@ void TodoApi::setTaskRecurrence(const QString &listId, const QString &taskId,
         QJsonObject rec = recurrence;
         QJsonObject range = rec.value(QStringLiteral("range")).toObject();
         if (!range.contains(QStringLiteral("startDate"))) {
-            range.insert(QStringLiteral("startDate"),
-                         QDate::currentDate().toString(Qt::ISODate));
+            range.insert(QStringLiteral("startDate"), QDate::currentDate().toString(Qt::ISODate));
         }
         if (!range.contains(QStringLiteral("recurrenceTimeZone"))) {
             range.insert(QStringLiteral("recurrenceTimeZone"), QStringLiteral("UTC"));
@@ -304,7 +320,10 @@ void TodoApi::updateTask(const QString &listId, const QString &taskId, const QJs
 {
     m_graph->patch(QStringLiteral("/me/todo/lists/%1/tasks/%2").arg(listId, taskId), patch,
                    [this, listId](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT taskMutated(listId);
     });
 }
@@ -313,7 +332,10 @@ void TodoApi::deleteTask(const QString &listId, const QString &taskId)
 {
     m_graph->del(QStringLiteral("/me/todo/lists/%1/tasks/%2").arg(listId, taskId),
                  [this, listId](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT taskMutated(listId);
     });
 }
@@ -324,7 +346,10 @@ void TodoApi::createList(const QString &displayName)
     body.insert(QStringLiteral("displayName"), displayName);
     m_graph->post(QStringLiteral("/me/todo/lists"), body,
                   [this](const QJsonValue &val, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         // Emit listCreated first so the App can preselect the new list,
         // then listMutated to trigger a refresh.
         const QString newId = val.toObject().value(QStringLiteral("id")).toString();
@@ -337,7 +362,10 @@ void TodoApi::deleteList(const QString &listId)
 {
     m_graph->del(QStringLiteral("/me/todo/lists/%1").arg(listId),
                  [this](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT listMutated();
     });
 }
@@ -348,7 +376,10 @@ void TodoApi::renameList(const QString &listId, const QString &newName)
     body.insert(QStringLiteral("displayName"), newName);
     m_graph->patch(QStringLiteral("/me/todo/lists/%1").arg(listId), body,
                    [this](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT listMutated();
     });
 }
@@ -398,18 +429,24 @@ void TodoApi::bootstrapDeltaLink(const QString &listId)
     q.addQueryItem(QStringLiteral("$deltatoken"), QStringLiteral("latest"));
     m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/delta").arg(listId), q,
                  [this, listId](const QJsonValue &val, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
-        const QString newDeltaLink = val.toObject()
-            .value(QStringLiteral("@odata.deltaLink")).toString();
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
+        const QString newDeltaLink
+            = val.toObject().value(QStringLiteral("@odata.deltaLink")).toString();
         Q_EMIT tasksDelta(listId, {}, {}, newDeltaLink);
     });
 }
 
 void TodoApi::fetchChecklistItems(const QString &listId, const QString &taskId)
 {
-    m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems").arg(listId, taskId), {},
-                 [this, listId, taskId](const QJsonValue &val, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+    m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems").arg(listId, taskId),
+                 {}, [this, listId, taskId](const QJsonValue &val, const QString &err) {
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         QList<ChecklistItem> items;
         for (const auto &v : val.toObject().value(QStringLiteral("value")).toArray()) {
             items.append(parseChecklistItem(v.toObject()));
@@ -418,26 +455,34 @@ void TodoApi::fetchChecklistItems(const QString &listId, const QString &taskId)
     });
 }
 
-void TodoApi::moveTask(const QString &srcListId, const QString &taskId,
-                       const QString &dstListId)
+void TodoApi::moveTask(const QString &srcListId, const QString &taskId, const QString &dstListId)
 {
     QUrlQuery q;
     q.addQueryItem(QStringLiteral("$expand"), QStringLiteral("checklistItems,linkedResources"));
     const QString srcPath = QStringLiteral("/me/todo/lists/%1/tasks/%2").arg(srcListId, taskId);
-    m_graph->get(srcPath, q, [this, srcListId, taskId, dstListId, srcPath](const QJsonValue &v,
-                                                                          const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT taskMoveFailed(srcListId, taskId, err); return; }
+    m_graph->get(
+        srcPath, q,
+        [this, srcListId, taskId, dstListId, srcPath](const QJsonValue &v, const QString &err) {
+        if (!err.isEmpty()) {
+            Q_EMIT taskMoveFailed(srcListId, taskId, err);
+            return;
+        }
         const QJsonObject src = v.toObject();
 
         // Whitelist of writable fields; everything else (ids, timestamps,
         // etags, hasAttachments) is server-owned. completedDateTime is left to
         // the server, which stamps it from status=completed.
         static const QStringList kCopied = {
-            QStringLiteral("title"), QStringLiteral("body"), QStringLiteral("importance"),
-            QStringLiteral("status"), QStringLiteral("dueDateTime"),
+            QStringLiteral("title"),
+            QStringLiteral("body"),
+            QStringLiteral("importance"),
+            QStringLiteral("status"),
+            QStringLiteral("dueDateTime"),
             QStringLiteral("startDateTime"),
-            QStringLiteral("reminderDateTime"), QStringLiteral("isReminderOn"),
-            QStringLiteral("recurrence"), QStringLiteral("categories"),
+            QStringLiteral("reminderDateTime"),
+            QStringLiteral("isReminderOn"),
+            QStringLiteral("recurrence"),
+            QStringLiteral("categories"),
         };
         QJsonObject body;
         for (const QString &key : kCopied) {
@@ -450,8 +495,10 @@ void TodoApi::moveTask(const QString &srcListId, const QString &taskId,
         using Done = std::function<void(const QString &)>;
         using Step = std::function<void(const QString &dstTaskId, Done)>;
         auto steps = std::make_shared<QList<Step>>();
-        const auto postTo = [this, dstListId](const QString &collection, const QJsonObject &payload) {
-            return Step([this, dstListId, collection, payload](const QString &dstTaskId, Done done) {
+        const auto postTo
+            = [this, dstListId](const QString &collection, const QJsonObject &payload) {
+            return Step(
+                [this, dstListId, collection, payload](const QString &dstTaskId, Done done) {
                 m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks/%2/%3")
                                   .arg(dstListId, dstTaskId, collection),
                               payload, [done](const QJsonValue &, const QString &e) { done(e); });
@@ -459,34 +506,41 @@ void TodoApi::moveTask(const QString &srcListId, const QString &taskId,
         };
         for (const auto &c : src.value(QStringLiteral("checklistItems")).toArray()) {
             const auto o = c.toObject();
-            steps->append(postTo(QStringLiteral("checklistItems"), QJsonObject{
-                {QStringLiteral("displayName"), o.value(QStringLiteral("displayName"))},
-                {QStringLiteral("isChecked"), o.value(QStringLiteral("isChecked"))},
-            }));
+            steps->append(
+                postTo(QStringLiteral("checklistItems"),
+                       QJsonObject {
+                           {QStringLiteral("displayName"), o.value(QStringLiteral("displayName"))},
+                           {QStringLiteral("isChecked"), o.value(QStringLiteral("isChecked"))},
+                       }));
         }
         for (const auto &r : src.value(QStringLiteral("linkedResources")).toArray()) {
             const QJsonObject o = r.toObject();
             QJsonObject copy;
             for (const char *key : {"webUrl", "applicationName", "displayName", "externalId"}) {
                 const QJsonValue val = o.value(QLatin1String(key));
-                if (val.isString() && !val.toString().isEmpty()) copy.insert(QLatin1String(key), val);
+                if (val.isString() && !val.toString().isEmpty())
+                    copy.insert(QLatin1String(key), val);
             }
             steps->append(postTo(QStringLiteral("linkedResources"), copy));
         }
 
         const auto run = [this, srcListId, taskId, dstListId, srcPath, body, steps] {
             m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks").arg(dstListId), body,
-                          [this, srcListId, taskId, dstListId, srcPath, steps](const QJsonValue &created,
-                                                                              const QString &err) {
-                if (!err.isEmpty()) { Q_EMIT taskMoveFailed(srcListId, taskId, err); return; }
+                          [this, srcListId, taskId, dstListId, srcPath,
+                           steps](const QJsonValue &created, const QString &err) {
+                if (!err.isEmpty()) {
+                    Q_EMIT taskMoveFailed(srcListId, taskId, err);
+                    return;
+                }
                 const QString newId = created.toObject().value(QStringLiteral("id")).toString();
 
                 auto next = std::make_shared<std::function<void()>>();
                 *next = [this, srcListId, taskId, dstListId, srcPath, newId, steps, next] {
                     if (steps->isEmpty()) {
-                        *next = nullptr;  // break the self-reference
-                        m_graph->del(srcPath, [this, srcListId, taskId, dstListId, newId](
-                                                  const QJsonValue &, const QString &err) {
+                        *next = nullptr; // break the self-reference
+                        m_graph->del(srcPath,
+                                     [this, srcListId, taskId, dstListId,
+                                      newId](const QJsonValue &, const QString &err) {
                             if (!err.isEmpty()) {
                                 // Copy exists, original still there: report it
                                 // so the caller refreshes both lists.
@@ -521,19 +575,25 @@ void TodoApi::moveTask(const QString &srcListId, const QString &taskId,
         // as part of the copy steps.
         m_graph->get(srcPath + QStringLiteral("/attachments"), {},
                      [this, srcListId, taskId, dstListId, srcPath, steps, run](const QJsonValue &v,
-                                                                             const QString &err) {
-            if (!err.isEmpty()) { Q_EMIT taskMoveFailed(srcListId, taskId, err); return; }
+                                                                               const QString &err) {
+            if (!err.isEmpty()) {
+                Q_EMIT taskMoveFailed(srcListId, taskId, err);
+                return;
+            }
             for (const auto &a : v.toObject().value(QStringLiteral("value")).toArray()) {
                 const QJsonObject o = a.toObject();
                 const QString id = o.value(QStringLiteral("id")).toString();
                 const QString name = o.value(QStringLiteral("name")).toString();
                 const QString type = o.value(QStringLiteral("contentType")).toString();
                 steps->append([this, srcPath, dstListId, id, name, type](const QString &dstTaskId,
-                                                                        Done done) {
+                                                                         Done done) {
                     m_graph->getBytes(srcPath + QStringLiteral("/attachments/%1/$value").arg(id),
-                                      [this, dstListId, dstTaskId, name, type, done](
-                                          const QByteArray &data, const QString &e) {
-                        if (!e.isEmpty()) { done(e); return; }
+                                      [this, dstListId, dstTaskId, name, type,
+                                       done](const QByteArray &data, const QString &e) {
+                        if (!e.isEmpty()) {
+                            done(e);
+                            return;
+                        }
                         uploadAttachmentImpl(dstListId, dstTaskId, name, type, data, done);
                     });
                 });
@@ -564,7 +624,10 @@ void TodoApi::fetchAttachments(const QString &listId, const QString &taskId)
 {
     m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/%2/attachments").arg(listId, taskId), {},
                  [this, listId, taskId](const QJsonValue &v, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT attachmentsReceived(listId, taskId, parseAttachments(v));
     });
 }
@@ -574,7 +637,10 @@ void TodoApi::uploadAttachment(const QString &listId, const QString &taskId, con
 {
     uploadAttachmentImpl(listId, taskId, name, contentType, data,
                          [this, listId, taskId](const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT attachmentMutated(listId, taskId);
     });
 }
@@ -588,14 +654,15 @@ void TodoApi::uploadAttachmentImpl(const QString &listId, const QString &taskId,
         done(i18n("\"%1\" is larger than 25 MB, the Microsoft To Do limit.", name));
         return;
     }
-    const QString base = QStringLiteral("/me/todo/lists/%1/tasks/%2/attachments").arg(listId, taskId);
-    const QString type = contentType.isEmpty() ? QStringLiteral("application/octet-stream")
-                                               : contentType;
+    const QString base
+        = QStringLiteral("/me/todo/lists/%1/tasks/%2/attachments").arg(listId, taskId);
+    const QString type
+        = contentType.isEmpty() ? QStringLiteral("application/octet-stream") : contentType;
 
     // Small files go inline as base64 (Graph's limit for this is 3 MB).
     constexpr qint64 kInlineLimit = 3 * 1024 * 1024;
     if (data.size() < kInlineLimit) {
-        const QJsonObject body{
+        const QJsonObject body {
             {QStringLiteral("@odata.type"), QStringLiteral("#microsoft.graph.taskFileAttachment")},
             {QStringLiteral("name"), name},
             {QStringLiteral("contentType"), type},
@@ -605,16 +672,20 @@ void TodoApi::uploadAttachmentImpl(const QString &listId, const QString &taskId,
         return;
     }
 
-    const QJsonObject session{
-        {QStringLiteral("attachmentInfo"), QJsonObject{
-            {QStringLiteral("attachmentType"), QStringLiteral("file")},
-            {QStringLiteral("name"), name},
-            {QStringLiteral("size"), data.size()},
-        }},
+    const QJsonObject session {
+        {QStringLiteral("attachmentInfo"),
+         QJsonObject {
+             {QStringLiteral("attachmentType"), QStringLiteral("file")},
+             {QStringLiteral("name"), name},
+             {QStringLiteral("size"), data.size()},
+         }},
     };
     m_graph->post(base + QStringLiteral("/createUploadSession"), session,
                   [this, data, done](const QJsonValue &v, const QString &err) {
-        if (!err.isEmpty()) { done(err); return; }
+        if (!err.isEmpty()) {
+            done(err);
+            return;
+        }
         const QUrl uploadUrl(v.toObject().value(QStringLiteral("uploadUrl")).toString());
         // Chunks must be multiples of 320 KiB (Graph upload-session rule).
         constexpr qint64 kChunk = 10 * 320 * 1024;
@@ -652,7 +723,10 @@ void TodoApi::deleteAttachment(const QString &listId, const QString &taskId,
     m_graph->del(QStringLiteral("/me/todo/lists/%1/tasks/%2/attachments/%3")
                      .arg(listId, taskId, attachmentId),
                  [this, listId, taskId](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT attachmentMutated(listId, taskId);
     });
 }
@@ -663,9 +737,12 @@ void TodoApi::addChecklistItem(const QString &listId, const QString &taskId,
     QJsonObject body;
     body.insert(QStringLiteral("displayName"), displayName);
     body.insert(QStringLiteral("isChecked"), false);
-    m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems").arg(listId, taskId), body,
-                  [this, listId, taskId](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+    m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems").arg(listId, taskId),
+                  body, [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT checklistItemMutated(listId, taskId);
     });
 }
@@ -675,10 +752,13 @@ void TodoApi::setChecklistItemChecked(const QString &listId, const QString &task
 {
     QJsonObject patch;
     patch.insert(QStringLiteral("isChecked"), checked);
-    m_graph->patch(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems/%3")
-                       .arg(listId, taskId, itemId), patch,
-                   [this, listId, taskId](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+    m_graph->patch(
+        QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems/%3").arg(listId, taskId, itemId),
+        patch, [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT checklistItemMutated(listId, taskId);
     });
 }
@@ -688,10 +768,13 @@ void TodoApi::renameChecklistItem(const QString &listId, const QString &taskId,
 {
     QJsonObject patch;
     patch.insert(QStringLiteral("displayName"), displayName);
-    m_graph->patch(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems/%3")
-                       .arg(listId, taskId, itemId), patch,
-                   [this, listId, taskId](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+    m_graph->patch(
+        QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems/%3").arg(listId, taskId, itemId),
+        patch, [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT checklistItemMutated(listId, taskId);
     });
 }
@@ -699,19 +782,25 @@ void TodoApi::renameChecklistItem(const QString &listId, const QString &taskId,
 void TodoApi::deleteChecklistItem(const QString &listId, const QString &taskId,
                                   const QString &itemId)
 {
-    m_graph->del(QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems/%3")
-                     .arg(listId, taskId, itemId),
-                 [this, listId, taskId](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+    m_graph->del(
+        QStringLiteral("/me/todo/lists/%1/tasks/%2/checklistItems/%3").arg(listId, taskId, itemId),
+        [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT checklistItemMutated(listId, taskId);
     });
 }
 
 void TodoApi::fetchLinkedResources(const QString &listId, const QString &taskId)
 {
-    m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/%2/linkedResources").arg(listId, taskId), {},
-                 [this, listId, taskId](const QJsonValue &val, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+    m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/%2/linkedResources").arg(listId, taskId),
+                 {}, [this, listId, taskId](const QJsonValue &val, const QString &err) {
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         QList<LinkedResource> items;
         for (const auto &v : val.toObject().value(QStringLiteral("value")).toArray()) {
             items.append(parseLinkedResource(v.toObject()));
@@ -721,8 +810,7 @@ void TodoApi::fetchLinkedResources(const QString &listId, const QString &taskId)
 }
 
 void TodoApi::addLinkedResource(const QString &listId, const QString &taskId,
-                                const QString &applicationName,
-                                const QString &webUrl,
+                                const QString &applicationName, const QString &webUrl,
                                 const QString &displayName)
 {
     QJsonObject body;
@@ -730,9 +818,11 @@ void TodoApi::addLinkedResource(const QString &listId, const QString &taskId,
     body.insert(QStringLiteral("webUrl"), webUrl);
     body.insert(QStringLiteral("displayName"), displayName);
     m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks/%2/linkedResources").arg(listId, taskId),
-                  body,
-                  [this, listId, taskId](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+                  body, [this, listId, taskId](const QJsonValue &, const QString &err) {
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT linkedResourceMutated(listId, taskId);
     });
 }
@@ -743,7 +833,10 @@ void TodoApi::removeLinkedResource(const QString &listId, const QString &taskId,
     m_graph->del(QStringLiteral("/me/todo/lists/%1/tasks/%2/linkedResources/%3")
                      .arg(listId, taskId, resourceId),
                  [this, listId, taskId](const QJsonValue &, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (!err.isEmpty()) {
+            Q_EMIT errorOccurred(err);
+            return;
+        }
         Q_EMIT linkedResourceMutated(listId, taskId);
     });
 }

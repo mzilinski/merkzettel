@@ -7,10 +7,19 @@ using namespace QKeychain;
 
 namespace Merkzettel {
 
-QString TokenStore::serviceName() { return QStringLiteral("merkzettel"); }
-QString TokenStore::keyName() { return QStringLiteral("refresh_token"); }
+QString TokenStore::serviceName()
+{
+    return QStringLiteral("merkzettel");
+}
+QString TokenStore::keyName()
+{
+    return QStringLiteral("refresh_token");
+}
 
-TokenStore::TokenStore(QObject *parent) : QObject(parent) {}
+TokenStore::TokenStore(QObject *parent)
+    : QObject(parent)
+{
+}
 
 void TokenStore::writeRefreshToken(const QString &token)
 {

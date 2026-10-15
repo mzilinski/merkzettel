@@ -12,7 +12,7 @@ class TestDateParser : public QObject
     Q_OBJECT
 
     // Thursday, 15 October 2026
-    const QDate today{2026, 10, 15};
+    const QDate today {2026, 10, 15};
 
 private Q_SLOTS:
     void keywords_data()
@@ -25,7 +25,8 @@ private Q_SLOTS:
         QTest::newRow("heute") << "Buy milk heute" << "Buy milk" << today;
         QTest::newRow("today") << "Buy milk today" << "Buy milk" << today;
         QTest::newRow("morgen") << "Buy milk morgen" << "Buy milk" << today.addDays(1);
-        QTest::newRow("tomorrow, mixed case") << "Buy milk Tomorrow" << "Buy milk" << today.addDays(1);
+        QTest::newRow("tomorrow, mixed case")
+            << "Buy milk Tomorrow" << "Buy milk" << today.addDays(1);
         QTest::newRow("übermorgen") << "Arzt übermorgen" << "Arzt" << today.addDays(2);
         QTest::newRow("uebermorgen") << "Arzt uebermorgen" << "Arzt" << today.addDays(2);
         // Weekdays always resolve to the *next* occurrence, never today.

@@ -18,18 +18,16 @@ TrayIcon::TrayIcon(QObject *parent)
     m_sni->setStatus(KStatusNotifierItem::Active);
     m_sni->setCategory(KStatusNotifierItem::ApplicationStatus);
     m_sni->setStandardActionsEnabled(false);
-    m_sni->setToolTip(QStringLiteral("merkzettel"),
-                      i18n("Merkzettel"),
-                      i18n("Microsoft To Do"));
+    m_sni->setToolTip(QStringLiteral("merkzettel"), i18n("Merkzettel"), i18n("Microsoft To Do"));
 
     auto *menu = new QMenu();
     auto *openAction = menu->addAction(QIcon::fromTheme(QStringLiteral("view-list-details")),
                                        i18n("Show/hide window"));
-    auto *syncAction = menu->addAction(QIcon::fromTheme(QStringLiteral("view-refresh")),
-                                       i18n("Synchronize"));
+    auto *syncAction
+        = menu->addAction(QIcon::fromTheme(QStringLiteral("view-refresh")), i18n("Synchronize"));
     menu->addSeparator();
-    auto *quitAction = menu->addAction(QIcon::fromTheme(QStringLiteral("application-exit")),
-                                       i18n("Quit"));
+    auto *quitAction
+        = menu->addAction(QIcon::fromTheme(QStringLiteral("application-exit")), i18n("Quit"));
 
     connect(openAction, &QAction::triggered, this, &TrayIcon::activated);
     connect(syncAction, &QAction::triggered, this, &TrayIcon::syncRequested);
@@ -37,8 +35,8 @@ TrayIcon::TrayIcon(QObject *parent)
 
     m_sni->setContextMenu(menu);
 
-    connect(m_sni, &KStatusNotifierItem::activateRequested,
-            this, [this](bool, const QPoint &) { Q_EMIT activated(); });
+    connect(m_sni, &KStatusNotifierItem::activateRequested, this,
+            [this](bool, const QPoint &) { Q_EMIT activated(); });
 }
 
 void TrayIcon::show()
@@ -49,14 +47,11 @@ void TrayIcon::show()
 void TrayIcon::setOpenCount(int count)
 {
     if (count > 0) {
-        m_sni->setToolTip(QStringLiteral("merkzettel"),
-                          i18n("Merkzettel"),
+        m_sni->setToolTip(QStringLiteral("merkzettel"), i18n("Merkzettel"),
                           i18np("%1 open task due today", "%1 open tasks due today", count));
         m_sni->setOverlayIconByName(QStringLiteral("emblem-important"));
     } else {
-        m_sni->setToolTip(QStringLiteral("merkzettel"),
-                          i18n("Merkzettel"),
-                          i18n("No tasks due"));
+        m_sni->setToolTip(QStringLiteral("merkzettel"), i18n("Merkzettel"), i18n("No tasks due"));
         m_sni->setOverlayIconByName(QString());
     }
 }

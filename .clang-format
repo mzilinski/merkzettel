@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: CC0-1.0
+---
+Language: Cpp
+BasedOnStyle: WebKit
+Standard: c++17
+ColumnLimit: 100
+IndentWidth: 4
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: false
+  AfterEnum: false
+  AfterControlStatement: Never
+  BeforeElse: false
+  BeforeLambdaBody: false
+  SplitEmptyFunction: true
+NamespaceIndentation: None
+FixNamespaceComments: true
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortBlocksOnASingleLine: Empty
+AllowShortLambdasOnASingleLine: All
+AllowShortCaseLabelsOnASingleLine: true
+AlignAfterOpenBracket: Align
+AlignTrailingComments: true
+AlignConsecutiveAssignments: None
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+PointerAlignment: Right
+SpaceAfterTemplateKeyword: false
+SortIncludes: Never
+IncludeBlocks: Preserve
+Cpp11BracedListStyle: true
+ReflowComments: false
+LambdaBodyIndentation: OuterScope
+...

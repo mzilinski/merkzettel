@@ -19,15 +19,13 @@ namespace Merkzettel {
 namespace {
 constexpr auto kAuthority = "https://login.microsoftonline.com";
 constexpr auto kRedirectPath = "/callback";
-constexpr quint16 kCallbackPort = 53682;  // must match Azure App Registration redirect URI
+constexpr quint16 kCallbackPort = 53682; // must match Azure App Registration redirect URI
 
 QSet<QByteArray> defaultScopes()
 {
     return {
-        QByteArrayLiteral("openid"),
-        QByteArrayLiteral("profile"),
-        QByteArrayLiteral("Tasks.ReadWrite"),
-        QByteArrayLiteral("User.Read"),
+        QByteArrayLiteral("openid"),          QByteArrayLiteral("profile"),
+        QByteArrayLiteral("Tasks.ReadWrite"), QByteArrayLiteral("User.Read"),
         QByteArrayLiteral("offline_access"),
     };
 }
@@ -47,12 +45,9 @@ AuthManager::AuthManager(QObject *parent)
         Q_EMIT sessionRestored();
         requestFreshToken();
     });
-    connect(m_store, &TokenStore::tokenMissing, this, [this] {
-        Q_EMIT loggedOut();
-    });
-    connect(m_store, &TokenStore::error, this, [this](const QString &msg) {
-        Q_EMIT authError(msg);
-    });
+    connect(m_store, &TokenStore::tokenMissing, this, [this] { Q_EMIT loggedOut(); });
+    connect(m_store, &TokenStore::error, this,
+            [this](const QString &msg) { Q_EMIT authError(msg); });
 }
 
 AuthManager::~AuthManager() = default;
@@ -72,23 +67,25 @@ void AuthManager::configureFlow()
     // Qt 6.5+ adds PKCE (S256) automatically. Only push the prompt parameter ourselves.
     m_flow->setModifyParametersFunction(
         [](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant> *params) {
-            if (stage == QAbstractOAuth::Stage::RequestingAuthorization) {
-                params->insert(QStringLiteral("prompt"), QStringLiteral("select_account"));
-            }
-        });
+        if (stage == QAbstractOAuth::Stage::RequestingAuthorization) {
+            params->insert(QStringLiteral("prompt"), QStringLiteral("select_account"));
+        }
+    });
 
-    connect(m_flow, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
-            this, [](const QUrl &url) { QDesktopServices::openUrl(url); });
+    connect(m_flow, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this,
+            [](const QUrl &url) { QDesktopServices::openUrl(url); });
 
     connect(m_flow, &QOAuth2AuthorizationCodeFlow::granted, this, &AuthManager::onGranted);
     // OAuth error responses from the token endpoint. invalid_grant on a
     // refresh means the refresh token was revoked or expired (password
     // change, consent withdrawn, 90 days unused): the session is over.
     const auto onServerError = [this](const QString &error, const QString &description) {
-        if (m_refreshing && (error == QLatin1String("invalid_grant")
-                             || error == QLatin1String("interaction_required")
-                             || error == QLatin1String("consent_required"))) {
-            endSession(i18n("Your Microsoft sign-in has expired or was revoked. Please sign in again."));
+        if (m_refreshing
+            && (error == QLatin1String("invalid_grant")
+                || error == QLatin1String("interaction_required")
+                || error == QLatin1String("consent_required"))) {
+            endSession(
+                i18n("Your Microsoft sign-in has expired or was revoked. Please sign in again."));
             return;
         }
         if (!m_refreshing) onError(error, description, {});
@@ -106,7 +103,7 @@ void AuthManager::configureFlow()
 #endif
 
     connect(m_flow, &QAbstractOAuth::requestFailed, this, [this](QAbstractOAuth::Error err) {
-        if (m_sessionJustEnded) {  // already reported by endSession()
+        if (m_sessionJustEnded) { // already reported by endSession()
             m_sessionJustEnded = false;
             return;
         }
@@ -124,9 +121,15 @@ void AuthManager::configureFlow()
         switch (err) {
         case QAbstractOAuth::Error::NetworkError: name = i18n("Network error"); break;
         case QAbstractOAuth::Error::ServerError: name = i18n("Server error"); break;
-        case QAbstractOAuth::Error::OAuthTokenNotFoundError: name = i18n("Token not received"); break;
-        case QAbstractOAuth::Error::OAuthTokenSecretNotFoundError: name = i18n("Token secret missing"); break;
-        case QAbstractOAuth::Error::OAuthCallbackNotVerified: name = i18n("Callback not verified"); break;
+        case QAbstractOAuth::Error::OAuthTokenNotFoundError:
+            name = i18n("Token not received");
+            break;
+        case QAbstractOAuth::Error::OAuthTokenSecretNotFoundError:
+            name = i18n("Token secret missing");
+            break;
+        case QAbstractOAuth::Error::OAuthCallbackNotVerified:
+            name = i18n("Callback not verified");
+            break;
         default: name = i18n("Unknown error %1", int(err));
         }
         Q_EMIT authError(name);
@@ -152,17 +155,17 @@ void AuthManager::login()
         m_handler->setCallbackPath(QString::fromLatin1(kRedirectPath));
     }
     if (m_handler->isListening() && m_handler->port() != kCallbackPort) {
-        m_handler->close();  // wrong port from previous attempt
+        m_handler->close(); // wrong port from previous attempt
     }
     if (!m_handler->isListening()) {
         if (!m_handler->listen(QHostAddress::LocalHost, kCallbackPort)) {
-            Q_EMIT authError(i18n("Port %1 in use — close other instances or programs", kCallbackPort));
+            Q_EMIT authError(
+                i18n("Port %1 in use — close other instances or programs", kCallbackPort));
             return;
         }
     }
     qInfo() << "[Auth] Handler listening:" << m_handler->isListening()
-            << "port:" << m_handler->port()
-            << "callback URL:" << m_handler->callback();
+            << "port:" << m_handler->port() << "callback URL:" << m_handler->callback();
     m_flow->setReplyHandler(m_handler);
     m_flow->grant();
 }
@@ -176,7 +179,10 @@ void AuthManager::logout()
     Q_EMIT loggedOut();
 }
 
-bool AuthManager::isAuthenticated() const { return m_authenticated && !m_flow->token().isEmpty(); }
+bool AuthManager::isAuthenticated() const
+{
+    return m_authenticated && !m_flow->token().isEmpty();
+}
 
 bool AuthManager::hasSession() const
 {
@@ -195,7 +201,10 @@ void AuthManager::endSession(const QString &message)
     Q_EMIT loggedOut();
 }
 
-QString AuthManager::accessToken() const { return m_flow->token(); }
+QString AuthManager::accessToken() const
+{
+    return m_flow->token();
+}
 
 void AuthManager::requestFreshToken()
 {
@@ -204,7 +213,7 @@ void AuthManager::requestFreshToken()
         Q_EMIT loggedOut();
         return;
     }
-    if (m_refreshing) return;  // one refresh at a time; waiters get the signal
+    if (m_refreshing) return; // one refresh at a time; waiters get the signal
     m_refreshing = true;
     m_flow->refreshTokens();
 }

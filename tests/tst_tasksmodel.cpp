@@ -65,9 +65,10 @@ private Q_SLOTS:
         m.setSortMode(QStringLiteral("default"));
         m.setShowCompleted(true);
         m.setTasks(sample());
-        QCOMPARE(ids(m), (QStringList{QStringLiteral("over"), QStringLiteral("today"),
-                                      QStringLiteral("later"), QStringLiteral("nodate"),
-                                      QStringLiteral("cat"), QStringLiteral("done")}));
+        QCOMPARE(ids(m),
+                 (QStringList {QStringLiteral("over"), QStringLiteral("today"),
+                               QStringLiteral("later"), QStringLiteral("nodate"),
+                               QStringLiteral("cat"), QStringLiteral("done")}));
         QCOMPARE(m.data(m.index(0, 0), TasksModel::SectionLabelRole).toString(),
                  QStringLiteral("Overdue"));
     }
@@ -81,23 +82,23 @@ private Q_SLOTS:
         m.setSmartFilter(TasksModel::SmartFilter::Important);
         const QStringList important = ids(m);
         QCOMPARE(QSet<QString>(important.cbegin(), important.cend()),
-                 (QSet<QString>{QStringLiteral("today"), QStringLiteral("nodate")}));
+                 (QSet<QString> {QStringLiteral("today"), QStringLiteral("nodate")}));
 
         m.setSmartFilter(TasksModel::SmartFilter::Planned);
         QVERIFY(!ids(m).contains(QStringLiteral("nodate")));
         QVERIFY(ids(m).contains(QStringLiteral("later")));
 
         m.setSmartFilter(TasksModel::SmartFilter::Completed);
-        QCOMPARE(ids(m), QStringList{QStringLiteral("done")});
-        m.setShowCompleted(false);  // the Completed list ignores the toggle
-        QCOMPARE(ids(m), QStringList{QStringLiteral("done")});
+        QCOMPARE(ids(m), QStringList {QStringLiteral("done")});
+        m.setShowCompleted(false); // the Completed list ignores the toggle
+        QCOMPARE(ids(m), QStringList {QStringLiteral("done")});
 
         m.setSmartFilter(TasksModel::SmartFilter::None);
         QVERIFY(!ids(m).contains(QStringLiteral("done")));
 
         m.setMyDayIds({QStringLiteral("later")});
         m.setSmartFilter(TasksModel::SmartFilter::MyDay);
-        QCOMPARE(ids(m), QStringList{QStringLiteral("later")});
+        QCOMPARE(ids(m), QStringList {QStringLiteral("later")});
         m.setShowCompleted(true);
     }
 
@@ -110,8 +111,8 @@ private Q_SLOTS:
 
         m.setSortMode(QStringLiteral("title"));
         QVERIFY(!m.sortDescending());
-        QCOMPARE(ids(m).first(), QStringLiteral("later"));   // "Alpha later"
-        QCOMPARE(ids(m).last(), QStringLiteral("nodate"));   // "Zulu"
+        QCOMPARE(ids(m).first(), QStringLiteral("later")); // "Alpha later"
+        QCOMPARE(ids(m).last(), QStringLiteral("nodate")); // "Zulu"
         // Explicit sorts drop the date sections for open tasks.
         QVERIFY(m.data(m.index(0, 0), TasksModel::SectionLabelRole).toString().isEmpty());
 
@@ -119,9 +120,10 @@ private Q_SLOTS:
         QCOMPARE(ids(m).first(), QStringLiteral("nodate"));
 
         m.setSortMode(QStringLiteral("importance"));
-        QVERIFY(!m.sortDescending());  // picking a mode resets the direction
+        QVERIFY(!m.sortDescending()); // picking a mode resets the direction
         const QStringList byImportance = ids(m);
-        QVERIFY(byImportance.indexOf(QStringLiteral("today")) < byImportance.indexOf(QStringLiteral("over")));
+        QVERIFY(byImportance.indexOf(QStringLiteral("today"))
+                < byImportance.indexOf(QStringLiteral("over")));
 
         m.setSortMode(QStringLiteral("dueDate"));
         QCOMPARE(ids(m).first(), QStringLiteral("over"));
@@ -147,9 +149,9 @@ private Q_SLOTS:
         TasksModel m;
         m.setTasks(sample());
         m.setFilterText(QStringLiteral("finance"));
-        QCOMPARE(ids(m), QStringList{QStringLiteral("cat")});
+        QCOMPARE(ids(m), QStringList {QStringLiteral("cat")});
         m.setFilterText(QStringLiteral("ZULU"));
-        QCOMPARE(ids(m), QStringList{QStringLiteral("nodate")});
+        QCOMPARE(ids(m), QStringList {QStringLiteral("nodate")});
     }
 
     void hiddenTasksAreExcludedUntilGone()
@@ -170,21 +172,27 @@ private Q_SLOTS:
         QTest::addColumn<int>("interval");
 
         QTest::newRow("none") << QString() << QString() << QString() << 0;
-        QTest::newRow("daily") << R"({"pattern":{"type":"daily","interval":1}})" << "daily" << "day" << 1;
-        QTest::newRow("every 3 days") << R"({"pattern":{"type":"daily","interval":3}})" << "custom" << "day" << 3;
+        QTest::newRow("daily") << R"({"pattern":{"type":"daily","interval":1}})" << "daily" << "day"
+                               << 1;
+        QTest::newRow("every 3 days")
+            << R"({"pattern":{"type":"daily","interval":3}})" << "custom" << "day" << 3;
         QTest::newRow("weekdays")
             << R"({"pattern":{"type":"weekly","interval":1,"daysOfWeek":["friday","monday","tuesday","wednesday","thursday"]}})"
             << "weekdays" << "week" << 1;
-        QTest::newRow("weekly one day") << R"({"pattern":{"type":"weekly","interval":1,"daysOfWeek":["monday"]}})"
-                                        << "weekly" << "week" << 1;
+        QTest::newRow("weekly one day")
+            << R"({"pattern":{"type":"weekly","interval":1,"daysOfWeek":["monday"]}})"
+            << "weekly" << "week" << 1;
         QTest::newRow("biweekly two days")
             << R"({"pattern":{"type":"weekly","interval":2,"daysOfWeek":["monday","thursday"]}})"
             << "custom" << "week" << 2;
-        QTest::newRow("monthly") << R"({"pattern":{"type":"absoluteMonthly","interval":1,"dayOfMonth":5}})"
-                                 << "monthly" << "month" << 1;
-        QTest::newRow("yearly") << R"({"pattern":{"type":"absoluteYearly","interval":1}})" << "yearly" << "year" << 1;
-        QTest::newRow("relative monthly") << R"({"pattern":{"type":"relativeMonthly","interval":1}})"
-                                          << "custom" << "" << 1;
+        QTest::newRow("monthly")
+            << R"({"pattern":{"type":"absoluteMonthly","interval":1,"dayOfMonth":5}})"
+            << "monthly" << "month" << 1;
+        QTest::newRow("yearly") << R"({"pattern":{"type":"absoluteYearly","interval":1}})"
+                                << "yearly" << "year" << 1;
+        QTest::newRow("relative monthly")
+            << R"({"pattern":{"type":"relativeMonthly","interval":1}})"
+            << "custom" << "" << 1;
     }
 
     void recurrenceDecoding()
