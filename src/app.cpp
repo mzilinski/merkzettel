@@ -294,6 +294,8 @@ void App::start()
         registerGlobalShortcuts();
         reloadMyDay();
         m_tray->setOpenCount(0);
+        // Lets the documentation screenshots show the offline banner.
+        if (qEnvironmentVariableIsSet("MERKZETTEL_DEMO_OFFLINE")) setOnline(false);
         Q_EMIT loggedInChanged();
         setStatus(i18n("Demo mode — no real data, all changes are local"));
         return;
@@ -1543,6 +1545,12 @@ void App::loadDemoData()
             t.categories = demoCategories.value(t.id);
 
     m_demoMyDay = {QStringLiteral("d2"), QStringLiteral("d3"), QStringLiteral("w1")};
+
+    // A monthly recurrence so the detail sheet shows every section.
+    for (auto &t : m_demoTasks[QStringLiteral("demo-tasks")])
+        if (t.id == QLatin1String("d6"))
+            t.recurrenceJson = QStringLiteral(
+                R"({"pattern":{"type":"absoluteMonthly","interval":1,"dayOfMonth":18},"range":{"type":"noEnd"}})");
 
     // Fake attachment metadata so the Files section can be shown.
     m_attachments.insert(

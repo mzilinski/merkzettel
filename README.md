@@ -5,11 +5,12 @@
 
 Native KDE/Kirigami client for **Microsoft To Do**. Written in C++/Qt6, talks Microsoft Graph directly — no PWA, no web wrapper.
 
-| English | Deutsch |
+| Light | Dark |
 |:---:|:---:|
-| ![English screenshot](screenshots/main-en.png) | ![German screenshot](screenshots/main-de.png) |
+| ![Task list, light](screenshots/en/tasks-light.png) | ![Task list, dark](screenshots/en/tasks-dark.png) |
+| ![My Day](screenshots/en/myday-light.png) | ![Task details](screenshots/en/details-dark.png) |
 
-> Try it without an Azure account: `merkzettel --demo` runs the UI with built-in demo lists and tasks (no sign-in, no network, all mutations are no-ops). Both screenshots above were taken with `--demo`.
+> Try it without an Azure account: `merkzettel --demo` runs the UI with built-in demo lists and tasks (no sign-in, no network, all mutations are no-ops). All screenshots are generated from the demo mode with `make screenshots`.
 
 ## Features
 

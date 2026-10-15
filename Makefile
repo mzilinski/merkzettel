@@ -8,13 +8,14 @@
 #                   accessibility, clang-format, static analysis
 #   make pot        regenerate po/merkzettel.pot and merge translations
 #   make flatpak    build the Flatpak from the working tree
+#   make screenshots  regenerate docs/README/metainfo screenshots (Xvfb + KWin)
 #   make run-demo   start the freshly built app with demo data
 
 BUILD ?= build
 CLIENT_ID ?=
 JOBS ?= $(shell nproc)
 
-.PHONY: all configure build test lint pot flatpak run-demo clean
+.PHONY: all configure build test lint pot flatpak screenshots run-demo clean
 
 all: build
 
@@ -44,6 +45,9 @@ pot:
 flatpak:
 	flatpak-builder --user --force-clean --install-deps-from=flathub \
 	  $(BUILD)/flatpak flatpak/io.github.mzilinski.merkzettel.yml
+
+screenshots: build
+	scripts/screenshots.sh $(BUILD)
 
 run-demo: build
 	$(BUILD)/bin/merkzettel --demo
