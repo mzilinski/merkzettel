@@ -408,7 +408,7 @@ msgstr ""
 msgid "Reminder:"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:246 src/app.cpp:1406
+#: src/TaskDetailSheet.qml:246 src/app.cpp:1462
 #, kde-format
 msgid "Reminder"
 msgstr ""
@@ -509,7 +509,7 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:634 src/app.cpp:1416
+#: src/TaskDetailSheet.qml:634 src/app.cpp:1472
 #, kde-format
 msgid "Mark done"
 msgstr ""
@@ -697,266 +697,261 @@ msgstr ""
 msgid "Quick add task"
 msgstr ""
 
-#: src/app.cpp:549
+#: src/app.cpp:551
 #, kde-format
 msgid "Demo mode — nothing to sync"
 msgstr ""
 
-#: src/app.cpp:556
+#: src/app.cpp:558
 #, kde-format
 msgid "Connecting to Microsoft ..."
 msgstr ""
 
-#: src/app.cpp:560
+#: src/app.cpp:562
 #, kde-format
 msgid "Synchronizing ..."
 msgstr ""
 
-#: src/app.cpp:578 src/app.cpp:622 src/app.cpp:633 src/app.cpp:700
-#: src/app.cpp:721 src/app.cpp:820 src/app.cpp:830 src/app.cpp:840
-#: src/app.cpp:851 src/app.cpp:873 src/app.cpp:884 src/app.cpp:895
-#: src/app.cpp:906 src/app.cpp:917 src/app.cpp:928 src/app.cpp:939
-#: src/app.cpp:950 src/app.cpp:972 src/app.cpp:983 src/app.cpp:995
-#: src/app.cpp:1021 src/app.cpp:1072 src/app.cpp:1107 src/app.cpp:1123
-#: src/app.cpp:1213 src/app.cpp:1300
-#, kde-format
-msgid "Demo mode — change not applied"
-msgstr ""
-
-#: src/app.cpp:669
+#: src/app.cpp:682
 #, kde-format
 msgid "Task deleted"
 msgid_plural "%1 tasks deleted"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/app.cpp:692
+#: src/app.cpp:705
 #, kde-format
 msgid "Task moved to \"%2\""
 msgid_plural "%1 tasks moved to \"%2\""
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/app.cpp:714
+#: src/app.cpp:720 src/app.cpp:735
 #, kde-format
 msgid "Task completed"
 msgid_plural "%1 tasks completed"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/app.cpp:1148
+#: src/app.cpp:848 src/app.cpp:858 src/app.cpp:868 src/app.cpp:1269
+#: src/app.cpp:1356
+#, kde-format
+msgid "Demo mode — change not applied"
+msgstr ""
+
+#: src/app.cpp:1204
 #, kde-format
 msgid "Refusing to open link with unsupported scheme: %1"
 msgstr ""
 
-#: src/app.cpp:1221
+#: src/app.cpp:1277
 #, kde-format
 msgid "Could not read \"%1\"."
 msgstr ""
 
-#: src/app.cpp:1227 src/graph/todoapi.cpp:663
+#: src/app.cpp:1283 src/graph/todoapi.cpp:663
 #, kde-format
 msgid "\"%1\" is larger than 25 MB, the Microsoft To Do limit."
 msgstr ""
 
-#: src/app.cpp:1234
+#: src/app.cpp:1290
 #, kde-format
 msgid "Uploading %1 file ..."
 msgid_plural "Uploading %1 files ..."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/app.cpp:1243 src/app.cpp:1277
+#: src/app.cpp:1299 src/app.cpp:1333
 #, kde-format
 msgid "Demo mode — files are not available"
 msgstr ""
 
-#: src/app.cpp:1246
+#: src/app.cpp:1302
 #, kde-format
 msgid "Downloading \"%1\" ..."
 msgstr ""
 
-#: src/app.cpp:1263 src/app.cpp:1288
+#: src/app.cpp:1319 src/app.cpp:1344
 #, kde-format
 msgid "Could not write \"%1\"."
 msgstr ""
 
-#: src/app.cpp:1291
+#: src/app.cpp:1347
 #, kde-format
 msgid "Saved \"%1\""
 msgstr ""
 
-#: src/app.cpp:1428
+#: src/app.cpp:1484
 #, kde-format
 msgid "Tasks"
 msgstr ""
 
-#: src/app.cpp:1429 src/app.cpp:1543 src/app.cpp:1544
+#: src/app.cpp:1485 src/app.cpp:1599 src/app.cpp:1600
 #, kde-format
 msgid "Work"
 msgstr ""
 
-#: src/app.cpp:1430
+#: src/app.cpp:1486
 #, kde-format
 msgid "Home"
 msgstr ""
 
-#: src/app.cpp:1431
+#: src/app.cpp:1487
 #, kde-format
 msgid "Shopping"
 msgstr ""
 
-#: src/app.cpp:1432
+#: src/app.cpp:1488
 #, kde-format
 msgid "Learning"
 msgstr ""
 
-#: src/app.cpp:1473
+#: src/app.cpp:1529
 #, kde-format
 msgid "Pay electricity bill"
 msgstr ""
 
-#: src/app.cpp:1475
+#: src/app.cpp:1531
 #, kde-format
 msgid "Reply to Anna about the proposal"
 msgstr ""
 
-#: src/app.cpp:1477
+#: src/app.cpp:1533
 #, kde-format
 msgid "Buy groceries"
 msgstr ""
 
-#: src/app.cpp:1478
+#: src/app.cpp:1534
 #, kde-format
 msgid "milk, bread, coffee, oranges"
 msgstr ""
 
-#: src/app.cpp:1485
+#: src/app.cpp:1541
 #, kde-format
 msgid "Team standup"
 msgstr ""
 
-#: src/app.cpp:1487
+#: src/app.cpp:1543
 #, kde-format
 msgid "Pick up parcel from the post office"
 msgstr ""
 
-#: src/app.cpp:1489
+#: src/app.cpp:1545
 #, kde-format
 msgid "Submit travel expenses"
 msgstr ""
 
-#: src/app.cpp:1491
+#: src/app.cpp:1547
 #, kde-format
 msgid "Read 'The Pragmatic Programmer' ch.4"
 msgstr ""
 
-#: src/app.cpp:1492
+#: src/app.cpp:1548
 #, kde-format
 msgid "Focus on the chapter on orthogonality."
 msgstr ""
 
-#: src/app.cpp:1493
+#: src/app.cpp:1549
 #, kde-format
 msgid "Plan summer holiday"
 msgstr ""
 
-#: src/app.cpp:1501
+#: src/app.cpp:1557
 #, kde-format
 msgid "Learn Rust"
 msgstr ""
 
-#: src/app.cpp:1501
+#: src/app.cpp:1557
 #, kde-format
 msgid "Start with the official book."
 msgstr ""
 
-#: src/app.cpp:1503
+#: src/app.cpp:1559
 #, kde-format
 msgid "Refactor printer driver"
 msgstr ""
 
-#: src/app.cpp:1504
+#: src/app.cpp:1560
 #, kde-format
 msgid "Update CV"
 msgstr ""
 
-#: src/app.cpp:1505
+#: src/app.cpp:1561
 #, kde-format
 msgid "Renew library card"
 msgstr ""
 
-#: src/app.cpp:1510
+#: src/app.cpp:1566
 #, kde-format
 msgid "Quarterly report"
 msgstr ""
 
-#: src/app.cpp:1517
+#: src/app.cpp:1573
 #, kde-format
 msgid "Code review for Markus"
 msgstr ""
 
-#: src/app.cpp:1519
+#: src/app.cpp:1575
 #, kde-format
 msgid "1:1 with manager"
 msgstr ""
 
-#: src/app.cpp:1524
+#: src/app.cpp:1580
 #, kde-format
 msgid "Water the plants"
 msgstr ""
 
-#: src/app.cpp:1525
+#: src/app.cpp:1581
 #, kde-format
 msgid "Fix the bathroom faucet"
 msgstr ""
 
-#: src/app.cpp:1529
+#: src/app.cpp:1585
 #, kde-format
 msgid "New running shoes"
 msgstr ""
 
-#: src/app.cpp:1530
+#: src/app.cpp:1586
 #, kde-format
 msgid "Birthday present for Mum"
 msgstr ""
 
-#: src/app.cpp:1535
+#: src/app.cpp:1591
 #, kde-format
 msgid "Finish KDE Frameworks 6 tutorial"
 msgstr ""
 
-#: src/app.cpp:1537
+#: src/app.cpp:1593
 #, kde-format
 msgid "Watch Qt 6.6 release video"
 msgstr ""
 
-#: src/app.cpp:1542 src/app.cpp:1543
+#: src/app.cpp:1598 src/app.cpp:1599
 #, kde-format
 msgid "Finance"
 msgstr ""
 
-#: src/app.cpp:1545
+#: src/app.cpp:1601
 #, kde-format
 msgid "Family"
 msgstr ""
 
-#: src/app.cpp:1563
+#: src/app.cpp:1619
 #, kde-format
 msgid "Hotel receipt.pdf"
 msgstr ""
 
-#: src/app.cpp:1565
+#: src/app.cpp:1621
 #, kde-format
 msgid "Train ticket.png"
 msgstr ""
 
-#: src/app.cpp:1597
+#: src/app.cpp:1676
 #, kde-format
 msgid "Signed in, loading lists ..."
 msgstr ""
 
-#: src/app.cpp:1603
+#: src/app.cpp:1682
 #, kde-format
 msgid "Sign-in error: %1"
 msgstr ""
