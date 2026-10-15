@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
 Kirigami.Page {
-    title: i18n("Anmelden")
+    title: i18n("Sign in")
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -19,21 +19,20 @@ Kirigami.Page {
         }
 
         Kirigami.Heading {
-            text: i18n("Mit Microsoft anmelden")
+            text: i18n("Sign in with Microsoft")
             horizontalAlignment: Text.AlignHCenter
             Layout.fillWidth: true
         }
 
         QQC2.Label {
-            text: i18n("Merkzettel synchronisiert deine Aufgaben mit Microsoft To Do. " +
-                       "Es oeffnet sich der Standardbrowser fuer die Anmeldung.")
+            text: i18n("Merkzettel synchronizes your tasks with Microsoft To Do. The default browser will open for sign-in.")
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
             Layout.fillWidth: true
         }
 
         QQC2.Button {
-            text: i18n("Anmelden")
+            text: i18n("Sign in")
             icon.name: "go-next"
             Layout.alignment: Qt.AlignHCenter
             onClicked: app.login()

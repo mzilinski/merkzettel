@@ -425,3 +425,83 @@ msgstr "Listenname"
 
 msgid "Create"
 msgstr "Erstellen"
+
+# --- smart-lists, sorting, completed filter ---
+msgid "Planned"
+msgstr "Geplant"
+
+msgid "Sort"
+msgstr "Sortieren"
+
+msgid "Importance"
+msgstr "Wichtigkeit"
+
+msgid "Due date"
+msgstr "Fälligkeitsdatum"
+
+msgid "Alphabetically"
+msgstr "Alphabetisch"
+
+msgid "Creation date"
+msgstr "Erstellungsdatum"
+
+msgid "Show completed tasks"
+msgstr "Erledigte Aufgaben anzeigen"
+
+# --- previously untranslated strings ---
+msgid "All"
+msgstr "Alle"
+
+msgid "Search tasks ..."
+msgstr "Aufgaben suchen ..."
+
+msgid "Search across all lists ..."
+msgstr "In allen Listen suchen ..."
+
+msgid "No matching tasks"
+msgstr "Keine passenden Aufgaben"
+
+msgid "Try a different search term."
+msgstr "Versuche einen anderen Suchbegriff."
+
+msgid "Appearance"
+msgstr "Erscheinungsbild"
+
+msgid "Follow system"
+msgstr "Systemeinstellung folgen"
+
+msgid "Light"
+msgstr "Hell"
+
+msgid "Dark"
+msgstr "Dunkel"
+
+msgid "Created: %1"
+msgstr "Erstellt: %1"
+
+msgid "Last modified: %1"
+msgstr "Zuletzt geändert: %1"
+
+msgid "List: %1"
+msgstr "Liste: %1"
+
+msgid "Synced — %1 changed, %2 removed"
+msgstr "Synchronisiert — %1 geändert, %2 entfernt"
+
+msgid "Sorted by importance"
+msgstr "Nach Wichtigkeit sortiert"
+
+msgid "Sorted by due date"
+msgstr "Nach Fälligkeitsdatum sortiert"
+
+msgid "Sorted alphabetically"
+msgstr "Alphabetisch sortiert"
+
+msgid "Sorted by creation date"
+msgstr "Nach Erstellungsdatum sortiert"
+
+msgid "Reverse sort order"
+msgstr "Sortierreihenfolge umkehren"
+
+msgid "Remove sort order"
+msgstr "Sortierung entfernen"

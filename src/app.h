@@ -27,6 +27,8 @@ class App : public QObject
     Q_PROPERTY(bool loggedIn READ loggedIn NOTIFY loggedInChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString currentListId READ currentListId WRITE setCurrentListId NOTIFY currentListIdChanged)
+    // True for the synthetic smart-lists (All/Important/Planned/Completed).
+    Q_PROPERTY(bool currentListVirtual READ isVirtualList NOTIFY currentListIdChanged)
     Q_PROPERTY(TasksModel *tasksModel READ tasksModel CONSTANT)
     Q_PROPERTY(TaskListsModel *listsModel READ listsModel CONSTANT)
     Q_PROPERTY(QVariantMap detailTask READ detailTask NOTIFY detailTaskChanged)
@@ -114,10 +116,13 @@ private:
     void loadDemoData();
     void switchDemoList(const QString &id);
 
-    // True iff the synthetic "Alle" smart-list is selected.
-    bool isVirtualAll() const;
+    // True iff one of the synthetic smart-lists is selected.
+    bool isVirtualList() const;
+    // Push the smart-list filter and the per-list sort order matching
+    // m_currentListId to TasksModel.
+    void applyListViewSettings();
     // Resolve the originating listId for a task that lives in m_tasksModel.
-    // Used by mutations when the virtual all-list is active. Falls back to
+    // Used by mutations when a smart-list is active. Falls back to
     // m_currentListId for the non-virtual path.
     QString listIdForTask(const QString &taskId) const;
     // Refresh m_tasksModel from the local cache when virtual is active.

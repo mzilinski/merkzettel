@@ -171,10 +171,14 @@ void TodoApi::fetchTasks(const QString &listId)
     });
 }
 
-void TodoApi::addTask(const QString &listId, const QString &title, const QDateTime &due)
+void TodoApi::addTask(const QString &listId, const QString &title, const QDateTime &due,
+                      bool important)
 {
     QJsonObject body;
     body.insert(QStringLiteral("title"), title);
+    if (important) {
+        body.insert(QStringLiteral("importance"), QStringLiteral("high"));
+    }
     if (due.isValid()) {
         body.insert(QStringLiteral("dueDateTime"), toGraphDateTime(due));
     }

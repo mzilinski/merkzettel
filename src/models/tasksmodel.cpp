@@ -4,7 +4,10 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLocale>
+#include <QUrl>
+#include <KConfigGroup>
 #include <KLocalizedString>
+#include <KSharedConfig>
 #include <algorithm>
 
 namespace Merkzettel {
@@ -22,9 +25,72 @@ QDate toLocalDate(const QDateTime &dt)
 {
     return dt.toLocalTime().date();
 }
+
+const QStringList kSortModes = {
+    QStringLiteral("default"), QStringLiteral("importance"), QStringLiteral("dueDate"),
+    QStringLiteral("title"), QStringLiteral("created"),
+};
+
+// Direction a sort mode starts out with when picked, matching MS To Do:
+// newest first for the creation date, everything else ascending.
+bool defaultDescending(const QString &mode)
+{
+    return mode == QLatin1String("created");
+}
+
+KConfigGroup viewConfig()
+{
+    return KSharedConfig::openConfig()->group(QStringLiteral("View"));
+}
+
+KConfigGroup sortConfig()
+{
+    return KSharedConfig::openConfig()->group(QStringLiteral("ListSort"));
+}
+
+// Graph list ids are base64 and may contain '=' / '/', so percent-encode
+// them before using them as config keys.
+QString sortKey(const QString &listId)
+{
+    return QString::fromLatin1(QUrl::toPercentEncoding(listId));
+}
 } // namespace
 
-TasksModel::TasksModel(QObject *parent) : QAbstractListModel(parent) {}
+TasksModel::TasksModel(QObject *parent) : QAbstractListModel(parent)
+{
+    m_showCompleted = viewConfig().readEntry("ShowCompleted", true);
+}
+
+void TasksModel::saveSortConfig() const
+{
+    if (m_sortScope.isEmpty()) return;
+    KConfigGroup cfg = sortConfig();
+    if (m_sortMode == QLatin1String("default")) {
+        cfg.deleteEntry(sortKey(m_sortScope));
+    } else {
+        cfg.writeEntry(sortKey(m_sortScope),
+                       QStringList{m_sortMode, m_sortDescending ? QStringLiteral("desc")
+                                                                : QStringLiteral("asc")});
+    }
+    cfg.sync();
+}
+
+void TasksModel::setSortScope(const QString &listId)
+{
+    if (listId == m_sortScope) return;
+    m_sortScope = listId;
+    const QStringList stored = sortConfig().readEntry(sortKey(listId), QStringList());
+    QString mode = stored.value(0, QStringLiteral("default"));
+    if (!kSortModes.contains(mode)) mode = QStringLiteral("default");
+    const bool desc = stored.value(1) == QLatin1String("desc");
+    const bool modeChanged = mode != m_sortMode;
+    const bool descChanged = desc != m_sortDescending;
+    m_sortMode = mode;
+    m_sortDescending = desc;
+    if (modeChanged) Q_EMIT sortModeChanged();
+    if (descChanged) Q_EMIT sortDescendingChanged();
+    if (modeChanged || descChanged) applyFilter();
+}
 
 int TasksModel::rowCount(const QModelIndex &parent) const
 {
@@ -45,13 +111,19 @@ int TasksModel::sectionRank(const Task &t)
     return kSectionLater;
 }
 
-QString TasksModel::sectionKey(const Task &t)
+// With an explicit sort order the due-date buckets would fight the ordering,
+// so only the open/completed split survives.
+int TasksModel::effectiveSectionRank(const Task &t) const
 {
-    return QString::number(sectionRank(t));
+    if (m_sortMode == QLatin1String("default")) return sectionRank(t);
+    return t.completed() ? kSectionCompleted : kSectionOverdue;
 }
 
-QString TasksModel::sectionLabel(const Task &t)
+QString TasksModel::sectionLabel(const Task &t) const
 {
+    if (m_sortMode != QLatin1String("default") && !t.completed()) {
+        return QString();  // single unlabeled bucket; the view hides empty headers
+    }
     switch (sectionRank(t)) {
     case kSectionOverdue:   return i18n("Overdue");
     case kSectionToday:     return i18n("Today");
@@ -81,7 +153,7 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
     case BodyRole:         return t.body;
     case ReminderDateRole: return t.reminderDate;
     case HasReminderRole:  return t.hasReminder;
-    case SectionKeyRole:   return sectionKey(t);
+    case SectionKeyRole:   return QString::number(effectiveSectionRank(t));
     case SectionLabelRole: return sectionLabel(t);
     case ChecklistTotalRole: return t.totalChecklistCount;
     case HasRecurrenceRole: return !t.recurrenceJson.isEmpty();
@@ -131,20 +203,78 @@ QHash<int, QByteArray> TasksModel::roleNames() const
     };
 }
 
+bool TasksModel::lessThan(const Task &a, const Task &b) const
+{
+    const int sa = effectiveSectionRank(a);
+    const int sb = effectiveSectionRank(b);
+    if (sa != sb) return sa < sb;
+
+    // Primary key per sort mode; ties fall through to the title. Tasks
+    // without a value for the key (no due date, no created date) always go
+    // last, regardless of direction.
+    int c = 0;
+    if (m_sortMode == QLatin1String("default")) {
+        if (a.isImportant() != b.isImportant()) return a.isImportant();
+        if (a.dueDate.isValid() != b.dueDate.isValid()) return a.dueDate.isValid();
+        if (a.dueDate != b.dueDate) return a.dueDate < b.dueDate;
+    } else if (m_sortMode == QLatin1String("importance")) {
+        if (a.isImportant() != b.isImportant()) c = a.isImportant() ? -1 : 1;
+    } else if (m_sortMode == QLatin1String("dueDate")) {
+        if (a.dueDate.isValid() != b.dueDate.isValid()) return a.dueDate.isValid();
+        if (a.dueDate != b.dueDate) c = a.dueDate < b.dueDate ? -1 : 1;
+    } else if (m_sortMode == QLatin1String("created")) {
+        if (a.createdDate.isValid() != b.createdDate.isValid()) return a.createdDate.isValid();
+        if (a.createdDate != b.createdDate) c = a.createdDate < b.createdDate ? -1 : 1;
+    } else if (m_sortMode == QLatin1String("title")) {
+        c = a.title.localeAwareCompare(b.title);
+    }
+    if (c != 0) return m_sortDescending ? c > 0 : c < 0;
+    return a.title.localeAwareCompare(b.title) < 0;
+}
+
 void TasksModel::setTasks(const QList<Task> &tasks)
 {
     m_allTasks = tasks;
-    std::sort(m_allTasks.begin(), m_allTasks.end(), [](const Task &a, const Task &b) {
-        const int sa = sectionRank(a);
-        const int sb = sectionRank(b);
-        if (sa != sb) return sa < sb;
-        if (a.isImportant() != b.isImportant()) return a.isImportant();
-        if (a.dueDate.isValid() && b.dueDate.isValid() && a.dueDate != b.dueDate)
-            return a.dueDate < b.dueDate;
-        if (a.dueDate.isValid() != b.dueDate.isValid())
-            return a.dueDate.isValid();
-        return a.title.localeAwareCompare(b.title) < 0;
-    });
+    applyFilter();
+}
+
+void TasksModel::setShowCompleted(bool show)
+{
+    if (show == m_showCompleted) return;
+    m_showCompleted = show;
+    KConfigGroup cfg = viewConfig();
+    cfg.writeEntry("ShowCompleted", show);
+    cfg.sync();
+    Q_EMIT showCompletedChanged();
+    applyFilter();
+}
+
+void TasksModel::setSortMode(const QString &mode)
+{
+    if (mode == m_sortMode || !kSortModes.contains(mode)) return;
+    m_sortMode = mode;
+    const bool desc = defaultDescending(mode);
+    const bool descChanged = desc != m_sortDescending;
+    m_sortDescending = desc;
+    saveSortConfig();
+    Q_EMIT sortModeChanged();
+    if (descChanged) Q_EMIT sortDescendingChanged();
+    applyFilter();
+}
+
+void TasksModel::setSortDescending(bool descending)
+{
+    if (descending == m_sortDescending) return;
+    m_sortDescending = descending;
+    saveSortConfig();
+    Q_EMIT sortDescendingChanged();
+    applyFilter();
+}
+
+void TasksModel::setSmartFilter(SmartFilter filter)
+{
+    if (filter == m_smartFilter) return;
+    m_smartFilter = filter;
     applyFilter();
 }
 
@@ -174,6 +304,23 @@ void TasksModel::setFilterText(const QString &text)
 
 bool TasksModel::matchesFilter(const Task &t) const
 {
+    switch (m_smartFilter) {
+    case SmartFilter::None:
+        break;
+    case SmartFilter::Important:
+        if (!t.isImportant()) return false;
+        break;
+    case SmartFilter::Planned:
+        if (!t.dueDate.isValid() && !t.hasReminder) return false;
+        break;
+    case SmartFilter::Completed:
+        if (!t.completed()) return false;
+        break;
+    }
+    // The "Completed" smart-list exists to show exactly what this hides.
+    if (!m_showCompleted && t.completed() && m_smartFilter != SmartFilter::Completed) {
+        return false;
+    }
     if (m_filterText.isEmpty()) return true;
     return t.title.contains(m_filterText, Qt::CaseInsensitive)
         || t.body.contains(m_filterText, Qt::CaseInsensitive);
@@ -187,6 +334,8 @@ void TasksModel::applyFilter()
     for (const auto &t : m_allTasks) {
         if (matchesFilter(t)) m_tasks.append(t);
     }
+    std::sort(m_tasks.begin(), m_tasks.end(),
+              [this](const Task &a, const Task &b) { return lessThan(a, b); });
     endResetModel();
     Q_EMIT countChanged();
 }

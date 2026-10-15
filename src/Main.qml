@@ -194,8 +194,7 @@ Kirigami.ApplicationWindow {
                     id: listItem
                     Layout.fillWidth: true
                     text: root.globalDrawer.collapsed ? "" : model.displayName
-                    icon.name: model.isVirtual ? "view-list-icons"
-                              : (model.isDefault ? "emblem-favorite" : "view-list-text")
+                    icon.name: model.iconName
                     display: root.globalDrawer.collapsed
                              ? QQC2.AbstractButton.IconOnly
                              : QQC2.AbstractButton.TextBesideIcon
@@ -261,8 +260,8 @@ Kirigami.ApplicationWindow {
 
                     TapHandler {
                         acceptedButtons: Qt.RightButton
-                        // The synthetic "Alle" smart-list isn't a real Graph
-                        // resource — share/rename/delete don't apply to it.
+                        // The synthetic smart-lists aren't real Graph
+                        // resources — share/rename/delete don't apply to them.
                         onTapped: if (!model.isVirtual) listCtxMenu.popup()
                     }
                 }

@@ -10,7 +10,17 @@ class TasksModel : public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(QString filterText READ filterText WRITE setFilterText NOTIFY filterTextChanged)
+    // Global view option, persisted in merkzettelrc [View].
+    Q_PROPERTY(bool showCompleted READ showCompleted WRITE setShowCompleted NOTIFY showCompletedChanged)
+    // Per-list sort order like MS To Do, persisted in merkzettelrc [ListSort]
+    // (Graph doesn't sync it). "default" = sectioned by due date; otherwise
+    // "importance" / "dueDate" / "title" / "created".
+    Q_PROPERTY(QString sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
+    Q_PROPERTY(bool sortDescending READ sortDescending WRITE setSortDescending NOTIFY sortDescendingChanged)
 public:
+    // Local filter applied on top of the task set, driven by the smart-lists.
+    enum class SmartFilter { None, Important, Planned, Completed };
+
     enum Roles {
         IdRole = Qt::UserRole + 1,
         TitleRole,
@@ -45,6 +55,17 @@ public:
     QString filterText() const;
     void setFilterText(const QString &text);
 
+    bool showCompleted() const { return m_showCompleted; }
+    void setShowCompleted(bool show);
+    QString sortMode() const { return m_sortMode; }
+    void setSortMode(const QString &mode);
+    bool sortDescending() const { return m_sortDescending; }
+    void setSortDescending(bool descending);
+    // Switch the sort settings to those stored for listId.
+    void setSortScope(const QString &listId);
+
+    void setSmartFilter(SmartFilter filter);
+
     // Map listId -> displayName, used to resolve ListNameRole. App refreshes
     // this whenever listsReceived fires.
     void setListNames(const QHash<QString, QString> &names);
@@ -55,11 +76,16 @@ public:
 Q_SIGNALS:
     void countChanged();
     void filterTextChanged();
+    void showCompletedChanged();
+    void sortModeChanged();
+    void sortDescendingChanged();
 
 private:
     static int sectionRank(const Task &t);
-    static QString sectionKey(const Task &t);
-    static QString sectionLabel(const Task &t);
+    int effectiveSectionRank(const Task &t) const;
+    QString sectionLabel(const Task &t) const;
+    bool lessThan(const Task &a, const Task &b) const;
+    void saveSortConfig() const;
 
     void applyFilter();
     bool matchesFilter(const Task &t) const;
@@ -67,6 +93,11 @@ private:
     QList<Task> m_allTasks;
     QList<Task> m_tasks;
     QString m_filterText;
+    SmartFilter m_smartFilter = SmartFilter::None;
+    bool m_showCompleted = true;
+    QString m_sortMode = QStringLiteral("default");
+    bool m_sortDescending = false;
+    QString m_sortScope;
     QHash<QString, QString> m_listNames;
 };
 

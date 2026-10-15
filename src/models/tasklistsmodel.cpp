@@ -6,6 +6,14 @@ namespace Merkzettel {
 
 TaskListsModel::TaskListsModel(QObject *parent) : QAbstractListModel(parent) {}
 
+bool TaskListsModel::isVirtualId(const QString &id)
+{
+    return id == QLatin1String(kVirtualAllId)
+        || id == QLatin1String(kVirtualImportantId)
+        || id == QLatin1String(kVirtualPlannedId)
+        || id == QLatin1String(kVirtualCompletedId);
+}
+
 int TaskListsModel::rowCount(const QModelIndex &parent) const
 {
     return parent.isValid() ? 0 : m_lists.size();
@@ -23,6 +31,12 @@ QVariant TaskListsModel::data(const QModelIndex &index, int role) const
     case IsDefaultRole:   return l.isDefault;
     case IsSharedRole:    return l.isShared;
     case IsVirtualRole:   return l.isVirtual;
+    case IconNameRole:
+        if (l.id == QLatin1String(kVirtualAllId))       return QStringLiteral("view-list-icons");
+        if (l.id == QLatin1String(kVirtualImportantId)) return QStringLiteral("starred-symbolic");
+        if (l.id == QLatin1String(kVirtualPlannedId))   return QStringLiteral("view-calendar");
+        if (l.id == QLatin1String(kVirtualCompletedId)) return QStringLiteral("checkmark");
+        return l.isDefault ? QStringLiteral("go-home") : QStringLiteral("view-list-text");
     }
     return {};
 }
@@ -35,6 +49,7 @@ QHash<int, QByteArray> TaskListsModel::roleNames() const
         {IsDefaultRole, "isDefault"},
         {IsSharedRole, "isShared"},
         {IsVirtualRole, "isVirtual"},
+        {IconNameRole, "iconName"},
     };
 }
 
@@ -42,13 +57,19 @@ void TaskListsModel::setLists(const QList<TaskList> &lists)
 {
     beginResetModel();
     m_lists.clear();
-    m_lists.reserve(lists.size() + 1);
+    m_lists.reserve(lists.size() + 4);
     if (!lists.isEmpty()) {
-        TaskList all;
-        all.id = QString::fromLatin1(kVirtualAllId);
-        all.displayName = i18n("All");
-        all.isVirtual = true;
-        m_lists.append(all);
+        const auto addVirtual = [this](const char *id, const QString &name) {
+            TaskList l;
+            l.id = QString::fromLatin1(id);
+            l.displayName = name;
+            l.isVirtual = true;
+            m_lists.append(l);
+        };
+        addVirtual(kVirtualAllId, i18n("All"));
+        addVirtual(kVirtualImportantId, i18n("Important"));
+        addVirtual(kVirtualPlannedId, i18n("Planned"));
+        addVirtual(kVirtualCompletedId, i18n("Completed"));
     }
     m_lists.append(lists);
     endResetModel();

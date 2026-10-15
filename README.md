@@ -19,6 +19,8 @@ Native KDE/Kirigami client for **Microsoft To Do**. Written in C++/Qt6, talks Mi
 - Create, complete, delete tasks; importance (star), due date, reminder, notes
 - Date+time picker via [kirigami-addons](https://invent.kde.org/libraries/kirigami-addons) `DatePopup`/`TimePopup`
 - **Sectioned task view**: Overdue / Today / Tomorrow / This week / Later / No date / Completed
+- **Smart lists** across all lists: All / Important / Planned / Completed
+- Sort by importance, due date, title or creation date (ascending/descending); hide completed tasks — both remembered across launches
 - Date parsing in the add bar: `Buy milk tomorrow`, `Pay rent mo`, `Doctor 25.5.`
 - Right-click context menu, click-to-open detail sheet, hover-revealed star toggle
 - **KStatusNotifierItem** tray icon with badge for tasks due today

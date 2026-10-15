@@ -68,7 +68,8 @@ public:
     void createList(const QString &displayName);
     void deleteList(const QString &listId);
     void renameList(const QString &listId, const QString &newName);
-    void addTask(const QString &listId, const QString &title, const QDateTime &due = {});
+    void addTask(const QString &listId, const QString &title, const QDateTime &due = {},
+                 bool important = false);
     void setTaskStatus(const QString &listId, const QString &taskId, const QString &status);
     void setTaskImportance(const QString &listId, const QString &taskId, const QString &importance);
     void setTaskDueDate(const QString &listId, const QString &taskId, const QDateTime &due);

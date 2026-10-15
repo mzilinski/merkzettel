@@ -16,10 +16,17 @@ public:
         IsDefaultRole,
         IsSharedRole,
         IsVirtualRole,
+        IconNameRole,
     };
 
-    // Sentinel id for the synthetic "Alle"/All smart-list entry.
+    // Sentinel ids for the synthetic smart-list entries. They aggregate tasks
+    // across every real list and filter them locally (see TasksModel).
     static constexpr auto kVirtualAllId = "__all__";
+    static constexpr auto kVirtualImportantId = "__important__";
+    static constexpr auto kVirtualPlannedId = "__planned__";
+    static constexpr auto kVirtualCompletedId = "__completed__";
+
+    static bool isVirtualId(const QString &id);
 
     explicit TaskListsModel(QObject *parent = nullptr);
 

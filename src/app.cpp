@@ -61,8 +61,8 @@ App::App(QObject *parent)
         pushListNamesToModel();
         if (m_currentListId.isEmpty() && !lists.isEmpty()) {
             setCurrentListId(lists.first().id);
-        } else if (isVirtualAll()) {
-            // Virtual all-list: refresh tasks across every real list.
+        } else if (isVirtualList()) {
+            // Smart-list: refresh tasks across every real list.
             syncAllLists();
         } else if (!m_currentListId.isEmpty()) {
             m_todo->fetchTasks(m_currentListId);
@@ -76,7 +76,7 @@ App::App(QObject *parent)
         if (listId == m_currentListId) {
             m_tasksModel->setTasks(tasks);
             refreshDetailTaskFromModel();
-        } else if (isVirtualAll()) {
+        } else if (isVirtualList()) {
             m_tasksModel->setTasks(m_db->allTasks());
             refreshDetailTaskFromModel();
         }
@@ -114,7 +114,7 @@ App::App(QObject *parent)
             if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
                 refreshDetailTaskFromModel();
             }
-        } else if (isVirtualAll()) {
+        } else if (isVirtualList()) {
             m_tasksModel->setTasks(m_db->allTasks());
             if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
                 refreshDetailTaskFromModel();
@@ -139,7 +139,7 @@ App::App(QObject *parent)
         if (listId == m_currentListId) {
             const auto cached = m_db->tasks(listId);
             m_tasksModel->setTasks(cached);
-        } else if (isVirtualAll()) {
+        } else if (isVirtualList()) {
             m_tasksModel->setTasks(m_db->allTasks());
             refreshDetailTaskFromModel();
         }
@@ -167,7 +167,7 @@ App::App(QObject *parent)
             if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
                 refreshDetailTaskFromModel();
             }
-        } else if (isVirtualAll()) {
+        } else if (isVirtualList()) {
             m_tasksModel->setTasks(m_db->allTasks());
             if (m_detailTask.value(QStringLiteral("taskId")).toString() == taskId) {
                 refreshDetailTaskFromModel();
@@ -255,13 +255,14 @@ void App::setCurrentListId(const QString &id)
     if (m_currentListId == id) return;
     m_currentListId = id;
     Q_EMIT currentListIdChanged();
+    applyListViewSettings();
 
     if (m_demoMode) {
         switchDemoList(id);
         return;
     }
 
-    if (isVirtualAll()) {
+    if (isVirtualList()) {
         // Aggregate everything we already have cached, then trigger a sync of
         // every real list so the aggregated view picks up remote changes.
         m_tasksModel->setTasks(m_db->allTasks());
@@ -285,20 +286,32 @@ void App::setCurrentListId(const QString &id)
     }
 }
 
-bool App::isVirtualAll() const
+bool App::isVirtualList() const
 {
-    return m_currentListId == QString::fromLatin1(TaskListsModel::kVirtualAllId);
+    return TaskListsModel::isVirtualId(m_currentListId);
+}
+
+void App::applyListViewSettings()
+{
+    m_tasksModel->setSortScope(m_currentListId);
+
+    using SF = TasksModel::SmartFilter;
+    SF filter = SF::None;
+    if (m_currentListId == QLatin1String(TaskListsModel::kVirtualImportantId)) filter = SF::Important;
+    else if (m_currentListId == QLatin1String(TaskListsModel::kVirtualPlannedId)) filter = SF::Planned;
+    else if (m_currentListId == QLatin1String(TaskListsModel::kVirtualCompletedId)) filter = SF::Completed;
+    m_tasksModel->setSmartFilter(filter);
 }
 
 QString App::listIdForTask(const QString &taskId) const
 {
-    if (isVirtualAll()) return m_tasksModel->listIdForTask(taskId);
+    if (isVirtualList()) return m_tasksModel->listIdForTask(taskId);
     return m_currentListId;
 }
 
 void App::refreshAggregatedTasks()
 {
-    if (isVirtualAll()) m_tasksModel->setTasks(m_db->allTasks());
+    if (isVirtualList()) m_tasksModel->setTasks(m_db->allTasks());
 }
 
 void App::pushListNamesToModel()
@@ -357,7 +370,7 @@ void App::refresh()
     if (!loggedIn()) return;
     setStatus(i18n("Synchronizing ..."));
     m_todo->fetchLists();
-    if (isVirtualAll()) {
+    if (isVirtualList()) {
         syncAllLists();
     } else if (!m_currentListId.isEmpty()) {
         const QString delta = m_db->deltaLink(m_currentListId);
@@ -427,7 +440,7 @@ void App::addTask(const QString &input)
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
 
     QString targetList = m_currentListId;
-    if (isVirtualAll() || targetList.isEmpty()) {
+    if (isVirtualList() || targetList.isEmpty()) {
         // Virtual smart-list (or no selection yet): pick the user's default
         // list, falling back to the first real list if none is flagged.
         QString defaultId, firstRealId;
@@ -446,8 +459,14 @@ void App::addTask(const QString &input)
     }
     if (targetList.isEmpty()) return;
 
-    const auto parsed = parseAddInput(input.trimmed());
-    m_todo->addTask(targetList, parsed.first, parsed.second);
+    // Like MS To Do: adding from a smart-list gives the task the property
+    // that list filters on, so it doesn't vanish right after creation.
+    auto parsed = parseAddInput(input.trimmed());
+    const bool important = m_currentListId == QLatin1String(TaskListsModel::kVirtualImportantId);
+    if (m_currentListId == QLatin1String(TaskListsModel::kVirtualPlannedId) && !parsed.second.isValid()) {
+        parsed.second = QDateTime(QDate::currentDate(), QTime(9, 0), QTimeZone::LocalTime);
+    }
+    m_todo->addTask(targetList, parsed.first, parsed.second, important);
 }
 
 void App::completeTask(const QString &taskId)
@@ -879,7 +898,7 @@ void App::loadDemoData()
 
 void App::switchDemoList(const QString &id)
 {
-    if (id == QString::fromLatin1(TaskListsModel::kVirtualAllId)) {
+    if (TaskListsModel::isVirtualId(id)) {
         QList<Task> all;
         for (auto it = m_demoTasks.constBegin(); it != m_demoTasks.constEnd(); ++it) {
             for (Task t : it.value()) {

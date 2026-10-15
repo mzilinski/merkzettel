@@ -51,7 +51,7 @@ QQC2.ItemDelegate {
                     text: model.listName || ""
                     // Originating list only matters in the aggregated view —
                     // hide for normal lists where every row shares the same.
-                    visible: text.length > 0 && app.currentListId === "__all__"
+                    visible: text.length > 0 && app.currentListVirtual
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
                     color: Kirigami.Theme.disabledTextColor
                     elide: Text.ElideRight

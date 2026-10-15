@@ -7,7 +7,35 @@ Kirigami.ScrollablePage {
     id: page
     title: ""
 
+    // Exclusive radio-style sort entries; the model persists the choice per
+    // list. Removing the sort again goes through the indicator below the
+    // search field, like in MS To Do.
+    component SortAction: Kirigami.Action {
+        required property string mode
+        checkable: true
+        checked: app.tasksModel.sortMode === mode
+        onTriggered: app.tasksModel.sortMode = mode
+    }
+
     actions: [
+        Kirigami.Action {
+            text: i18n("Sort")
+            icon.name: "view-sort"
+            displayHint: Kirigami.DisplayHint.IconOnly
+            SortAction { mode: "importance"; text: i18n("Importance") }
+            SortAction { mode: "dueDate"; text: i18n("Due date") }
+            SortAction { mode: "title"; text: i18n("Alphabetically") }
+            SortAction { mode: "created"; text: i18n("Creation date") }
+        },
+        Kirigami.Action {
+            text: i18n("Show completed tasks")
+            displayHint: Kirigami.DisplayHint.AlwaysHide
+            checkable: true
+            // Irrelevant in the Completed smart-list, which always shows them.
+            enabled: app.currentListId !== "__completed__"
+            checked: app.tasksModel.showCompleted
+            onTriggered: app.tasksModel.showCompleted = checked
+        },
         Kirigami.Action {
             text: i18n("Sync")
             icon.name: "view-refresh"
@@ -43,10 +71,48 @@ Kirigami.ScrollablePage {
             Kirigami.SearchField {
                 id: searchField
                 Layout.fillWidth: true
-                placeholderText: app.currentListId === "__all__"
+                placeholderText: app.currentListVirtual
                                  ? i18n("Search across all lists ...")
                                  : i18n("Search tasks ...")
                 onTextChanged: app.tasksModel.filterText = text
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                visible: app.tasksModel.sortMode !== "default"
+                spacing: 0
+                QQC2.Label {
+                    Layout.leftMargin: Kirigami.Units.smallSpacing
+                    text: {
+                        switch (app.tasksModel.sortMode) {
+                        case "importance": return i18n("Sorted by importance");
+                        case "dueDate": return i18n("Sorted by due date");
+                        case "title": return i18n("Sorted alphabetically");
+                        case "created": return i18n("Sorted by creation date");
+                        }
+                        return "";
+                    }
+                    color: Kirigami.Theme.disabledTextColor
+                }
+                QQC2.ToolButton {
+                    icon.name: app.tasksModel.sortDescending ? "view-sort-descending"
+                                                             : "view-sort-ascending"
+                    display: QQC2.AbstractButton.IconOnly
+                    text: i18n("Reverse sort order")
+                    QQC2.ToolTip.text: text
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: app.tasksModel.sortDescending = !app.tasksModel.sortDescending
+                }
+                Item { Layout.fillWidth: true }
+                QQC2.ToolButton {
+                    icon.name: "dialog-close"
+                    display: QQC2.AbstractButton.IconOnly
+                    text: i18n("Remove sort order")
+                    QQC2.ToolTip.text: text
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: app.tasksModel.sortMode = "default"
+                }
             }
         }
     }
@@ -60,7 +126,9 @@ Kirigami.ScrollablePage {
         section.criteria: ViewSection.FullString
         section.delegate: Item {
             width: ListView.view.width
-            height: Kirigami.Units.gridUnit * 1.8
+            // Explicit sort orders put all open tasks in one unlabeled section.
+            height: section.length > 0 ? Kirigami.Units.gridUnit * 1.8 : 0
+            visible: section.length > 0
             Kirigami.Heading {
                 anchors.left: parent.left
                 anchors.right: parent.right
