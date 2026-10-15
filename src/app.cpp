@@ -10,8 +10,10 @@
 
 #include <KColorSchemeManager>
 #include <KColorSchemeModel>
+#include <KGlobalAccel>
 #include <KLocalizedString>
 #include <KNotification>
+#include <QAction>
 #include <QApplication>
 #include <QDate>
 #include <QDesktopServices>
@@ -210,6 +212,7 @@ void App::start()
     if (m_demoMode) {
         loadDemoData();
         m_tray->show();
+        registerGlobalShortcuts();
         m_tray->setOpenCount(0);
         Q_EMIT loggedInChanged();
         setStatus(i18n("Demo mode — no real data, all changes are local"));
@@ -218,6 +221,7 @@ void App::start()
 
     m_db->open();
     m_tray->show();
+    registerGlobalShortcuts();
 
     const auto cachedLists = m_db->lists();
     if (!cachedLists.isEmpty()) {
@@ -241,6 +245,19 @@ void App::start()
 
     m_auth->start();
     Q_EMIT loggedInChanged();
+}
+
+void App::registerGlobalShortcuts()
+{
+    // KGlobalAccel keys the shortcut by component (KAboutData) + action
+    // objectName; the user can rebind it in System Settings > Shortcuts.
+    auto *quickAdd = new QAction(i18n("Quick add task"), this);
+    quickAdd->setObjectName(QStringLiteral("quick_add_task"));
+    KGlobalAccel::setGlobalShortcut(quickAdd, QKeySequence(Qt::META | Qt::ALT | Qt::Key_N));
+    connect(quickAdd, &QAction::triggered, this, [this] {
+        activateWindow();
+        Q_EMIT quickAddRequested();
+    });
 }
 
 bool App::loggedIn() const { return m_demoMode || m_auth->isAuthenticated(); }
@@ -732,6 +749,23 @@ void App::requestPickDateForDue(const QString &taskId)
 void App::toggleWindow() { Q_EMIT windowToggleRequested(); }
 
 void App::activateWindow() { Q_EMIT windowActivateRequested(); }
+
+void App::selectAdjacentList(int delta)
+{
+    const int n = m_listsModel->rowCount();
+    if (n == 0) return;
+    int current = -1;
+    for (int i = 0; i < n; ++i) {
+        if (m_listsModel->data(m_listsModel->index(i, 0), TaskListsModel::IdRole).toString()
+            == m_currentListId) {
+            current = i;
+            break;
+        }
+    }
+    const int next = current < 0 ? 0 : ((current + delta) % n + n) % n;
+    setCurrentListId(m_listsModel->data(m_listsModel->index(next, 0),
+                                        TaskListsModel::IdRole).toString());
+}
 
 void App::setColorScheme(const QString &scheme)
 {

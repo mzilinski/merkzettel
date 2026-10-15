@@ -63,12 +63,41 @@ Kirigami.ApplicationWindow {
             errorBanner.text = message;
             errorBanner.visible = true;
         }
+        function onQuickAddRequested() {
+            while (root.pageStack.layers.depth > 1) root.pageStack.layers.pop();
+            app.closeTaskDetails();
+            const page = root.pageStack.currentItem;
+            if (page && page.focusAddField) page.focusAddField();
+        }
         function onPickDateRequested(taskId, initial) {
             datePopup.mode = "due";
             datePopup.contextTaskId = taskId;
             datePopup.value = initial;
             datePopup.open();
         }
+    }
+
+    // Window-wide shortcuts, modelled on MS To Do (Ctrl+L, Ctrl+R,
+    // Alt+Up/Down). Task-level ones live in TasksPage.
+    Shortcut {
+        sequence: "Ctrl+L"
+        enabled: app.loggedIn
+        onActivated: createListDialog.open()
+    }
+    Shortcut {
+        sequences: ["Ctrl+R", StandardKey.Refresh]
+        enabled: app.loggedIn
+        onActivated: app.refresh()
+    }
+    Shortcut {
+        sequence: "Alt+Up"
+        enabled: app.loggedIn
+        onActivated: app.selectAdjacentList(-1)
+    }
+    Shortcut {
+        sequence: "Alt+Down"
+        enabled: app.loggedIn
+        onActivated: app.selectAdjacentList(1)
     }
 
     onClosing: function(close) {

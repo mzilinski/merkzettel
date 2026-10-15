@@ -14,6 +14,8 @@ finish-args:
   - --device=dri
   # KStatusNotifierItem talks to the Plasma tray host.
   - --talk-name=org.kde.StatusNotifierWatcher
+  # Global "Quick add" shortcut via KGlobalAccel.
+  - --talk-name=org.kde.kglobalaccel
   # KWallet via the Secret Service / kwalletd6 D-Bus interface.
   - --talk-name=org.freedesktop.secrets
   - --talk-name=org.kde.kwalletd6

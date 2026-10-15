@@ -96,6 +96,9 @@ public Q_SLOTS:
     // Color scheme picker — "auto"/"light"/"dark" only. KColorSchemeManager
     // auto-saves; the choice survives across launches.
     void setColorScheme(const QString &scheme);
+    // Alt+Up / Alt+Down: select the previous/next entry in the sidebar,
+    // wrapping around.
+    void selectAdjacentList(int delta);
 
 Q_SIGNALS:
     void loggedInChanged();
@@ -107,11 +110,14 @@ Q_SIGNALS:
     void windowActivateRequested();
     void pickDateRequested(const QString &taskId, const QDateTime &initial);
     void colorSchemeChanged();
+    // Global "Quick add" shortcut fired: show the window, focus the add field.
+    void quickAddRequested();
 
 private:
     void onAuthenticated();
     void onAuthError(const QString &message);
     void setStatus(const QString &status);
+    void registerGlobalShortcuts();
     QPair<QString, QDateTime> parseAddInput(const QString &raw) const;
     void loadDemoData();
     void switchDemoList(const QString &id);

@@ -505,3 +505,13 @@ msgstr "Sortierreihenfolge umkehren"
 
 msgid "Remove sort order"
 msgstr "Sortierung entfernen"
+
+# --- keyboard shortcuts ---
+msgid "Quick add task"
+msgstr "Aufgabe schnell hinzufügen"
+
+msgid "Delete task?"
+msgstr "Aufgabe löschen?"
+
+msgid "\"%1\" will be permanently deleted."
+msgstr "„%1“ wird endgültig gelöscht."

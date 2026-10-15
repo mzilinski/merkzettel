@@ -32,6 +32,7 @@ target_link_libraries(merkzettel PRIVATE
     Qt6::Widgets
     KF6::CoreAddons
     KF6::DBusAddons
+    KF6::GlobalAccel
     KF6::I18n
     KF6::Notifications
     KF6::StatusNotifierItem

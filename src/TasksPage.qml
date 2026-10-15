@@ -17,6 +17,41 @@ Kirigami.ScrollablePage {
         onTriggered: app.tasksModel.sortMode = mode
     }
 
+    // Entry points for the window-level shortcuts and the global quick-add.
+    // (Ctrl+F needs no handler: Kirigami.SearchField's focusSequence has it.)
+    function focusAddField() {
+        addField.forceActiveFocus();
+    }
+
+    // Task the keyboard shortcuts act on: the one open in the detail sheet,
+    // otherwise the keyboard-selected row.
+    function shortcutTask() {
+        if (app.detailTask && app.detailTask.taskId !== undefined) return app.detailTask;
+        if (tasksView.activeFocus && tasksView.currentIndex >= 0)
+            return app.tasksModel.taskAt(tasksView.currentIndex);
+        return null;
+    }
+
+    function focusTaskList() {
+        if (tasksView.count === 0) return;
+        if (tasksView.currentIndex < 0) tasksView.currentIndex = 0;
+        tasksView.forceActiveFocus();
+    }
+
+    Shortcut {
+        sequences: [StandardKey.New]
+        onActivated: page.focusAddField()
+    }
+    Shortcut {
+        sequence: "Ctrl+D"
+        onActivated: {
+            const t = page.shortcutTask();
+            if (!t) return;
+            if (t.completed) app.uncompleteTask(t.taskId);
+            else app.completeTask(t.taskId);
+        }
+    }
+
     actions: [
         Kirigami.Action {
             text: i18n("Sort")
@@ -55,6 +90,7 @@ Kirigami.ScrollablePage {
                     Layout.fillWidth: true
                     placeholderText: i18n("New task ... (\"tomorrow\", \"mo\", \"25.5.\" at end for due date)")
                     onAccepted: addCurrent()
+                    Keys.onDownPressed: page.focusTaskList()
                     function addCurrent() {
                         if (text.trim().length > 0) {
                             app.addTask(text.trim());
@@ -75,6 +111,7 @@ Kirigami.ScrollablePage {
                                  ? i18n("Search across all lists ...")
                                  : i18n("Search tasks ...")
                 onTextChanged: app.tasksModel.filterText = text
+                Keys.onDownPressed: page.focusTaskList()
             }
             RowLayout {
                 Layout.fillWidth: true
@@ -121,6 +158,19 @@ Kirigami.ScrollablePage {
         id: tasksView
         model: app.tasksModel
         spacing: 0
+        // Arrow keys move the selection once the list has focus (Down from
+        // the add/search field), Return opens it, Delete asks to delete it.
+        keyNavigationEnabled: true
+        currentIndex: -1
+        Keys.onReturnPressed: if (currentIndex >= 0) app.openTaskDetails(currentIndex)
+        Keys.onEnterPressed: if (currentIndex >= 0) app.openTaskDetails(currentIndex)
+        Keys.onDeletePressed: {
+            if (currentIndex < 0) return;
+            const t = app.tasksModel.taskAt(currentIndex);
+            deleteTaskDialog.taskId = t.taskId;
+            deleteTaskDialog.taskTitle = t.title;
+            deleteTaskDialog.open();
+        }
 
         section.property: "sectionLabel"
         section.criteria: ViewSection.FullString
@@ -142,10 +192,14 @@ Kirigami.ScrollablePage {
 
         delegate: TaskDelegate {
             width: ListView.view.width
+            highlighted: ListView.isCurrentItem && tasksView.activeFocus
             onCheck: completed ? app.uncompleteTask(taskId) : app.completeTask(taskId)
             onRemove: app.deleteTask(taskId)
             onToggleStar: app.toggleImportance(taskId)
-            onOpenDetails: app.openTaskDetails(index)
+            onOpenDetails: {
+                tasksView.currentIndex = index;
+                app.openTaskDetails(index);
+            }
             onPickDate: app.requestPickDateForDue(taskId)
         }
 
@@ -159,5 +213,31 @@ Kirigami.ScrollablePage {
                 : i18n("Type a task above and press Enter.")
             icon.name: searchField.text.length > 0 ? "system-search" : "checkmark"
         }
+    }
+
+    Kirigami.PromptDialog {
+        id: deleteTaskDialog
+        parent: QQC2.Overlay.overlay
+        property string taskId: ""
+        property string taskTitle: ""
+        title: i18n("Delete task?")
+        subtitle: i18n("\"%1\" will be permanently deleted.", taskTitle)
+        standardButtons: Kirigami.PromptDialog.NoButton
+        customFooterActions: [
+            Kirigami.Action {
+                text: i18n("Cancel")
+                icon.name: "dialog-cancel"
+                onTriggered: deleteTaskDialog.close()
+            },
+            Kirigami.Action {
+                text: i18n("Delete")
+                icon.name: "edit-delete"
+                onTriggered: {
+                    app.deleteTask(deleteTaskDialog.taskId);
+                    deleteTaskDialog.close();
+                }
+            }
+        ]
+        onClosed: tasksView.forceActiveFocus()
     }
 }

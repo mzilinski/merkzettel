@@ -23,6 +23,8 @@ Native KDE/Kirigami client for **Microsoft To Do**. Written in C++/Qt6, talks Mi
 - Sort by importance, due date, title or creation date (ascending/descending); hide completed tasks — both remembered across launches
 - Date parsing in the add bar: `Buy milk tomorrow`, `Pay rent mo`, `Doctor 25.5.`
 - Right-click context menu, click-to-open detail sheet, hover-revealed star toggle
+- **Keyboard shortcuts** (MS To Do layout): Ctrl+N new task, Ctrl+L new list, Ctrl+F search, Ctrl+D complete, Ctrl+R/F5 sync, Alt+↑/↓ switch list, arrow keys + Enter/Delete in the task list
+- **Global quick add** (default Meta+Alt+N, rebindable in System Settings → Shortcuts) via KGlobalAccel
 - **KStatusNotifierItem** tray icon with badge for tasks due today
 - `--tray` flag for minimised startup (also exposed as a `.desktop` action)
 - Closing the window minimises to tray instead of quitting
@@ -37,7 +39,7 @@ Native KDE/Kirigami client for **Microsoft To Do**. Written in C++/Qt6, talks Mi
 ```bash
 sudo pacman -S \
   qt6-base qt6-declarative qt6-networkauth \
-  kirigami kirigami-addons kcoreaddons ki18n knotifications \
+  kirigami kirigami-addons kcoreaddons kglobalaccel ki18n knotifications \
   kstatusnotifieritem kconfig kconfigwidgets \
   qtkeychain-qt6 extra-cmake-modules cmake gettext
 ```
@@ -102,7 +104,6 @@ cmake --install build --prefix ~/.local
 **v0.3 — planned**
 - Delta sync (`@odata.deltaLink`) instead of full refresh
 - KNotifications for reminders (popup notifications)
-- KGlobalAccel "Quick Add" global shortcut
 - Subtasks (`checklistItems`)
 - Multiple accounts
 
