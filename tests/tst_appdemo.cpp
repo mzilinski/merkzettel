@@ -26,8 +26,9 @@ QtMessageHandler g_previous = nullptr;
 
 void collectQmlWarnings(QtMsgType type, const QMessageLogContext &ctx, const QString &msg)
 {
-    const bool fromQml = msg.contains(QLatin1String(".qml:")) || qstrcmp(ctx.category, "qml") == 0
-        || qstrcmp(ctx.category, "js") == 0;
+    // Only our own QML counts; Kirigami's internal messages (e.g. incubation
+    // timing under sanitizers) are not ours to fix.
+    const bool fromQml = msg.contains(QLatin1String(MERKZETTEL_QML_DIR "/"));
     // Known upstream issue: Kirigami's OverlaySheet template binds y to
     // implicitHeight and implicitHeight to y (templates/OverlaySheet.qml,
     // "parent.height - y"), which loops whenever the content is taller than the

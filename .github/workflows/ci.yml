@@ -58,16 +58,18 @@ jobs:
           - distro: arch
             container: archlinux:latest
             werror: "ON"
+            ctest_args: ""
             install: |
               pacman -Syu --noconfirm --needed base-devel cmake ninja git \
                 qt6-base qt6-declarative qt6-networkauth \
                 kirigami kirigami-addons kcoreaddons kdbusaddons kglobalaccel ki18n \
                 knotifications kstatusnotifieritem kconfig kconfigwidgets kcolorscheme \
-                qtkeychain-qt6 extra-cmake-modules gettext appstream
+                qtkeychain-qt6 extra-cmake-modules gettext appstream qqc2-desktop-style
 
           - distro: fedora
             container: fedora:latest
             werror: "OFF"
+            ctest_args: "-LE qml"
             install: |
               dnf install -y --setopt=install_weak_deps=False \
                 gcc-c++ cmake ninja-build git make findutils \
@@ -81,6 +83,7 @@ jobs:
           - distro: opensuse
             container: opensuse/tumbleweed
             werror: "OFF"
+            ctest_args: "-LE qml"
             install: |
               zypper -n install -y \
                 gcc-c++ cmake ninja git make \
@@ -94,6 +97,7 @@ jobs:
           - distro: ubuntu-26.04
             container: ubuntu:26.04
             werror: "OFF"
+            ctest_args: "-LE qml"
             install: |
               export DEBIAN_FRONTEND=noninteractive
               apt-get update
@@ -116,7 +120,7 @@ jobs:
       - name: Build
         run: cmake --build build
       - name: Test
-        run: QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
+        run: QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure ${{ matrix.ctest_args }}
       - name: Install (staging)
         run: DESTDIR="$PWD/stage" cmake --install build
 
@@ -152,7 +156,7 @@ jobs:
             qt6-base qt6-declarative qt6-networkauth \
             kirigami kirigami-addons kcoreaddons kdbusaddons kglobalaccel ki18n \
             knotifications kstatusnotifieritem kconfig kconfigwidgets kcolorscheme \
-            qtkeychain-qt6 extra-cmake-modules gettext
+            qtkeychain-qt6 extra-cmake-modules gettext qqc2-desktop-style
       - uses: actions/checkout@v6
       - name: Build
         run: |
