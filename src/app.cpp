@@ -546,6 +546,8 @@ void App::logout()
 void App::refresh()
 {
     if (m_demoMode) {
+        // Ends the simulated offline state (MERKZETTEL_DEMO_OFFLINE).
+        setOnline(true);
         setStatus(i18n("Demo mode — nothing to sync"));
         return;
     }
