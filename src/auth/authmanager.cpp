@@ -44,6 +44,7 @@ AuthManager::AuthManager(QObject *parent)
 
     connect(m_store, &TokenStore::tokenRead, this, [this](const QString &refresh) {
         m_flow->setRefreshToken(refresh);
+        Q_EMIT sessionRestored();
         requestFreshToken();
     });
     connect(m_store, &TokenStore::tokenMissing, this, [this] {
@@ -80,7 +81,45 @@ void AuthManager::configureFlow()
             this, [](const QUrl &url) { QDesktopServices::openUrl(url); });
 
     connect(m_flow, &QOAuth2AuthorizationCodeFlow::granted, this, &AuthManager::onGranted);
+    // OAuth error responses from the token endpoint. invalid_grant on a
+    // refresh means the refresh token was revoked or expired (password
+    // change, consent withdrawn, 90 days unused): the session is over.
+    const auto onServerError = [this](const QString &error, const QString &description) {
+        if (m_refreshing && (error == QLatin1String("invalid_grant")
+                             || error == QLatin1String("interaction_required")
+                             || error == QLatin1String("consent_required"))) {
+            endSession(i18n("Your Microsoft sign-in has expired or was revoked. Please sign in again."));
+            return;
+        }
+        if (!m_refreshing) onError(error, description, {});
+    };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+    connect(m_flow, &QAbstractOAuth2::serverReportedErrorOccurred, this,
+            [onServerError](const QString &error, const QString &description, const QUrl &) {
+        onServerError(error, description);
+    });
+#else
+    connect(m_flow, &QAbstractOAuth2::error, this,
+            [onServerError](const QString &error, const QString &description, const QUrl &) {
+        onServerError(error, description);
+    });
+#endif
+
     connect(m_flow, &QAbstractOAuth::requestFailed, this, [this](QAbstractOAuth::Error err) {
+        if (m_sessionJustEnded) {  // already reported by endSession()
+            m_sessionJustEnded = false;
+            return;
+        }
+        if (m_refreshing) {
+            // Transient: keep the refresh token, the caller retries later.
+            m_refreshing = false;
+            m_authenticated = false;
+            Q_EMIT refreshFailed(err == QAbstractOAuth::Error::NetworkError
+                                     ? i18n("No connection to Microsoft")
+                                     : i18n("Microsoft sign-in is temporarily unavailable"),
+                                 false);
+            return;
+        }
         QString name;
         switch (err) {
         case QAbstractOAuth::Error::NetworkError: name = i18n("Network error"); break;
@@ -139,19 +178,41 @@ void AuthManager::logout()
 
 bool AuthManager::isAuthenticated() const { return m_authenticated && !m_flow->token().isEmpty(); }
 
+bool AuthManager::hasSession() const
+{
+    return isAuthenticated() || !m_flow->refreshToken().isEmpty();
+}
+
+void AuthManager::endSession(const QString &message)
+{
+    m_refreshing = false;
+    m_authenticated = false;
+    m_sessionJustEnded = true;
+    m_flow->setToken(QString());
+    m_flow->setRefreshToken(QString());
+    m_store->clear();
+    Q_EMIT refreshFailed(message, true);
+    Q_EMIT loggedOut();
+}
+
 QString AuthManager::accessToken() const { return m_flow->token(); }
 
 void AuthManager::requestFreshToken()
 {
     if (m_flow->refreshToken().isEmpty()) {
+        Q_EMIT refreshFailed(i18n("Not signed in"), true);
         Q_EMIT loggedOut();
         return;
     }
+    if (m_refreshing) return;  // one refresh at a time; waiters get the signal
+    m_refreshing = true;
     m_flow->refreshTokens();
 }
 
 void AuthManager::onGranted()
 {
+    m_refreshing = false;
+    m_sessionJustEnded = false;
     m_authenticated = true;
     if (m_flow->expirationAt().isValid()) {
         m_expiresAt = m_flow->expirationAt();

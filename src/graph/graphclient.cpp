@@ -6,10 +6,12 @@
 #include <QNetworkReply>
 #include <QUrl>
 #include <QTimer>
+#include <memory>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
+#include <KLocalizedString>
 
 namespace Merkzettel {
 
@@ -21,6 +23,10 @@ constexpr int kMaxThrottleRetries = 5;  // then surface the 429 as an error
 // "HTTP <status>[: <Graph error message>]" — callers match on the prefix.
 QString errorMessage(int status, const QByteArray &data, QNetworkReply *reply)
 {
+    if (status == 0) {
+        // No HTTP response at all: offline, DNS, TLS, timeout.
+        return i18n("No connection to Microsoft (%1)", reply->errorString());
+    }
     QString errMsg = QStringLiteral("HTTP %1").arg(status);
     const auto errDoc = QJsonDocument::fromJson(data);
     if (errDoc.isObject()) {
@@ -125,6 +131,27 @@ void GraphClient::pump()
     }
 }
 
+void GraphClient::afterTokenRefresh(std::function<void()> retry,
+                                    std::function<void(const QString &)> fail)
+{
+    struct Pending {
+        QMetaObject::Connection ok, failed;
+    };
+    auto p = std::make_shared<Pending>();
+    p->ok = connect(m_auth, &AuthManager::accessTokenChanged, this, [p, retry] {
+        QObject::disconnect(p->ok);
+        QObject::disconnect(p->failed);
+        retry();
+    });
+    p->failed = connect(m_auth, &AuthManager::refreshFailed, this,
+                        [p, fail](const QString &message, bool) {
+        QObject::disconnect(p->ok);
+        QObject::disconnect(p->failed);
+        fail(message);
+    });
+    m_auth->requestFreshToken();
+}
+
 bool GraphClient::retryIfThrottled(QNetworkReply *reply, int throttleAttempt,
                                    std::function<void()> again)
 {
@@ -170,11 +197,9 @@ void GraphClient::handleReply(QNetworkReply *reply, GraphCallback cb,
 
     if (status == 401 && retries > 0) {
         // Token expired — refresh and retry once.
-        connect(m_auth, &AuthManager::accessTokenChanged, this,
-                [this, method, url, body, cb, throttleAttempt] {
-                    sendUrl(method, url, body, cb, 0, throttleAttempt);
-                }, Qt::SingleShotConnection);
-        m_auth->requestFreshToken();
+        afterTokenRefresh([this, method, url, body, cb, throttleAttempt] {
+            sendUrl(method, url, body, cb, 0, throttleAttempt);
+        }, [cb](const QString &error) { cb(QJsonValue(), error); });
         return;
     }
 
@@ -211,10 +236,9 @@ void GraphClient::getBytes(const QString &path, GraphBytesCallback cb, int retri
         const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         const QByteArray data = reply->readAll();
         if (status == 401 && retries > 0) {
-            connect(m_auth, &AuthManager::accessTokenChanged, this,
-                    [this, path, cb, throttleAttempt] { getBytes(path, cb, 0, throttleAttempt); },
-                    Qt::SingleShotConnection);
-            m_auth->requestFreshToken();
+            afterTokenRefresh([this, path, cb, throttleAttempt] {
+                getBytes(path, cb, 0, throttleAttempt);
+            }, [cb](const QString &error) { cb(QByteArray(), error); });
             return;
         }
         if (status >= 200 && status < 300) {

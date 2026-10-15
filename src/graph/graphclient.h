@@ -7,6 +7,7 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <functional>
+#include <memory>
 #include <QList>
 
 class QNetworkAccessManager;
@@ -74,6 +75,11 @@ private:
     // True if the reply was throttled and a retry has been scheduled via
     // `again`; false if the caller should handle the reply itself.
     bool retryIfThrottled(QNetworkReply *reply, int throttleAttempt, std::function<void()> again);
+
+    // After a 401: refresh the token, then either retry or fail the request
+    // (refresh failed). Exactly one of the two callbacks runs.
+    void afterTokenRefresh(std::function<void()> retry,
+                           std::function<void(const QString &error)> fail);
 
     QString m_baseUrl;
     QList<Job> m_queue;

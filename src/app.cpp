@@ -24,6 +24,7 @@
 #include <QFileInfo>
 #include <QFile>
 #include <QJsonArray>
+#include <QNetworkInformation>
 #include <QJsonObject>
 #include <QLocale>
 #include <QTimer>
@@ -58,10 +59,36 @@ App::App(QObject *parent)
     connect(m_auth.get(), &AuthManager::authenticated, this, &App::onAuthenticated);
     connect(m_auth.get(), &AuthManager::authError, this, &App::onAuthError);
     connect(m_auth.get(), &AuthManager::loggedOut, this, [this] {
+        // Only announce a sign-out the user can notice; a first start without
+        // stored credentials just shows the login page.
+        const bool hadData = m_listsModel->rowCount() > 0;
         m_tasksModel->clear();
         m_listsModel->clear();
         Q_EMIT loggedInChanged();
-        setStatus(i18n("Signed out"));
+        if (hadData) setStatus(i18n("Signed out"));
+    });
+    connect(m_auth.get(), &AuthManager::sessionRestored, this, [this] {
+        // Stored credentials: show the cached data right away, even offline.
+        Q_EMIT loggedInChanged();
+    });
+    connect(m_auth.get(), &AuthManager::refreshFailed, this,
+            [this](const QString &message, bool sessionEnded) {
+        if (sessionEnded) {
+            Q_EMIT errorOccurred(message);
+            return;
+        }
+        setOnline(false);
+        setStatus(i18n("Offline — showing saved data"));
+        m_authRetryTimer->start();
+    });
+
+    // Retry a failed token refresh periodically, and right away when the
+    // network comes back.
+    m_authRetryTimer = new QTimer(this);
+    m_authRetryTimer->setSingleShot(true);
+    m_authRetryTimer->setInterval(60 * 1000);
+    connect(m_authRetryTimer, &QTimer::timeout, this, [this] {
+        if (m_auth->hasSession() && !m_auth->isAuthenticated()) m_auth->requestFreshToken();
     });
 
     connect(m_todo.get(), &TodoApi::listsReceived, this, [this](const QList<TaskList> &lists) {
@@ -280,6 +307,16 @@ void App::start()
     m_tray->show();
     registerGlobalShortcuts();
     reloadMyDay();
+    if (QNetworkInformation::loadBackendByFeatures(QNetworkInformation::Feature::Reachability)) {
+        connect(QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged, this,
+                [this](QNetworkInformation::Reachability r) {
+            if (r == QNetworkInformation::Reachability::Online) {
+                if (m_auth->hasSession() && !m_auth->isAuthenticated()) m_auth->requestFreshToken();
+            } else if (r == QNetworkInformation::Reachability::Disconnected) {
+                setOnline(false);
+            }
+        });
+    }
 
     const auto cachedLists = m_db->lists();
     if (!cachedLists.isEmpty()) {
@@ -319,7 +356,15 @@ void App::registerGlobalShortcuts()
     });
 }
 
-bool App::loggedIn() const { return m_demoMode || m_auth->isAuthenticated(); }
+bool App::loggedIn() const { return m_demoMode || m_auth->hasSession(); }
+bool App::canSync() const { return !m_demoMode && m_auth->isAuthenticated(); }
+
+void App::setOnline(bool online)
+{
+    if (online == m_online) return;
+    m_online = online;
+    Q_EMIT onlineChanged();
+}
 QString App::status() const { return m_status; }
 QString App::currentListId() const { return m_currentListId; }
 
@@ -345,14 +390,14 @@ void App::setCurrentListId(const QString &id)
         // Aggregate everything we already have cached, then trigger a sync of
         // every real list so the aggregated view picks up remote changes.
         m_tasksModel->setTasks(m_db->allTasks());
-        if (loggedIn()) syncAllLists();
+        if (canSync()) syncAllLists();
         return;
     }
 
     const auto cachedTasks = m_db->tasks(id);
     m_tasksModel->setTasks(cachedTasks);
 
-    if (loggedIn()) {
+    if (canSync()) {
         // Prefer incremental delta sync when we have a token from a prior run.
         // Otherwise fall back to a full fetch (which will get a delta token
         // bootstrapped on its tasksReceived path).
@@ -410,7 +455,7 @@ void App::pushListNamesToModel()
 
 void App::syncAllLists()
 {
-    if (!loggedIn()) return;
+    if (!canSync()) return;
     const int n = m_listsModel->rowCount();
     for (int i = 0; i < n; ++i) {
         const auto idx = m_listsModel->index(i, 0);
@@ -447,6 +492,13 @@ void App::refresh()
         return;
     }
     if (!loggedIn()) return;
+    if (!canSync()) {
+        // Signed in but no access token (offline at startup, or a failed
+        // refresh): a manual sync retries the token refresh first.
+        setStatus(i18n("Connecting to Microsoft ..."));
+        m_auth->requestFreshToken();
+        return;
+    }
     setStatus(i18n("Synchronizing ..."));
     m_todo->fetchLists();
     if (isVirtualList()) {
@@ -1143,7 +1195,7 @@ void App::checkReminders()
         const QString taskId = h.taskId;
         auto *doneAction = notif->addAction(i18n("Mark done"));
         connect(doneAction, &KNotificationAction::activated, this, [this, listId, taskId] {
-            if (loggedIn()) m_todo->setTaskStatus(listId, taskId, QStringLiteral("completed"));
+            if (canSync()) m_todo->setTaskStatus(listId, taskId, QStringLiteral("completed"));
         });
 
         notif->sendEvent();
@@ -1307,6 +1359,8 @@ void App::switchDemoList(const QString &id)
 
 void App::onAuthenticated()
 {
+    setOnline(true);
+    m_authRetryTimer->stop();
     Q_EMIT loggedInChanged();
     setStatus(i18n("Signed in, loading lists ..."));
     m_todo->fetchLists();

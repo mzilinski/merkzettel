@@ -722,3 +722,31 @@ msgstr "Konzentriere dich auf deinen Tag"
 
 msgid "Add tasks here, or press Ctrl+T on a task in any list."
 msgstr "Füge hier Aufgaben hinzu oder drücke Strg+T auf einer Aufgabe in einer beliebigen Liste."
+
+# --- offline / session handling ---
+msgid "Offline — showing saved data. Changes need a connection."
+msgstr "Offline — gespeicherte Daten werden angezeigt. Änderungen brauchen eine Verbindung."
+
+msgid "Reconnect"
+msgstr "Erneut verbinden"
+
+msgid "Offline — showing saved data"
+msgstr "Offline — gespeicherte Daten werden angezeigt"
+
+msgid "Connecting to Microsoft ..."
+msgstr "Verbindung zu Microsoft wird hergestellt ..."
+
+msgid "No connection to Microsoft"
+msgstr "Keine Verbindung zu Microsoft"
+
+msgid "No connection to Microsoft (%1)"
+msgstr "Keine Verbindung zu Microsoft (%1)"
+
+msgid "Microsoft sign-in is temporarily unavailable"
+msgstr "Die Microsoft-Anmeldung ist vorübergehend nicht erreichbar"
+
+msgid "Your Microsoft sign-in has expired or was revoked. Please sign in again."
+msgstr "Deine Microsoft-Anmeldung ist abgelaufen oder wurde widerrufen. Bitte melde dich erneut an."
+
+msgid "Not signed in"
+msgstr "Nicht angemeldet"

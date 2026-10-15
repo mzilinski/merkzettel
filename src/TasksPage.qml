@@ -159,6 +159,18 @@ Kirigami.ScrollablePage {
     header: QQC2.ToolBar {
         contentItem: ColumnLayout {
             spacing: Kirigami.Units.smallSpacing
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                visible: !app.online
+                type: Kirigami.MessageType.Warning
+                text: i18n("Offline — showing saved data. Changes need a connection.")
+                actions: Kirigami.Action {
+                    text: i18n("Reconnect")
+                    icon.name: "view-refresh"
+                    onTriggered: app.refresh()
+                }
+            }
+
             // My Day banner: today's date and the reminder that, unlike in
             // MS To Do, this list lives only on this device.
             RowLayout {

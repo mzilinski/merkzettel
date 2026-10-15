@@ -26,6 +26,8 @@ class App : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool loggedIn READ loggedIn NOTIFY loggedInChanged)
+    // False while Microsoft can't be reached; the UI shows cached data.
+    Q_PROPERTY(bool online READ online NOTIFY onlineChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString currentListId READ currentListId WRITE setCurrentListId NOTIFY currentListIdChanged)
     // True for the synthetic smart-lists (All/Important/Planned/Completed).
@@ -50,6 +52,7 @@ public:
     bool demoMode() const { return m_demoMode; }
 
     bool loggedIn() const;
+    bool online() const { return m_online; }
     QString status() const;
     QString currentListId() const;
     QString currentListName() const { return listDisplayName(m_currentListId); }
@@ -133,6 +136,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void loggedInChanged();
+    void onlineChanged();
     void statusChanged();
     void currentListIdChanged();
     void currentListNameChanged();
@@ -152,6 +156,9 @@ private:
     void onAuthError(const QString &message);
     void setStatus(const QString &status);
     void registerGlobalShortcuts();
+    // Signed in *and* holding an access token, i.e. requests can go out.
+    bool canSync() const;
+    void setOnline(bool online);
     // Reload today's My Day ids into TasksModel (startup, changes, midnight).
     void reloadMyDay();
     // Execute a delayed delete/move now (timer expiry, list switch, or a
@@ -213,6 +220,8 @@ private:
     QDate m_myDayDate;  // day the loaded My Day set belongs to
     UndoState m_undo;
     QTimer *m_commitTimer = nullptr;
+    QTimer *m_authRetryTimer = nullptr;
+    bool m_online = true;
     int m_movesInFlight = 0;
     QSet<QString> m_moveTouchedLists;
     QVariantMap m_detailTask;

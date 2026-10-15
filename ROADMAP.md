@@ -18,19 +18,19 @@ progress summaries in [REPORT.md](REPORT.md).
 
 ### Correctness and robustness
 
-- [ ] P0 [AUTO] Page through `@odata.nextLink` when fetching tasks and lists
+- [x] P0 [AUTO] Page through `@odata.nextLink` when fetching tasks and lists
   (today lists with more than 200 tasks are truncated and the cache drops
   the rest)
-- [ ] P0 [AUTO] Offline start: treat a stored refresh token as signed in,
+- [x] P0 [AUTO] Offline start: treat a stored refresh token as signed in,
   show cached data, retry the token refresh when the network returns
-- [ ] P0 [AUTO] Token refresh failures: `invalid_grant` / revoked consent
+- [x] P0 [AUTO] Token refresh failures: `invalid_grant` / revoked consent
   signs out cleanly with an explanation; requests waiting on a refresh
   fail instead of hanging
-- [ ] P1 [AUTO] Fix self-referencing delta handler (leaks one closure per
+- [x] P1 [AUTO] Fix self-referencing delta handler (leaks one closure per
   sync)
 - [x] P0 [AUTO] HTTP 429/503: request queue (max 4 concurrent), Retry-After,
   bounded retries
-- [ ] P1 [AUTO] Network loss feedback: offline indicator, mutations while
+- [x] P1 [AUTO] Network loss feedback: offline indicator, mutations while
   offline report a clear error instead of raw HTTP text
 - [ ] P1 [AUTO] Conflicts: define last-writer-wins behaviour for edits of a
   task changed remotely, document it
@@ -56,7 +56,7 @@ progress summaries in [REPORT.md](REPORT.md).
 
 ### Quality gates
 
-- [ ] P0 [AUTO] QtTest suite: Graph client (mocked HTTP), add-bar date
+- [x] P0 [AUTO] QtTest suite: Graph client (mocked HTTP), add-bar date
   parser, database cache, models, recurrence decoding
 - [ ] P1 [AUTO] QML smoke tests of the core flows in `--demo`, headless
 - [ ] P1 [AUTO] Static analysis: clang-tidy, clazy, cppcheck in CI
