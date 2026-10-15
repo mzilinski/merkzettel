@@ -107,22 +107,22 @@ progress summaries in [REPORT.md](REPORT.md).
 - [x] P0 [AUTO] `make screenshots`: reproducible screenshots (Xvfb +
   window manager, Breeze Light/Dark, DE/EN) replacing `screenshots/` and the
   metainfo screenshots
-- [ ] P1 [AUTO] `make videos`: one AI-generated video per use case (Xvfb +
+- [x] P1 [AUTO] `make videos`: one AI-generated video per use case (Xvfb +
   xdotool + ffmpeg, Piper TTS DE/EN, SRT subtitles, title cards)
 
 ## Phase 3 — Website
 
-- [ ] P0 [AUTO] Astro static site in `website/`, DE (default) / EN
-- [ ] P0 [AUTO] Pages: home, features, use cases (≥ 4), installation, docs,
+- [x] P0 [AUTO] Astro static site in `website/`, DE (default) / EN
+- [x] P0 [AUTO] Pages: home, features, use cases (≥ 4), installation, docs,
   open source, contact, imprint/privacy drafts
-- [ ] P0 [AUTO] GitHub Pages deployment workflow
-- [ ] P1 [AUTO] Lighthouse ≥ 90, no trackers/external fonts, OpenGraph,
+- [x] P0 [AUTO] GitHub Pages deployment workflow
+- [x] P1 [AUTO] Lighthouse ≥ 90, no trackers/external fonts, OpenGraph,
   sitemap, robots.txt
 
 ## Phase 4 — Release preparation
 
 - [ ] P0 [AUTO] Clean-room test from a fresh clone following the docs
-- [ ] P0 [AUTO] `flathub/` submission directory and checklist
+- [x] P0 [AUTO] `flathub/` submission directory and checklist
 - [ ] P0 [AUTO] `HUMAN_TODO.md`, final `REPORT.md`
 
 ## [HUMAN] checklist

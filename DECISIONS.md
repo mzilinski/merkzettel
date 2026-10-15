@@ -131,3 +131,29 @@ release. Newest last. Each entry: context, decision, consequences.
   the plugin system; the docs stay on 1.x until a migration path exists.
   Diagrams are rendered to static SVG at build time (Mermaid in headless
   Chromium) so no JavaScript or CDN is needed on the documentation pages.
+
+## D14 — Video pipeline and storage
+
+- **Context:** The how-to videos are built from scripts in `docs/videos/`
+  (Xvfb, KWin, xdotool, ffmpeg, Piper). Building them needs a desktop
+  stack, the app and ~120 MB of voices, which the Pages workflow on
+  `ubuntu-latest` does not have.
+- **Decision:** Each script has a fixed timeline (start time per segment);
+  the generator checks that the narration fits each slot. Both languages
+  share the timeline, so the English and German subtitles fit either video.
+  The MP4s (~2–3 MB each, CRF 28) are built locally with `make videos` and
+  committed through **Git LFS** (`website/public/videos/*.mp4`); posters and
+  subtitles are plain files. The Pages workflow checks out with `lfs: true`.
+  This keeps clones small when videos are re-rendered.
+- **Voices:** German *Thorsten* (CC0), English *libritts_r medium*, speaker
+  20 (CC BY 4.0, credited on the end card and in `docs/videos/README.md`).
+
+## D15 — Website
+
+- **Decision:** Astro 7, fully static, no client-side JavaScript, no
+  external fonts or CDNs (system font stack with Noto Sans first), German at
+  the root and English under `/en/`, `hreflang` alternates on every page.
+  Screenshots come straight from `docs/assets/screenshots` and are converted
+  to WebP with light/dark `<picture>` sources. The MkDocs output is served
+  below `/docs/` from the same artifact. Imprint and privacy policy are drafts
+  marked on the page (legal review and postal address: HUMAN_TODO.md).

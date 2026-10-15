@@ -132,3 +132,39 @@ Done (see ROADMAP.md for the full list):
 Open from Phase 1: multiple accounts (deferred to v0.4, D12); an offline
 change queue (D11); the Kirigami OverlaySheet binding-loop warning (upstream,
 detail view could move to `Kirigami.Dialog`).
+
+## Phase 2 — Documentation (summary)
+
+- **MkDocs site** (Material, DE default + EN, `mkdocs build --strict`
+  clean): installation per distribution, Azure setup, configuration, user
+  guide, shortcuts, FAQ, troubleshooting, privacy, architecture with Mermaid
+  diagrams rendered to static SVG, developer and translation guides.
+- **How-tos** for five use cases (work account, quick capture, plan your
+  day, organise tasks, offline), each with screenshots and a video.
+- **`make screenshots`:** 8 views × Breeze Light/Dark × EN/DE from the demo
+  mode in Xvfb with KWin, used by docs, README, metainfo and website.
+- **`make videos`:** scripts in `docs/videos/*.md` (timeline, actions,
+  narration EN/DE) drive a recorder in Xvfb (KWin, kglobalacceld, xdotool,
+  ffmpeg x11grab). Piper narrates (Thorsten CC0 / LibriTTS-R CC BY 4.0),
+  loudnorm to −16 LUFS, title and end cards rendered from HTML with
+  Playwright, key presses shown as captions. Output: 10 MP4s (1920×1080,
+  H.264/AAC, 71–94 s, 2–3 MB each), SRT + WebVTT in both languages, posters.
+  `--check` verifies that every narration fits its slot without recording.
+- The demo mode became editable (add, complete, edit, undo) so videos and
+  visitors can try the real flows; `merkzettel --quick-add` and a tray entry
+  were added for the quick-capture use case.
+
+## Phase 3 — Website (summary)
+
+- **Astro 7, static, no client-side JavaScript**, German at `/merkzettel/`,
+  English at `/merkzettel/en/`, language switch and `hreflang` on every page.
+- Pages: home (tagline, three benefits, light/dark screenshot, Flathub/AUR
+  buttons), features, five use cases (problem → solution → result, video,
+  screenshot, link to the how-to), installation, docs (MkDocs below
+  `/docs/`), open source (licence, repository, contributing, translating,
+  roadmap, donations), contact, imprint and privacy policy as drafts marked
+  "Entwurf – rechtliche Prüfung ausstehend" (GitHub Pages named as host).
+- No trackers, cookies, external fonts or CDNs; WebP screenshots with
+  `prefers-color-scheme` sources; OpenGraph image, sitemap, `robots.txt`;
+  `make site`; `.github/workflows/pages.yml` deploys docs + site with videos
+  from Git LFS.

@@ -32,6 +32,10 @@ First public release.
   weekday picker) and file attachments (up to 25 MB, drag and drop).
 - Works offline with the cached data and reconnects automatically.
 - Quick-add understands English and German date keywords.
+- `merkzettel --quick-add` and a *New task …* tray entry open the new-task
+  field, also for a running instance.
+- The sign-in page lists the requested permissions and offers a demo mode
+  in which tasks can be added and edited locally.
 
 ### Changed
 
