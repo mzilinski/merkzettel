@@ -1,0 +1,35 @@
+pkgbase = merkzettel
+	pkgdesc = Native Plasma client for Microsoft To Do
+	pkgver = 0.4.0
+	pkgrel = 1
+	url = https://mzilinski.github.io/merkzettel/
+	arch = x86_64
+	arch = aarch64
+	license = GPL-3.0-or-later
+	checkdepends = appstream
+	makedepends = cmake
+	makedepends = extra-cmake-modules
+	makedepends = git
+	makedepends = ninja
+	depends = glibc
+	depends = libstdc++
+	depends = hicolor-icon-theme
+	depends = qt6-base
+	depends = qt6-declarative
+	depends = qt6-networkauth
+	depends = kirigami
+	depends = kirigami-addons
+	depends = qqc2-desktop-style
+	depends = kcolorscheme
+	depends = kconfig
+	depends = kcoreaddons
+	depends = kdbusaddons
+	depends = kglobalaccel
+	depends = ki18n
+	depends = knotifications
+	depends = kstatusnotifieritem
+	depends = qtkeychain-qt6
+	source = git+https://github.com/mzilinski/merkzettel.git#tag=v0.4.0
+	sha256sums = SKIP
+
+pkgname = merkzettel

@@ -1,0 +1,45 @@
+# Maintainer: Malte Zilinski <malte at zilinski dot eu>
+#
+# Release package, built from the signed git tag. _clientid is the Azure
+# "Merkzettel (public releases)" client ID (see HUMAN_TODO.md); without it the
+# app builds but sign-in is disabled. Builders may override it with their own
+# registration: MERKZETTEL_CLIENT_ID=<id> makepkg
+pkgname=merkzettel
+pkgver=0.4.0
+pkgrel=1
+pkgdesc='Native Plasma client for Microsoft To Do'
+arch=('x86_64' 'aarch64')
+url='https://mzilinski.github.io/merkzettel/'
+license=('GPL-3.0-or-later')
+depends=(
+  'glibc' 'libstdc++' 'hicolor-icon-theme'
+  'qt6-base' 'qt6-declarative' 'qt6-networkauth'
+  # QML runtime imports (not visible to namcap's ELF scan)
+  'kirigami' 'kirigami-addons' 'qqc2-desktop-style'
+  'kcolorscheme' 'kconfig' 'kcoreaddons' 'kdbusaddons' 'kglobalaccel' 'ki18n'
+  'knotifications' 'kstatusnotifieritem' 'qtkeychain-qt6'
+)
+makedepends=('cmake' 'extra-cmake-modules' 'git' 'ninja')
+checkdepends=('appstream')
+source=("git+https://github.com/mzilinski/merkzettel.git#tag=v${pkgver}")
+sha256sums=('SKIP')
+_clientid=
+
+build() {
+  cmake -B build -S merkzettel -G Ninja \
+    -DCMAKE_BUILD_TYPE=None \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DMERKZETTEL_CLIENT_ID="${MERKZETTEL_CLIENT_ID:-$_clientid}" \
+    -DMERKZETTEL_TENANT=common
+  cmake --build build
+}
+
+# The QML smoke test needs a full Kirigami runtime and D-Bus session; the
+# unit tests cover the logic.
+check() {
+  QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure -E tst_appdemo
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}

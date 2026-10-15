@@ -47,7 +47,7 @@ progress summaries in [REPORT.md](REPORT.md).
   `appstreamcli validate --strict` and `desktop-file-validate` clean
 - [x] P0 [AUTO] Flatpak manifest against `org.kde.Platform` 6.x, minimal
   permissions, verified with `flatpak-builder`
-- [ ] P0 [AUTO] AUR `PKGBUILD` for `merkzettel` and `merkzettel-git`, `namcap`
+- [x] P0 [AUTO] AUR `PKGBUILD` for `merkzettel` and `merkzettel-git`, `namcap`
   clean
 - [x] P0 [AUTO] Version in one place (CMake), `CHANGELOG.md` (Keep a
   Changelog)
