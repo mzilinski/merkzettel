@@ -88,7 +88,7 @@ void TasksModel::setSortScope(const QString &listId)
     const bool desc = stored.value(1) == QLatin1String("desc");
     const bool modeChanged = mode != m_sortMode;
     const bool descChanged = desc != m_sortDescending;
-    m_sortMode = mode;
+    m_sortMode = std::move(mode);
     m_sortDescending = desc;
     if (modeChanged) Q_EMIT sortModeChanged();
     if (descChanged) Q_EMIT sortDescendingChanged();
@@ -135,6 +135,7 @@ QString TasksModel::sectionLabel(const Task &t) const
     case kSectionLater: return i18n("Later");
     case kSectionNoDate: return i18n("No date");
     case kSectionCompleted: return i18n("Completed");
+    default: break;
     }
     return {};
 }
@@ -180,6 +181,7 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
         if (d == today.addDays(-1)) return i18n("Yesterday");
         return QLocale().toString(d, QLocale::ShortFormat);
     }
+    default: break;
     }
     return {};
 }
@@ -376,7 +378,7 @@ void TasksModel::applyFilter()
     beginResetModel();
     m_tasks.clear();
     m_tasks.reserve(m_allTasks.size());
-    for (const auto &t : m_allTasks) {
+    for (const auto &t : std::as_const(m_allTasks)) {
         if (matchesFilter(t)) m_tasks.append(t);
     }
     std::sort(m_tasks.begin(), m_tasks.end(),
@@ -402,7 +404,8 @@ QVariantMap TasksModel::recurrenceInfo(const QString &recurrenceJson)
     const QString type = pat.value(QStringLiteral("type")).toString();
     const int interval = qMax(1, pat.value(QStringLiteral("interval")).toInt(1));
     QStringList days;
-    for (const auto &d : pat.value(QStringLiteral("daysOfWeek")).toArray())
+    const auto dayValues = pat.value(QStringLiteral("daysOfWeek")).toArray();
+    for (const auto &d : dayValues)
         days.append(d.toString());
 
     static const QStringList kWeekdays = {
@@ -444,7 +447,7 @@ QVariantMap TasksModel::recurrenceInfo(const QString &recurrenceJson)
         summary = i18np("Every day", "Every %1 days", interval);
     } else if (unit == QLatin1String("week")) {
         QStringList names;
-        for (const auto &d : sortedDays) {
+        for (const auto &d : std::as_const(sortedDays)) {
             names.append(QLocale().dayName(kWeekdays.indexOf(d) + 1, QLocale::ShortFormat));
         }
         summary = workweek && interval == 1

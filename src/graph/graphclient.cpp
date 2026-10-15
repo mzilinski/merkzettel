@@ -162,7 +162,8 @@ bool GraphClient::retryIfThrottled(QNetworkReply *reply, int throttleAttempt,
     // Retry-After is in seconds; without it back off 2, 4, 8, ... s.
     bool ok = false;
     int seconds = reply->rawHeader("Retry-After").trimmed().toInt(&ok);
-    if (!ok || seconds <= 0) seconds = 2 << throttleAttempt;
+    if (!ok || seconds <= 0)
+        seconds = 2 * static_cast<int>(1U << static_cast<unsigned>(qBound(0, throttleAttempt, 6)));
     seconds = qBound(1, seconds, 120);
     qInfo() << "Graph throttled (HTTP" << status << "), pausing" << seconds << "s";
 

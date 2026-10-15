@@ -40,6 +40,7 @@ QVariant TaskListsModel::data(const QModelIndex &index, int role) const
         if (l.id == QLatin1String(kVirtualPlannedId)) return QStringLiteral("view-calendar");
         if (l.id == QLatin1String(kVirtualCompletedId)) return QStringLiteral("checkmark");
         return l.isDefault ? QStringLiteral("go-home") : QStringLiteral("view-list-text");
+    default: break;
     }
     return {};
 }

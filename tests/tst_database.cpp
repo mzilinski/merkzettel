@@ -91,7 +91,8 @@ private Q_SLOTS:
                            makeTask(QStringLiteral("z"), QStringLiteral("Added"))},
                           {QStringLiteral("y")});
         QStringList titles;
-        for (const auto &t : db.tasks(QStringLiteral("L")))
+        const auto cachedTasks = db.tasks(QStringLiteral("L"));
+        for (const auto &t : cachedTasks)
             titles.append(t.title);
         titles.sort();
         QCOMPARE(titles, (QStringList {QStringLiteral("Added"), QStringLiteral("New")}));

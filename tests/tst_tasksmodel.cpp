@@ -111,13 +111,13 @@ private Q_SLOTS:
 
         m.setSortMode(QStringLiteral("title"));
         QVERIFY(!m.sortDescending());
-        QCOMPARE(ids(m).first(), QStringLiteral("later")); // "Alpha later"
-        QCOMPARE(ids(m).last(), QStringLiteral("nodate")); // "Zulu"
+        QCOMPARE(ids(m).constFirst(), QStringLiteral("later")); // "Alpha later"
+        QCOMPARE(ids(m).constLast(), QStringLiteral("nodate")); // "Zulu"
         // Explicit sorts drop the date sections for open tasks.
         QVERIFY(m.data(m.index(0, 0), TasksModel::SectionLabelRole).toString().isEmpty());
 
         m.setSortDescending(true);
-        QCOMPARE(ids(m).first(), QStringLiteral("nodate"));
+        QCOMPARE(ids(m).constFirst(), QStringLiteral("nodate"));
 
         m.setSortMode(QStringLiteral("importance"));
         QVERIFY(!m.sortDescending()); // picking a mode resets the direction
@@ -126,7 +126,7 @@ private Q_SLOTS:
                 < byImportance.indexOf(QStringLiteral("over")));
 
         m.setSortMode(QStringLiteral("dueDate"));
-        QCOMPARE(ids(m).first(), QStringLiteral("over"));
+        QCOMPARE(ids(m).constFirst(), QStringLiteral("over"));
         QVERIFY(ids(m).indexOf(QStringLiteral("nodate")) > ids(m).indexOf(QStringLiteral("later")));
 
         m.setSortMode(QStringLiteral("default"));

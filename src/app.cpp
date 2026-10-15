@@ -1149,7 +1149,8 @@ void App::setDetailTask(const QVariantMap &task)
     if (!id.isEmpty()) {
         QMimeDatabase mimes;
         QVariantList list;
-        for (const auto &a : m_attachments.value(id)) {
+        const auto attachmentList = m_attachments.value(id);
+        for (const auto &a : attachmentList) {
             list.append(QVariantMap {
                 {QStringLiteral("id"), a.id},
                 {QStringLiteral("name"), a.name},
@@ -1164,7 +1165,8 @@ void App::setDetailTask(const QVariantMap &task)
 
 Attachment App::findAttachment(const QString &taskId, const QString &attachmentId) const
 {
-    for (const auto &a : m_attachments.value(taskId)) {
+    const auto attachmentList = m_attachments.value(taskId);
+    for (const auto &a : attachmentList) {
         if (a.id == attachmentId) return a;
     }
     return {};
@@ -1420,7 +1422,7 @@ void App::loadDemoData()
             t.checklistItems.append(c);
         }
         t.totalChecklistCount = t.checklistItems.size();
-        for (const auto &c : t.checklistItems)
+        for (const auto &c : std::as_const(t.checklistItems))
             if (!c.isChecked) ++t.openChecklistCount;
         return t;
     };

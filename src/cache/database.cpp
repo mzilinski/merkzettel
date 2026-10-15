@@ -25,7 +25,8 @@ QStringList categoriesFromJson(const QString &json)
 {
     QStringList out;
     if (json.isEmpty()) return out;
-    for (const auto &v : QJsonDocument::fromJson(json.toUtf8()).array())
+    const auto jsonEntries = QJsonDocument::fromJson(json.toUtf8()).array();
+    for (const auto &v : jsonEntries)
         out.append(v.toString());
     return out;
 }
@@ -510,7 +511,7 @@ QList<Task> Database::tasks(const QString &listId) const
         t.checklistItems = itemsByTask.value(t.id);
         t.totalChecklistCount = t.checklistItems.size();
         t.openChecklistCount = 0;
-        for (const auto &c : t.checklistItems) {
+        for (const auto &c : std::as_const(t.checklistItems)) {
             if (!c.isChecked) ++t.openChecklistCount;
         }
         t.linkedResources = linksByTask.value(t.id);
@@ -592,7 +593,7 @@ QList<Task> Database::allTasks() const
         t.checklistItems = itemsByTask.value(t.id);
         t.totalChecklistCount = t.checklistItems.size();
         t.openChecklistCount = 0;
-        for (const auto &c : t.checklistItems) {
+        for (const auto &c : std::as_const(t.checklistItems)) {
             if (!c.isChecked) ++t.openChecklistCount;
         }
         t.linkedResources = linksByTask.value(t.id);

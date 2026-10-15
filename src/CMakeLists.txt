@@ -49,6 +49,7 @@ target_link_libraries(merkzettel PRIVATE
     KF6::CoreAddons
     KF6::DBusAddons
     KF6::GlobalAccel
+    KF6::I18nQml
     KF6::Notifications
     KF6::StatusNotifierItem
     KF6::ConfigGui

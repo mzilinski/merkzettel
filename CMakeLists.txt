@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(merkzettel VERSION 0.4.0 LANGUAGES CXX)
 
 set(QT_MIN_VERSION 6.6.0)
-set(KF_MIN_VERSION 6.0.0)
+set(KF_MIN_VERSION 6.8.0)
 
 find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
@@ -13,6 +13,18 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(ECMQmlModule)
 include(ECMAddTests)
+
+option(MERKZETTEL_WERROR "Treat compiler warnings as errors (CI)" OFF)
+if(MERKZETTEL_WERROR)
+    add_compile_options(-Werror)
+endif()
+
+option(MERKZETTEL_SANITIZERS "Build with AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+if(MERKZETTEL_SANITIZERS)
+    set(ECM_ENABLE_SANITIZERS "address;undefined")
+    include(ECMEnableSanitizers)
+endif()
+
 include(FeatureSummary)
 
 find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS

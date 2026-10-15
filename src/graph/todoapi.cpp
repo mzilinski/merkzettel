@@ -103,7 +103,8 @@ Task parseTask(const QJsonObject &obj)
         t.recurrenceJson = QString::fromUtf8(QJsonDocument(rec).toJson(QJsonDocument::Compact));
     }
 
-    for (const auto &c : obj.value(QStringLiteral("categories")).toArray()) {
+    const auto categoryValues = obj.value(QStringLiteral("categories")).toArray();
+    for (const auto &c : categoryValues) {
         const QString name = c.toString();
         if (!name.isEmpty()) t.categories.append(name);
     }
@@ -116,7 +117,7 @@ Task parseTask(const QJsonObject &obj)
     }
     t.totalChecklistCount = t.checklistItems.size();
     t.openChecklistCount = 0;
-    for (const auto &c : t.checklistItems) {
+    for (const auto &c : std::as_const(t.checklistItems)) {
         if (!c.isChecked) ++t.openChecklistCount;
     }
 
@@ -172,7 +173,8 @@ void TodoApi::fetchLists()
 {
     auto lists = std::make_shared<QList<TaskList>>();
     fetchAllPages(m_graph->url(QStringLiteral("/me/todo/lists")), [lists](const QJsonObject &page) {
-        for (const auto &v : page.value(QStringLiteral("value")).toArray())
+        const auto pageItems = page.value(QStringLiteral("value")).toArray();
+        for (const auto &v : pageItems)
             lists->append(parseList(v.toObject()));
     }, [this, lists](const QJsonObject &, const QString &err) {
         if (!err.isEmpty()) {
@@ -197,7 +199,8 @@ void TodoApi::fetchTasks(const QString &listId)
     auto tasks = std::make_shared<QList<Task>>();
     fetchAllPages(m_graph->url(QStringLiteral("/me/todo/lists/%1/tasks").arg(listId), q),
                   [tasks, listId](const QJsonObject &page) {
-        for (const auto &v : page.value(QStringLiteral("value")).toArray()) {
+        const auto pageItems = page.value(QStringLiteral("value")).toArray();
+        for (const auto &v : pageItems) {
             Task t = parseTask(v.toObject());
             t.listId = listId;
             tasks->append(std::move(t));
@@ -395,7 +398,8 @@ void TodoApi::syncTasks(const QString &listId, const QString &deltaLink)
         ? m_graph->url(QStringLiteral("/me/todo/lists/%1/tasks/delta").arg(listId))
         : QUrl(deltaLink);
     fetchAllPages(first, [state, listId](const QJsonObject &page) {
-        for (const auto &v : page.value(QStringLiteral("value")).toArray()) {
+        const auto pageItems = page.value(QStringLiteral("value")).toArray();
+        for (const auto &v : pageItems) {
             const auto taskObj = v.toObject();
             // Tasks removed since the last delta carry the @removed annotation
             // (Graph quirk: it's a top-level key, not inside the task body).
@@ -448,7 +452,8 @@ void TodoApi::fetchChecklistItems(const QString &listId, const QString &taskId)
             return;
         }
         QList<ChecklistItem> items;
-        for (const auto &v : val.toObject().value(QStringLiteral("value")).toArray()) {
+        const auto pageItems = val.toObject().value(QStringLiteral("value")).toArray();
+        for (const auto &v : pageItems) {
             items.append(parseChecklistItem(v.toObject()));
         }
         Q_EMIT checklistItemsReceived(listId, taskId, items);
@@ -504,7 +509,8 @@ void TodoApi::moveTask(const QString &srcListId, const QString &taskId, const QS
                               payload, [done](const QJsonValue &, const QString &e) { done(e); });
             });
         };
-        for (const auto &c : src.value(QStringLiteral("checklistItems")).toArray()) {
+        const auto checklistJson = src.value(QStringLiteral("checklistItems")).toArray();
+        for (const auto &c : checklistJson) {
             const auto o = c.toObject();
             steps->append(
                 postTo(QStringLiteral("checklistItems"),
@@ -513,7 +519,8 @@ void TodoApi::moveTask(const QString &srcListId, const QString &taskId, const QS
                            {QStringLiteral("isChecked"), o.value(QStringLiteral("isChecked"))},
                        }));
         }
-        for (const auto &r : src.value(QStringLiteral("linkedResources")).toArray()) {
+        const auto linkJson = src.value(QStringLiteral("linkedResources")).toArray();
+        for (const auto &r : linkJson) {
             const QJsonObject o = r.toObject();
             QJsonObject copy;
             for (const char *key : {"webUrl", "applicationName", "displayName", "externalId"}) {
@@ -580,7 +587,8 @@ void TodoApi::moveTask(const QString &srcListId, const QString &taskId, const QS
                 Q_EMIT taskMoveFailed(srcListId, taskId, err);
                 return;
             }
-            for (const auto &a : v.toObject().value(QStringLiteral("value")).toArray()) {
+            const auto pageItems = v.toObject().value(QStringLiteral("value")).toArray();
+            for (const auto &a : pageItems) {
                 const QJsonObject o = a.toObject();
                 const QString id = o.value(QStringLiteral("id")).toString();
                 const QString name = o.value(QStringLiteral("name")).toString();
@@ -607,7 +615,8 @@ namespace {
 QList<Attachment> parseAttachments(const QJsonValue &v)
 {
     QList<Attachment> out;
-    for (const auto &a : v.toObject().value(QStringLiteral("value")).toArray()) {
+    const auto pageItems = v.toObject().value(QStringLiteral("value")).toArray();
+    for (const auto &a : pageItems) {
         const QJsonObject o = a.toObject();
         Attachment att;
         att.id = o.value(QStringLiteral("id")).toString();
@@ -802,7 +811,8 @@ void TodoApi::fetchLinkedResources(const QString &listId, const QString &taskId)
             return;
         }
         QList<LinkedResource> items;
-        for (const auto &v : val.toObject().value(QStringLiteral("value")).toArray()) {
+        const auto pageItems = val.toObject().value(QStringLiteral("value")).toArray();
+        for (const auto &v : pageItems) {
             items.append(parseLinkedResource(v.toObject()));
         }
         Q_EMIT linkedResourcesReceived(listId, taskId, items);

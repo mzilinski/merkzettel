@@ -82,6 +82,9 @@ public:
     TasksModel *tasksModel() const;
     TaskListsModel *listsModel() const;
 
+    // Every category name used on any cached task, for autocompletion.
+    Q_INVOKABLE QStringList knownCategories() const;
+
 public Q_SLOTS:
     void login();
     // Try the app with demo data from the login page, and go back.
@@ -129,8 +132,7 @@ public Q_SLOTS:
     void setTaskRecurrence(const QString &taskId, const QString &unit, int interval,
                            const QStringList &days);
     void setTaskCategories(const QString &taskId, const QStringList &categories);
-    // Every category name used on any cached task, for autocompletion.
-    QStringList knownCategories() const;
+
     void addLinkedResource(const QString &taskId, const QString &webUrl,
                            const QString &displayName);
     void removeLinkedResource(const QString &taskId, const QString &resourceId);

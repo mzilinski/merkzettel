@@ -15,7 +15,7 @@
 #include <KSharedConfig>
 #include <KAboutData>
 #include <KDBusService>
-#include <KLocalizedContext>
+#include <KLocalizedQmlContext>
 #include <KLocalizedString>
 
 #include "app.h"
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
         [&controller](const QStringList &, const QString &) { controller.activateWindow(); });
 
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
+    KLocalization::setupLocalizedContext(&engine);
     engine.rootContext()->setContextProperty(QStringLiteral("app"), &controller);
     engine.rootContext()->setContextProperty(QStringLiteral("appVersion"),
                                              QStringLiteral(MERKZETTEL_VERSION));

@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: CC0-1.0
+---
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -bugprone-implicit-widening-of-multiplication-result,
+  clang-analyzer-*,
+  -clang-analyzer-optin.cplusplus.VirtualCall,
+  performance-*,
+  -performance-enum-size,
+  -performance-avoid-endl,
+  -performance-unnecessary-value-param,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-emplace,
+  readability-misleading-indentation,
+  readability-redundant-string-init,
+  misc-redundant-expression,
+  misc-unused-using-decls
+WarningsAsErrors: '*'
+HeaderFilterRegex: '.*/merkzettel/(src|tests)/.*'
+FormatStyle: file
+...

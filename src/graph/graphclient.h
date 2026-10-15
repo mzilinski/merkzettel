@@ -79,13 +79,13 @@ private:
     void afterTokenRefresh(std::function<void()> retry,
                            std::function<void(const QString &error)> fail);
 
-    QString m_baseUrl;
     QList<Job> m_queue;
     int m_inFlight = 0;
     bool m_paused = false;
 
     AuthManager *m_auth;
     QNetworkAccessManager *m_nam;
+    QString m_baseUrl;
 };
 
 } // namespace Merkzettel
