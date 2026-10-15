@@ -1,0 +1,30 @@
+flowchart LR
+  subgraph UI["QML (Kirigami)"]
+    Main[Main.qml<br/>sidebar, dialogs]
+    Tasks[TasksPage / TaskDelegate]
+    Detail[TaskDetailSheet]
+  end
+  App["App<br/>(controller, exposed as app)"]
+  subgraph Core["merkzettel_core"]
+    Models["TaskListsModel<br/>TasksModel"]
+    Todo["TodoApi<br/>(To Do endpoints)"]
+    Graph["GraphClient<br/>(queue, retry, 401 refresh)"]
+    Auth["AuthManager<br/>(OAuth 2.0 + PKCE)"]
+    Store["TokenStore<br/>(QtKeychain)"]
+    DB[("Database<br/>SQLite cache")]
+  end
+  MS[(Microsoft Graph)]
+  Login[(Microsoft identity platform)]
+  Keychain[(System keychain)]
+  Tray[TrayIcon]
+
+  UI <--> App
+  App --> Models
+  App --> Todo
+  App --> DB
+  App --> Tray
+  Todo --> Graph
+  Graph --> Auth
+  Auth --> Store --> Keychain
+  Auth <--> Login
+  Graph <--> MS

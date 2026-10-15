@@ -98,13 +98,13 @@ progress summaries in [REPORT.md](REPORT.md).
 
 ## Phase 2 — Documentation
 
-- [ ] P0 [AUTO] MkDocs (Material) site, DE/EN, built into
+- [x] P0 [AUTO] MkDocs (Material) site, DE/EN, built into
   `website/public/docs`
-- [ ] P0 [AUTO] Installation (Flathub, AUR, source per distro), Azure setup,
+- [x] P0 [AUTO] Installation (Flathub, AUR, source per distro), Azure setup,
   configuration, user guide, keyboard shortcuts, FAQ, troubleshooting,
   architecture (Mermaid), developer guide, translation guide
-- [ ] P0 [AUTO] One how-to per use case
-- [ ] P0 [AUTO] `make screenshots`: reproducible screenshots (Xvfb +
+- [x] P0 [AUTO] One how-to per use case
+- [x] P0 [AUTO] `make screenshots`: reproducible screenshots (Xvfb +
   window manager, Breeze Light/Dark, DE/EN) replacing `screenshots/` and the
   metainfo screenshots
 - [ ] P1 [AUTO] `make videos`: one AI-generated video per use case (Xvfb +

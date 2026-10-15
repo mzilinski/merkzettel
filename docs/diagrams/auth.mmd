@@ -1,0 +1,16 @@
+sequenceDiagram
+  participant U as User
+  participant M as Merkzettel
+  participant B as Browser
+  participant L as login.microsoftonline.com
+  participant K as Keychain
+  U->>M: Sign in
+  M->>M: listen on 127.0.0.1:53682, create PKCE verifier + state
+  M->>B: open /authorize?code_challenge=…&state=…
+  B->>L: sign in, consent
+  L-->>B: redirect to localhost:53682/callback?code=…&state=…
+  B->>M: callback (state checked)
+  M->>L: POST /token (code + verifier)
+  L-->>M: access token + refresh token
+  M->>K: store refresh token
+  Note over M,K: Next start: read refresh token, refresh silently.<br/>Offline: show cache, retry later.

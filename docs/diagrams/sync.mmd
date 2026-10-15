@@ -1,0 +1,24 @@
+sequenceDiagram
+  participant UI as QML
+  participant App
+  participant DB as SQLite cache
+  participant Api as TodoApi
+  participant G as Microsoft Graph
+  UI->>App: select list
+  App->>DB: tasks(list)
+  DB-->>App: cached tasks
+  App-->>UI: show immediately
+  alt delta link stored
+    App->>Api: syncTasks(list, deltaLink)
+    Api->>G: GET deltaLink (follows @odata.nextLink)
+    G-->>Api: changed + @removed, new deltaLink
+    Api-->>App: tasksDelta
+    App->>DB: applyTaskDelta + setDeltaLink
+  else no delta link / HTTP 410
+    App->>Api: fetchTasks(list)
+    Api->>G: GET /tasks?$expand=checklistItems,linkedResources (all pages)
+    G-->>Api: tasks
+    App->>DB: upsertTasks (replace list)
+    App->>Api: bootstrapDeltaLink
+  end
+  App-->>UI: refreshed model

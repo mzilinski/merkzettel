@@ -1,0 +1,120 @@
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: CC0-1.0
+#
+# Documentation site (MkDocs + Material), German default, English under /en/.
+# Build: make docs  ->  website/public/docs
+site_name: Merkzettel
+site_description: Microsoft To Do auf dem Plasma-Desktop – Dokumentation
+site_url: https://mzilinski.github.io/merkzettel/docs/
+repo_url: https://github.com/mzilinski/merkzettel
+repo_name: mzilinski/merkzettel
+edit_uri: edit/main/docs/
+copyright: © 2026 Malte Zilinski · Text CC BY-SA 4.0 · Code GPL-3.0-or-later
+docs_dir: docs
+site_dir: website/public/docs
+exclude_docs: |
+  /diagrams/
+
+theme:
+  name: material
+  language: de
+  font: false            # system fonts only, nothing loaded from Google
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Dunkles Design
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Helles Design
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: folder
+      reconfigure_material: true
+      languages:
+        - locale: de
+          name: Deutsch
+          default: true
+          build: true
+        - locale: en
+          name: English
+          build: true
+          site_description: Microsoft To Do on the Plasma desktop – documentation
+          nav_translations:
+            Start: Home
+            Installation: Installation
+            Azure-Einrichtung: Azure setup
+            Konfiguration: Configuration
+            Benutzerhandbuch: User guide
+            Tastenkürzel: Keyboard shortcuts
+            Anleitungen: How-tos
+            FAQ: FAQ
+            Fehlerbehebung: Troubleshooting
+            Datenschutz: Privacy
+            Entwicklung: Development
+            Architektur: Architecture
+            Entwicklerhandbuch: Developer guide
+            Übersetzen: Translating
+
+extra:
+  homepage: https://mzilinski.github.io/merkzettel/
+  generator: false
+
+extra_css:
+  - assets/css/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.keys
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Start: index.md
+  - Installation: installation.md
+  - Azure-Einrichtung: azure-setup.md
+  - Konfiguration: configuration.md
+  - Benutzerhandbuch: user-guide.md
+  - Tastenkürzel: shortcuts.md
+  - Anleitungen:
+      - howto/index.md
+      - howto/work-account.md
+      - howto/quick-capture.md
+      - howto/plan-your-day.md
+      - howto/organise-tasks.md
+      - howto/offline.md
+  - FAQ: faq.md
+  - Fehlerbehebung: troubleshooting.md
+  - Datenschutz: privacy.md
+  - Entwicklung:
+      - Architektur: architecture.md
+      - Entwicklerhandbuch: developer.md
+      - Übersetzen: translating.md

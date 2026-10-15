@@ -123,3 +123,11 @@ release. Newest last. Each entry: context, decision, consequences.
   need an account dimension.
 - **Decision:** Not part of 0.4.0. It is the first item proposed for v0.4
   (REPORT.md) so the release can ship with the reviewed single-account code.
+
+## D13 — Documentation toolchain
+
+- **Decision:** MkDocs 1.6 with Material 9.7 and mkdocs-static-i18n, pinned
+  in `docs/requirements.txt`. The Material team warns that MkDocs 2.0 removes
+  the plugin system; the docs stay on 1.x until a migration path exists.
+  Diagrams are rendered to static SVG at build time (Mermaid in headless
+  Chromium) so no JavaScript or CDN is needed on the documentation pages.

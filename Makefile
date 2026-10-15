@@ -9,13 +9,14 @@
 #   make pot        regenerate po/merkzettel.pot and merge translations
 #   make flatpak    build the Flatpak from the working tree
 #   make screenshots  regenerate docs/README/metainfo screenshots (Xvfb + KWin)
+#   make docs       documentation (MkDocs) into website/public/docs
 #   make run-demo   start the freshly built app with demo data
 
 BUILD ?= build
 CLIENT_ID ?=
 JOBS ?= $(shell nproc)
 
-.PHONY: all configure build test lint pot flatpak screenshots run-demo clean
+.PHONY: all configure build test lint pot flatpak screenshots docs website-deps run-demo clean
 
 all: build
 
@@ -48,6 +49,13 @@ flatpak:
 
 screenshots: build
 	scripts/screenshots.sh $(BUILD)
+
+website-deps:
+	cd website && npm ci --no-audit --no-fund
+
+docs: website-deps
+	cd website && npm run diagrams
+	mkdocs build --strict
 
 run-demo: build
 	$(BUILD)/bin/merkzettel --demo
