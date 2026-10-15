@@ -8,6 +8,10 @@ import org.kde.kirigami as Kirigami
 Kirigami.OverlaySheet {
     id: sheet
 
+    // Popups only close on Escape while they hold focus; without this the
+    // sheet ignored Escape whenever focus stayed in the task list.
+    focus: true
+
     property var task: app.detailTask
     property bool hasTask: task && task.taskId !== undefined
 
@@ -15,6 +19,14 @@ Kirigami.OverlaySheet {
     signal reminderDatePickerRequested(var initialDate)
     signal reminderTimePickerRequested(var initialDate)
     signal customRecurrenceRequested(string taskId, var info)
+
+    // Weekday + the locale's short date and time, e.g. "Do. 15.10.26, 09:00"
+    // or "Thu 10/15/26, 9:00 AM".
+    function formatDateTime(d) {
+        const loc = Qt.locale();
+        return loc.toString(d, "ddd " + loc.dateFormat(Locale.ShortFormat) + ", "
+                               + loc.timeFormat(Locale.ShortFormat));
+    }
 
     function openDatePicker(initial) {
         datePickerRequested(initial);
@@ -239,7 +251,7 @@ Kirigami.OverlaySheet {
                     enabled: reminderSwitch.checked
                     text: hasTask && task.hasReminder && task.reminderDate
                           && !isNaN(task.reminderDate.getTime())
-                          ? Qt.formatDateTime(task.reminderDate, "ddd d. MMM yyyy, HH:mm")
+                          ? sheet.formatDateTime(task.reminderDate)
                           : i18n("off")
                     color: reminderSwitch.checked ? Kirigami.Theme.textColor
                                                   : Kirigami.Theme.disabledTextColor
@@ -569,13 +581,13 @@ Kirigami.OverlaySheet {
             MetaLabel {
                 text: hasTask && task.createdDate && !isNaN(task.createdDate.getTime())
                       ? i18n("Created: %1",
-                             Qt.formatDateTime(task.createdDate, "ddd d. MMM yyyy, HH:mm"))
+                             sheet.formatDateTime(task.createdDate))
                       : ""
             }
             MetaLabel {
                 text: hasTask && task.lastModified && !isNaN(task.lastModified.getTime())
                       ? i18n("Last modified: %1",
-                             Qt.formatDateTime(task.lastModified, "ddd d. MMM yyyy, HH:mm"))
+                             sheet.formatDateTime(task.lastModified))
                       : ""
             }
         }

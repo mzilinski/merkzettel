@@ -66,6 +66,7 @@ App::App(QObject *parent)
     connect(m_todo.get(), &TodoApi::listsReceived, this, [this](const QList<TaskList> &lists) {
         m_db->upsertLists(lists);
         m_listsModel->setLists(lists);
+        Q_EMIT currentListNameChanged();
         pushListNamesToModel();
         if (m_currentListId.isEmpty() && !lists.isEmpty()) {
             setCurrentListId(lists.first().id);
@@ -282,6 +283,7 @@ void App::start()
     const auto cachedLists = m_db->lists();
     if (!cachedLists.isEmpty()) {
         m_listsModel->setLists(cachedLists);
+        Q_EMIT currentListNameChanged();
         pushListNamesToModel();
         if (m_currentListId.isEmpty()) {
             setCurrentListId(cachedLists.first().id);
@@ -330,6 +332,7 @@ void App::setCurrentListId(const QString &id)
     commitPending();
     m_currentListId = id;
     Q_EMIT currentListIdChanged();
+    Q_EMIT currentListNameChanged();
     applyListViewSettings();
 
     if (m_demoMode) {
@@ -461,18 +464,37 @@ QPair<QString, QDateTime> App::parseAddInput(const QString &raw) const
 {
     // Parse a trailing date keyword off the end of the title.
     // Recognized (case-insensitive, last whitespace-separated token):
-    //   heute, morgen, uebermorgen, mo/di/mi/do/fr/sa/so, 25.5., 25.5.2026
+    //   heute/today, morgen/tomorrow, übermorgen, weekday names and
+    //   abbreviations in German and English, 25.5., 25.5.2026
     // Returns {title-without-keyword, due-or-invalid}.
+    // German and English keywords are both accepted regardless of the UI
+    // language (the add-field placeholder advertises them per language).
     static const QMap<QString, int> dayOffsets = {
         {QStringLiteral("heute"), 0},
         {QStringLiteral("morgen"), 1},
+        {QStringLiteral("übermorgen"), 2},
         {QStringLiteral("uebermorgen"), 2},
         {QStringLiteral("uebermrgn"), 2},
+        {QStringLiteral("today"), 0},
+        {QStringLiteral("tomorrow"), 1},
     };
     static const QMap<QString, int> weekdays = {
         {QStringLiteral("mo"), 1}, {QStringLiteral("di"), 2}, {QStringLiteral("mi"), 3},
         {QStringLiteral("do"), 4}, {QStringLiteral("fr"), 5}, {QStringLiteral("sa"), 6},
         {QStringLiteral("so"), 7},
+        {QStringLiteral("montag"), 1}, {QStringLiteral("dienstag"), 2},
+        {QStringLiteral("mittwoch"), 3}, {QStringLiteral("donnerstag"), 4},
+        {QStringLiteral("freitag"), 5}, {QStringLiteral("samstag"), 6},
+        {QStringLiteral("sonntag"), 7},
+        // English: three-letter forms only — two-letter ones like "we" would
+        // misfire on ordinary trailing words. ("mo"/"fr"/"sa" come from German.)
+        {QStringLiteral("mon"), 1}, {QStringLiteral("tue"), 2}, {QStringLiteral("wed"), 3},
+        {QStringLiteral("thu"), 4}, {QStringLiteral("fri"), 5}, {QStringLiteral("sat"), 6},
+        {QStringLiteral("sun"), 7},
+        {QStringLiteral("monday"), 1}, {QStringLiteral("tuesday"), 2},
+        {QStringLiteral("wednesday"), 3}, {QStringLiteral("thursday"), 4},
+        {QStringLiteral("friday"), 5}, {QStringLiteral("saturday"), 6},
+        {QStringLiteral("sunday"), 7},
     };
     static const QRegularExpression dateRe(
         QStringLiteral(R"(^(\d{1,2})\.(\d{1,2})\.(\d{2,4})?$)"));
@@ -1207,6 +1229,7 @@ void App::loadDemoData()
         {QStringLiteral("demo-learning"), i18n("Learning"), false},
     };
     m_listsModel->setLists(lists);
+    Q_EMIT currentListNameChanged();
     pushListNamesToModel();
 
     const QDate today = QDate::currentDate();

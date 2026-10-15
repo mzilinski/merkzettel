@@ -30,6 +30,8 @@ class App : public QObject
     Q_PROPERTY(QString currentListId READ currentListId WRITE setCurrentListId NOTIFY currentListIdChanged)
     // True for the synthetic smart-lists (All/Important/Planned/Completed).
     Q_PROPERTY(bool currentListVirtual READ isVirtualList NOTIFY currentListIdChanged)
+    // Display name of the selected list (page title when the sidebar is folded).
+    Q_PROPERTY(QString currentListName READ currentListName NOTIFY currentListNameChanged)
     Q_PROPERTY(TasksModel *tasksModel READ tasksModel CONSTANT)
     Q_PROPERTY(TaskListsModel *listsModel READ listsModel CONSTANT)
     Q_PROPERTY(QVariantMap detailTask READ detailTask NOTIFY detailTaskChanged)
@@ -50,6 +52,7 @@ public:
     bool loggedIn() const;
     QString status() const;
     QString currentListId() const;
+    QString currentListName() const { return listDisplayName(m_currentListId); }
     void setCurrentListId(const QString &id);
     QVariantMap detailTask() const { return m_detailTask; }
     QString colorScheme() const { return m_colorScheme; }
@@ -132,6 +135,7 @@ Q_SIGNALS:
     void loggedInChanged();
     void statusChanged();
     void currentListIdChanged();
+    void currentListNameChanged();
     void detailTaskChanged();
     void errorOccurred(const QString &message);
     void windowToggleRequested();

@@ -19,9 +19,19 @@ QQC2.ItemDelegate {
 
     // Set by the view; drives the highlight together with keyboard focus.
     property bool selected: false
+    // Secondary text/icons; on a highlighted (selected/current) row the grey
+    // would vanish into the highlight, so switch to the highlighted text colour.
+    readonly property color metaColor: highlighted
+        ? Qt.alpha(Kirigami.Theme.highlightedTextColor, 0.8)
+        : Kirigami.Theme.disabledTextColor
     // Hoisted out of `model` so the category Repeater (whose own `model`
     // shadows ours) can reach it.
     readonly property var categories: model.categories || []
+
+    // The current row holds keyboard focus inside the ListView, and
+    // ItemDelegate would treat Space as a click — so toggle the selection
+    // here before the button sees it.
+    Keys.onSpacePressed: delegate.toggleSelected()
 
     // Plain clicks open the details; modifier clicks only select. Separate
     // handlers because ItemDelegate.clicked carries no modifier state.
@@ -57,6 +67,8 @@ QQC2.ItemDelegate {
                 Layout.fillWidth: true
                 text: model.title
                 elide: Text.ElideRight
+                color: delegate.highlighted ? Kirigami.Theme.highlightedTextColor
+                                            : Kirigami.Theme.textColor
                 font.strikeout: model.completed
                 opacity: model.completed ? 0.6 : 1.0
             }
@@ -75,13 +87,13 @@ QQC2.ItemDelegate {
                     source: "weather-clear-symbolic"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.small
                     Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                 }
                 QQC2.Label {
                     visible: myDayIcon.visible
                     text: i18n("My Day")
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                     rightPadding: Kirigami.Units.smallSpacing
                 }
                 Kirigami.Icon {
@@ -89,7 +101,7 @@ QQC2.ItemDelegate {
                     source: "view-list-text"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.small
                     Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                 }
                 QQC2.Label {
                     id: listLbl
@@ -98,7 +110,7 @@ QQC2.ItemDelegate {
                     // hide for normal lists where every row shares the same.
                     visible: text.length > 0 && app.currentListVirtual
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                     elide: Text.ElideRight
                     Layout.maximumWidth: Kirigami.Units.gridUnit * 8
                 }
@@ -112,14 +124,14 @@ QQC2.ItemDelegate {
                     source: "view-calendar-day"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.small
                     Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                 }
                 QQC2.Label {
                     id: dueLbl
                     text: model.dueLabel
                     visible: text.length > 0
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                 }
                 Item {
                     visible: dueLbl.visible && bodyHint.visible
@@ -131,7 +143,7 @@ QQC2.ItemDelegate {
                     source: "text-x-generic"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.small
                     Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                 }
                 Item {
                     visible: recurrenceIcon.visible && (dueLbl.visible || bodyHint.visible)
@@ -143,7 +155,7 @@ QQC2.ItemDelegate {
                     source: "view-refresh-symbolic"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.small
                     Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                 }
                 Item {
                     visible: linkIcon.visible && (dueLbl.visible || bodyHint.visible || recurrenceIcon.visible)
@@ -154,7 +166,7 @@ QQC2.ItemDelegate {
                     source: "mail-attachment"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.small
                     Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                 }
                 Kirigami.Icon {
                     id: linkIcon
@@ -162,7 +174,7 @@ QQC2.ItemDelegate {
                     source: "internet-services"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.small
                     Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                 }
                 Item {
                     visible: progressLbl.visible && (dueLbl.visible || bodyHint.visible)
@@ -174,14 +186,14 @@ QQC2.ItemDelegate {
                     source: "checkbox"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.small
                     Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                 }
                 QQC2.Label {
                     id: progressLbl
                     text: model.checklistProgress || ""
                     visible: text.length > 0
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    color: Kirigami.Theme.disabledTextColor
+                    color: delegate.metaColor
                 }
                 Repeater {
                     model: delegate.categories
@@ -192,11 +204,14 @@ QQC2.ItemDelegate {
                         implicitWidth: catLbl.implicitWidth + Kirigami.Units.smallSpacing * 2
                         implicitHeight: catLbl.implicitHeight
                         radius: height / 2
-                        color: Qt.alpha(Kirigami.Theme.highlightColor, 0.18)
+                        color: delegate.highlighted ? Qt.alpha(Kirigami.Theme.highlightedTextColor, 0.2)
+                                                    : Qt.alpha(Kirigami.Theme.highlightColor, 0.18)
                         QQC2.Label {
                             id: catLbl
                             anchors.centerIn: parent
                             text: parent.modelData
+                            color: delegate.highlighted ? Kirigami.Theme.highlightedTextColor
+                                                        : Kirigami.Theme.textColor
                             font.pointSize: Kirigami.Theme.smallFont.pointSize
                         }
                     }

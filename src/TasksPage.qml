@@ -5,7 +5,9 @@ import org.kde.kirigami as Kirigami
 
 Kirigami.ScrollablePage {
     id: page
-    title: ""
+    // The sidebar shows the selected list on wide windows; when it is folded
+    // away (narrow window) the title is the only hint which list this is.
+    title: applicationWindow().wideScreen ? "" : app.currentListName
 
     // Exclusive radio-style sort entries; the model persists the choice per
     // list. Removing the sort again goes through the indicator below the
@@ -170,10 +172,14 @@ Kirigami.ScrollablePage {
                 }
                 Kirigami.Heading {
                     level: 3
-                    text: Qt.locale().toString(new Date(), "dddd, d. MMMM")
+                    // Locale's long date without the year: "Donnerstag, 15. Oktober",
+                    // "Thursday, October 15", ...
+                    text: Qt.locale().toString(new Date(), Qt.locale().dateFormat(Locale.LongFormat)
+                                                   .replace(/[,.\s]*y+[.,]?/g, " ").trim())
                 }
                 Item { Layout.fillWidth: true }
                 QQC2.Label {
+                    Layout.rightMargin: Kirigami.Units.smallSpacing
                     text: i18n("Only on this device")
                     color: Kirigami.Theme.disabledTextColor
                     font: Kirigami.Theme.smallFont
@@ -336,8 +342,8 @@ Kirigami.ScrollablePage {
         model: app.tasksModel
         spacing: 0
         // Arrow keys move the current row once the list has focus (Down from
-        // the add/search field), Return opens it, Space toggles it in the
-        // multi-selection, Ctrl+A selects all, Delete deletes.
+        // the add/search field), Return opens it, Ctrl+A selects all, Delete
+        // deletes. Space (toggle selection) is handled in TaskDelegate.
         keyNavigationEnabled: true
         currentIndex: -1
         Keys.onReturnPressed: if (currentIndex >= 0) app.openTaskDetails(currentIndex)
@@ -356,9 +362,6 @@ Kirigami.ScrollablePage {
         Keys.onPressed: event => {
             if (event.matches(StandardKey.SelectAll)) {
                 page.selectAll();
-                event.accepted = true;
-            } else if (event.key === Qt.Key_Space && currentIndex >= 0) {
-                page.toggleSelected(currentIndex);
                 event.accepted = true;
             }
         }
