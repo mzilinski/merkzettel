@@ -1,0 +1,21 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// A how-to video from public/videos (make videos) with subtitles in both
+// languages; the page language is the default track.
+import { asset, T, type Lang } from "../i18n";
+
+interface Props { id: string; lang: Lang; title: string; }
+const { id, lang, title } = Astro.props;
+const v = (ext: string, l: Lang = lang) => asset(`videos/${id}-${l}.${ext}`);
+const tracks: [Lang, string][] = lang === "de"
+  ? [["de", "Deutsch"], ["en", "English"]] : [["en", "English"], ["de", "Deutsch"]];
+---
+<video controls preload="none" poster={v("jpg")} width="1920" height="1080" aria-label={title}>
+  <source src={v("mp4")} type="video/mp4" />
+  {tracks.map(([l, label], i) => (
+    <track kind="subtitles" srclang={l} label={label} src={v("vtt", l)} default={i === 0} />
+  ))}
+  <p>{T[lang].videoFallback} <a href={v("mp4")}>{title} (MP4)</a></p>
+</video>

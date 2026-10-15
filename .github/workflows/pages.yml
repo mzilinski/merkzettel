@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: CC0-1.0
+#
+# Website (Astro) + documentation (MkDocs) -> GitHub Pages at
+# https://mzilinski.github.io/merkzettel/. The videos come from Git LFS
+# (website/public/videos, built locally with `make videos`).
+name: Website
+
+on:
+  push:
+    branches: [main]
+    paths: ["website/**", "docs/**", "mkdocs.yml", "icons/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          lfs: true
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - name: Install tools
+        run: |
+          pip install -r docs/requirements.txt
+          cd website && npm ci --no-audit --no-fund
+      - name: Documentation
+        run: mkdocs build --strict
+      - name: Website
+        run: cd website && npm run build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: website/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

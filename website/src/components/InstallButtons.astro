@@ -1,0 +1,19 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+import { T, FLATHUB, AUR, url, type Lang } from "../i18n";
+
+interface Props { lang: Lang; onHero?: boolean; }
+const { lang, onHero = false } = Astro.props;
+const t = T[lang];
+---
+<div class="buttons">
+  <a class={`button ${onHero ? "primary" : "solid"}`} href={FLATHUB}>
+    <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
+    {t.flathub}
+  </a>
+  <a class={`button ${onHero ? "secondary" : "outline"}`} href={AUR}>{t.aur}</a>
+  <a class={`button ${onHero ? "secondary" : "outline"}`} href={url("install", lang)}>
+    {lang === "de" ? "Weitere Wege" : "Other ways"}
+  </a>
+</div>

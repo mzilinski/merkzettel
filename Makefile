@@ -10,13 +10,15 @@
 #   make flatpak    build the Flatpak from the working tree
 #   make screenshots  regenerate docs/README/metainfo screenshots (Xvfb + KWin)
 #   make docs       documentation (MkDocs) into website/public/docs
+#   make videos     how-to videos (Xvfb + KWin + Piper) into website/public/videos
+#   make site       website (Astro) with the docs into website/dist
 #   make run-demo   start the freshly built app with demo data
 
 BUILD ?= build
 CLIENT_ID ?=
 JOBS ?= $(shell nproc)
 
-.PHONY: all configure build test lint pot flatpak screenshots docs website-deps run-demo clean
+.PHONY: all configure build test lint pot flatpak screenshots docs videos site website-deps run-demo clean
 
 all: build
 
@@ -56,6 +58,13 @@ website-deps:
 docs: website-deps
 	cd website && npm run diagrams
 	mkdocs build --strict
+
+site: docs
+	cd website && npm run build
+	@echo "website in website/dist (preview: cd website && npx astro preview)"
+
+videos: build website-deps
+	python3 scripts/videos/make_videos.py --build $(BUILD)
 
 run-demo: build
 	$(BUILD)/bin/merkzettel --demo

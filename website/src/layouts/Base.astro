@@ -1,0 +1,99 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+import "../styles/global.css";
+import { T, url, asset, docsUrl, REPO, type Lang, type PageKey } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  page: PageKey;
+  title?: string;
+  description?: string;
+}
+const { lang, page, title, description } = Astro.props;
+const t = T[lang];
+const other: Lang = lang === "de" ? "en" : "de";
+const fullTitle = title ? `${title} – Merkzettel` : `Merkzettel – ${t.tagline}`;
+const desc = description ?? t.description;
+const site = Astro.site!.toString().replace(/\/$/, "");
+const canonical = site + url(page, lang);
+const ogImage = site + asset("og.png");
+const nav: [PageKey | "docs", string][] = [
+  ["features", t.nav.features],
+  ["useCases", t.nav.useCases],
+  ["install", t.nav.install],
+  ["docs", t.nav.docs],
+  ["openSource", t.nav.openSource],
+];
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={lang} href={canonical} />
+    <link rel="alternate" hreflang={other} href={site + url(page, other)} />
+    <link rel="alternate" hreflang="x-default" href={site + url(page, "de")} />
+    <link rel="icon" type="image/svg+xml" href={asset("favicon.svg")} />
+    <link rel="sitemap" href={asset("sitemap-index.xml")} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#1d6fa5" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Merkzettel" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`Merkzettel – ${t.tagline}`} />
+    <meta property="og:locale" content={lang === "de" ? "de_DE" : "en_US"} />
+    <meta property="og:locale:alternate" content={lang === "de" ? "en_US" : "de_DE"} />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <a class="skip" href="#main">{t.skip}</a>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href={url("home", lang)}>
+          <img src={asset("favicon.svg")} alt="" width="32" height="32" />
+          <span>Merkzettel</span>
+        </a>
+        <nav aria-label={t.menu}>
+          <ul>
+            {nav.map(([key, label]) => (
+              <li>
+                <a
+                  href={key === "docs" ? docsUrl(lang) : url(key, lang)}
+                  aria-current={key === page ? "page" : undefined}
+                >{label}</a>
+              </li>
+            ))}
+            <li>
+              <a class="lang" href={url(page, other)} hreflang={other} lang={other}
+                 title={t.switchLabel}>{t.switchTo}</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <ul class="footer-links">
+          <li><a href={url("contact", lang)}>{t.footer.contact}</a></li>
+          <li><a href={url("imprint", lang)}>{t.footer.imprint}</a></li>
+          <li><a href={url("privacy", lang)}>{t.footer.privacy}</a></li>
+          <li><a href={REPO}>{t.footer.source}</a></li>
+        </ul>
+        <p>{t.footer.license}</p>
+        <p class="muted">{t.notAffiliated}</p>
+      </div>
+    </footer>
+  </body>
+</html>

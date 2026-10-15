@@ -1,0 +1,39 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// A screenshot from docs/assets/screenshots (make screenshots) in the
+// visitor's colour scheme: light by default, dark with prefers-color-scheme.
+import { getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import type { Lang } from "../i18n";
+
+interface Props {
+  view: string;
+  lang: Lang;
+  alt: string;
+  eager?: boolean;
+  sizes?: string;
+}
+const { view, lang, alt, eager = false, sizes = "(min-width: 1120px) 1088px, 100vw" } = Astro.props;
+const files = import.meta.glob<{ default: ImageMetadata }>(
+  "../../../docs/assets/screenshots/*/*.png", { eager: true });
+const pick = (scheme: string) => {
+  const f = files[`../../../docs/assets/screenshots/${lang}/${view}-${scheme}.png`];
+  if (!f) throw new Error(`missing screenshot ${lang}/${view}-${scheme}`);
+  return f.default;
+};
+const opts = { widths: [480, 800, 1100], format: "webp" as const, quality: 82 };
+const light = await getImage({ src: pick("light"), ...opts });
+const dark = await getImage({ src: pick("dark"), ...opts });
+const src = pick("light");
+---
+<div class="shot">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset={dark.srcSet.attribute} sizes={sizes} type="image/webp" />
+    <source srcset={light.srcSet.attribute} sizes={sizes} type="image/webp" />
+    <img src={light.src} alt={alt} width={src.width} height={src.height}
+         loading={eager ? "eager" : "lazy"} decoding="async"
+         fetchpriority={eager ? "high" : undefined} />
+  </picture>
+</div>

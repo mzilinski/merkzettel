@@ -1,0 +1,59 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// DRAFT: see HUMAN_TODO.md (postal address, legal review).
+import Base from "../../layouts/Base.astro";
+import { T, url, EMAIL, type Lang } from "../../i18n";
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const de = lang === "de";
+---
+<Base lang={lang} page="imprint" title={de ? "Impressum" : "Imprint"}>
+  <div class="page-head">
+    <div class="wrap"><h1>{de ? "Impressum" : "Imprint"}</h1></div>
+  </div>
+  <div class="wrap narrow prose">
+    <p class="notice" role="note">{T[lang].draft}</p>
+    {de ? (
+      <>
+        <h2>Angaben gemäß § 5 DDG</h2>
+        <p>Malte Zilinski<br />
+          Postanschrift: wird vor der Veröffentlichung ergänzt</p>
+        <h2>Kontakt</h2>
+        <p>E-Mail: <a href={`mailto:${EMAIL}`}>{EMAIL}</a></p>
+        <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+        <p>Malte Zilinski, Anschrift wie oben</p>
+        <h2>Hinweis</h2>
+        <p>Merkzettel ist ein privates, nicht kommerzielles Open-Source-Projekt. Es ist kein Produkt
+          von Microsoft und steht in keiner Verbindung zu Microsoft.</p>
+        <h2>Haftung für Links</h2>
+        <p>Diese Website enthält Links zu externen Websites (z. B. GitHub, Flathub, AUR). Auf deren
+          Inhalte habe ich keinen Einfluss; verantwortlich ist der jeweilige Anbieter. Bei Bekanntwerden
+          von Rechtsverletzungen entferne ich solche Links umgehend.</p>
+        <p>Zur <a href={url("privacy", lang)}>Datenschutzerklärung</a>.</p>
+      </>
+    ) : (
+      <>
+        <p>The legally binding imprint is the <a href={url("imprint", "de")} lang="de">German version</a>.
+          This is a translation for convenience.</p>
+        <h2>Information according to § 5 DDG (German Digital Services Act)</h2>
+        <p>Malte Zilinski<br />
+          Postal address: to be added before publication</p>
+        <h2>Contact</h2>
+        <p>E-mail: <a href={`mailto:${EMAIL}`}>{EMAIL}</a></p>
+        <h2>Responsible for the content according to § 18 (2) MStV</h2>
+        <p>Malte Zilinski, address as above</p>
+        <h2>Note</h2>
+        <p>Merkzettel is a private, non-commercial open-source project. It is not a Microsoft product
+          and is not affiliated with Microsoft.</p>
+        <h2>Liability for links</h2>
+        <p>This website links to external websites (e.g. GitHub, Flathub, AUR). I have no influence on
+          their content; the respective provider is responsible. Links will be removed promptly when
+          infringements become known.</p>
+        <p>See the <a href={url("privacy", lang)}>privacy policy</a>.</p>
+      </>
+    )}
+  </div>
+</Base>

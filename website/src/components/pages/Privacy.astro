@@ -1,0 +1,115 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// DRAFT: see HUMAN_TODO.md (legal review). Covers the website only; the app
+// has its own privacy page in the docs.
+import Base from "../../layouts/Base.astro";
+import { T, url, docsUrl, EMAIL, type Lang } from "../../i18n";
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const de = lang === "de";
+const GH_PRIVACY = "https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement";
+---
+<Base lang={lang} page="privacy" title={de ? "Datenschutzerklärung" : "Privacy policy"}>
+  <div class="page-head">
+    <div class="wrap"><h1>{de ? "Datenschutzerklärung" : "Privacy policy"}</h1></div>
+  </div>
+  <div class="wrap narrow prose">
+    <p class="notice" role="note">{T[lang].draft}</p>
+    {de ? (
+      <>
+        <h2>1. Verantwortlicher</h2>
+        <p>Malte Zilinski, E-Mail: <a href={`mailto:${EMAIL}`}>{EMAIL}</a>. Die Postanschrift steht im
+          <a href={url("imprint", lang)}>Impressum</a>.</p>
+
+        <h2>2. Überblick</h2>
+        <p>Diese Website ist eine statische Seite ohne Cookies, ohne Analyse- oder Tracking-Werkzeuge,
+          ohne Formulare und ohne eingebundene Inhalte Dritter. Schriften, Bilder und Videos werden vom
+          selben Server geladen wie die Seite.</p>
+
+        <h2>3. Hosting durch GitHub Pages</h2>
+        <p>Die Website wird über GitHub Pages bereitgestellt, einen Dienst der GitHub, Inc.,
+          88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf verarbeitet GitHub
+          technisch notwendige Daten, insbesondere deine IP-Adresse, Datum und Uhrzeit, die aufgerufene
+          Adresse, den Referrer und die Browserkennung, um die Seite auszuliefern und die Sicherheit des
+          Dienstes zu gewährleisten. Ich selbst erhalte diese Daten nicht.</p>
+        <p>Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; mein berechtigtes Interesse ist eine
+          zuverlässige und sichere Bereitstellung der Website. Dabei können Daten in die USA übermittelt
+          werden. GitHub ist nach dem EU-US Data Privacy Framework zertifiziert (Angemessenheitsbeschluss
+          der EU-Kommission vom 10. Juli 2023, Art. 45 DSGVO). Einzelheiten:
+          <a href={GH_PRIVACY}>GitHub General Privacy Statement</a>.</p>
+
+        <h2>4. Kontakt per E-Mail</h2>
+        <p>Wenn du mir schreibst, verarbeite ich deine Adresse und deine Nachricht, um sie zu beantworten
+          (Art. 6 Abs. 1 lit. b bzw. f DSGVO), und lösche sie, wenn sie dafür nicht mehr nötig sind und keine
+          Aufbewahrungspflichten bestehen.</p>
+
+        <h2>5. Links auf andere Websites</h2>
+        <p>Links etwa zu GitHub, Flathub, dem AUR oder PayPal führen zu Angeboten anderer Anbieter. Erst
+          wenn du sie anklickst, gelten deren Datenschutzbestimmungen.</p>
+
+        <h2>6. Die App Merkzettel</h2>
+        <p>Diese Erklärung betrifft nur die Website. Was die App verarbeitet – sie spricht ausschließlich
+          mit Microsoft und hat keine Telemetrie – beschreibt die
+          <a href={docsUrl(lang, "privacy/")}>Datenschutzseite der Doku</a>.</p>
+
+        <h2>7. Deine Rechte</h2>
+        <p>Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17),
+          Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen
+          Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21). Wende dich dazu an die oben
+          genannte E-Mail-Adresse. Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde
+          beschweren (Art. 77 DSGVO).</p>
+
+        <p class="muted">Stand: Oktober 2026</p>
+      </>
+    ) : (
+      <>
+        <p>The legally binding version is the <a href={url("privacy", "de")} lang="de">German one</a>.
+          This is a translation for convenience.</p>
+        <h2>1. Controller</h2>
+        <p>Malte Zilinski, e-mail: <a href={`mailto:${EMAIL}`}>{EMAIL}</a>. The postal address is in the
+          <a href={url("imprint", lang)}>imprint</a>.</p>
+
+        <h2>2. Overview</h2>
+        <p>This website is a static site without cookies, without analytics or tracking tools, without
+          forms and without embedded third-party content. Fonts, images and videos are loaded from the
+          same server as the page.</p>
+
+        <h2>3. Hosting by GitHub Pages</h2>
+        <p>The website is served by GitHub Pages, a service of GitHub, Inc., 88 Colin P. Kelly Jr. Street,
+          San Francisco, CA 94107, USA. When you visit it, GitHub processes technically necessary data,
+          in particular your IP address, date and time, the requested address, the referrer and the
+          browser identification, to deliver the page and keep the service secure. I do not receive
+          this data.</p>
+        <p>The legal basis is Art. 6(1)(f) GDPR; my legitimate interest is reliable and secure delivery
+          of the website. Data may be transferred to the USA. GitHub is certified under the EU-US Data
+          Privacy Framework (adequacy decision of the European Commission of 10 July 2023, Art. 45 GDPR).
+          Details: <a href={GH_PRIVACY}>GitHub General Privacy Statement</a>.</p>
+
+        <h2>4. Contact by e-mail</h2>
+        <p>If you write to me, I process your address and your message to answer it (Art. 6(1)(b) or (f)
+          GDPR) and delete them when they are no longer needed for this and no retention obligations
+          apply.</p>
+
+        <h2>5. Links to other websites</h2>
+        <p>Links, for example to GitHub, Flathub, the AUR or PayPal, lead to other providers' services.
+          Their privacy policies apply only once you follow them.</p>
+
+        <h2>6. The Merkzettel app</h2>
+        <p>This policy covers the website only. What the app processes – it talks to Microsoft only and
+          has no telemetry – is described on the <a href={docsUrl(lang, "privacy/")}>privacy page of the
+          documentation</a>.</p>
+
+        <h2>7. Your rights</h2>
+        <p>You have the right of access (Art. 15 GDPR), rectification (Art. 16), erasure (Art. 17),
+          restriction of processing (Art. 18), data portability (Art. 20) and to object to processing
+          based on legitimate interests (Art. 21). Contact me at the e-mail address above. You may also
+          lodge a complaint with a data protection supervisory authority (Art. 77 GDPR).</p>
+
+        <p class="muted">Last updated: October 2026</p>
+      </>
+    )}
+  </div>
+</Base>

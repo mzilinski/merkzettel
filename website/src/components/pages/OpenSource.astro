@@ -1,0 +1,62 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+import Base from "../../layouts/Base.astro";
+import { docsUrl, REPO, DONATE, type Lang } from "../../i18n";
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const de = lang === "de";
+const blob = (f: string) => `${REPO}/blob/main/${f}`;
+---
+<Base lang={lang} page="openSource" title="Open Source"
+      description={de ? "Merkzettel ist freie Software: Lizenz, Quellcode, Mitmachen, Übersetzen, Roadmap und Spenden."
+                      : "Merkzettel is free software: licence, source code, contributing, translating, roadmap and donations."}>
+  <div class="page-head">
+    <div class="wrap">
+      <h1>Open Source</h1>
+      <p>{de ? "Merkzettel ist freie Software. Du darfst es nutzen, untersuchen, verändern und weitergeben."
+             : "Merkzettel is free software. You may use, study, change and share it."}</p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="grid" style="margin-top:2rem">
+      <div class="card">
+        <h3>{de ? "Lizenz" : "Licence"}</h3>
+        <p>{de ? "Der Code steht unter der GNU General Public License 3.0 oder neuer, Doku, Website und Videos unter CC BY-SA 4.0. Das Projekt folgt der REUSE-Spezifikation."
+               : "The code is licensed under the GNU General Public License 3.0 or later; docs, website and videos under CC BY-SA 4.0. The project follows the REUSE specification."}</p>
+        <p><a href={blob("LICENSES/GPL-3.0-or-later.txt")}>GPL-3.0-or-later</a> · <a href={blob("REUSE.toml")}>REUSE.toml</a></p>
+      </div>
+      <div class="card">
+        <h3>{de ? "Quellcode" : "Source code"}</h3>
+        <p>{de ? "C++17, Qt 6 und KDE Kirigami. Entwickelt offen auf GitHub, mit Tests und Builds für Arch, Fedora, openSUSE, Ubuntu und Flatpak in der CI."
+               : "C++17, Qt 6 and KDE Kirigami. Developed in the open on GitHub, with tests and builds for Arch, Fedora, openSUSE, Ubuntu and Flatpak in CI."}</p>
+        <p><a href={REPO}>github.com/mzilinski/merkzettel</a></p>
+      </div>
+      <div class="card">
+        <h3>{de ? "Mitmachen" : "Contribute"}</h3>
+        <p>{de ? "Fehler melden, Ideen vorschlagen oder Code beitragen: Die Beitragsrichtlinien erklären Build, Tests und Stil. Sicherheitslücken bitte vertraulich melden."
+               : "Report bugs, suggest ideas or contribute code: the contribution guide explains build, tests and style. Please report security issues privately."}</p>
+        <p><a href={`${REPO}/issues`}>Issues</a> · <a href={blob("CONTRIBUTING.md")}>CONTRIBUTING</a> · <a href={blob("SECURITY.md")}>SECURITY</a> · <a href={docsUrl(lang, "developer/")}>{de ? "Entwickler-Doku" : "Developer docs"}</a></p>
+      </div>
+      <div class="card">
+        <h3>{de ? "Übersetzen" : "Translate"}</h3>
+        <p>{de ? "Merkzettel nutzt KDEs Gettext-Übersetzungen. Deutsch ist vollständig; jede weitere Sprache ist willkommen – eine .po-Datei genügt."
+               : "Merkzettel uses KDE's gettext translations. German is complete; every other language is welcome – one .po file is all it takes."}</p>
+        <p><a href={docsUrl(lang, "translating/")}>{de ? "Anleitung zum Übersetzen" : "Translation guide"}</a></p>
+      </div>
+      <div class="card">
+        <h3>Roadmap</h3>
+        <p>{de ? "Als Nächstes geplant: mehrere Konten gleichzeitig, eine Warteschlange für Änderungen ohne Netz und die Farben der Outlook-Kategorien."
+               : "Planned next: several accounts at once, a queue for changes made offline and the colours of Outlook categories."}</p>
+        <p><a href={blob("ROADMAP.md")}>ROADMAP.md</a> · <a href={blob("CHANGELOG.md")}>CHANGELOG.md</a></p>
+      </div>
+      <div class="card">
+        <h3>{de ? "Spenden" : "Donate"}</h3>
+        <p>{de ? "Merkzettel ist kostenlos und werbefrei. Wenn es dir nützt, freut sich der Autor über ein Trinkgeld. Den KDE-Unterbau pflegt KDE e.V."
+               : "Merkzettel is free of charge and free of ads. If it is useful to you, the author appreciates a tip. The KDE foundation it builds on is maintained by KDE e.V."}</p>
+        <p><a href={DONATE}>PayPal</a> · <a href="https://kde.org/community/donations/">KDE e.V.</a></p>
+      </div>
+    </div>
+  </div>
+</Base>

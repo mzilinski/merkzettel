@@ -3,10 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/sync-assets.mjs",
     "dev": "astro dev",
+    "prebuild": "node scripts/sync-assets.mjs",
     "build": "astro build",
     "preview": "astro preview",
-    "diagrams": "node scripts/render-diagrams.mjs"
+    "diagrams": "node scripts/render-diagrams.mjs",
+    "og": "node scripts/render-og.mjs"
   },
   "dependencies": {
     "astro": "7.3.8",

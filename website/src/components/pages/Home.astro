@@ -1,0 +1,107 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+import Base from "../../layouts/Base.astro";
+import Screenshot from "../Screenshot.astro";
+import InstallButtons from "../InstallButtons.astro";
+import { T, url, docsUrl, REPO, type Lang } from "../../i18n";
+import { USE_CASES } from "../../usecases";
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = T[lang];
+const de = lang === "de";
+
+const benefits = de ? [
+  { icon: "fast", title: "Schnell", text: "Startet in unter einer Sekunde aus dem lokalen Speicher und synchronisiert danach im Hintergrund – nur die Änderungen, nicht jedes Mal alles." },
+  { icon: "native", title: "Nativ integriert", text: "Breeze-Optik, Hell und Dunkel nach deinem Plasma-Farbschema, Symbol im Systemabschnitt, Benachrichtigungen, globales Tastenkürzel und KWallet." },
+  { icon: "offline", title: "Offline-fähig", text: "Alle Listen liegen als Kopie auf deinem Rechner. Ohne Netz startet Merkzettel trotzdem und verbindet sich später von selbst." },
+] : [
+  { icon: "fast", title: "Fast", text: "Starts in under a second from the local cache and syncs in the background afterwards – only what changed, not everything every time." },
+  { icon: "native", title: "Natively integrated", text: "Breeze look, light and dark following your Plasma colour scheme, tray icon, notifications, a global shortcut and KWallet." },
+  { icon: "offline", title: "Works offline", text: "All lists are kept as a copy on your computer. Without a network Merkzettel still starts and reconnects by itself later." },
+];
+const icons: Record<string, string> = {
+  fast: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  native: '<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18M8 21h8M12 18v3"/>',
+  offline: '<path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5.2-2.8M19 13a10 10 0 0 0-2-1.5M2 8.8a15 15 0 0 1 4.2-2.7M22 8.8A15 15 0 0 0 10.7 5M12 20h.01"/>',
+};
+---
+<Base lang={lang} page="home">
+  <section class="hero">
+    <div class="wrap">
+      <h1>{t.tagline}</h1>
+      <p class="lead">
+        {de
+          ? "Merkzettel ist ein freier, nativer Client für Microsoft To Do – gebaut mit Qt und KDE Kirigami. Deine Listen vom Handy und aus Outlook, direkt auf dem Plasma-Desktop, ohne Browser-Tab."
+          : "Merkzettel is a free, native client for Microsoft To Do – built with Qt and KDE Kirigami. Your lists from the phone and from Outlook, right on the Plasma desktop, without a browser tab."}
+      </p>
+      <InstallButtons lang={lang} onHero />
+      <div class="hero-shot">
+        <Screenshot view="tasks" lang={lang} eager
+          alt={de ? "Merkzettel mit Listen in der Seitenleiste und Aufgaben nach Fälligkeit gruppiert"
+                  : "Merkzettel with lists in the sidebar and tasks grouped by due date"} />
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <h2>{de ? "Warum Merkzettel?" : "Why Merkzettel?"}</h2>
+      <div class="grid">
+        {benefits.map((b) => (
+          <div class="card">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons[b.icon]} />
+            <h3>{b.title}</h3>
+            <p>{b.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt">
+    <div class="wrap">
+      <div class="split">
+        <div>
+          <h2>{de ? "Alles, was To Do kann – auf Plasma" : "Everything To Do does – on Plasma"}</h2>
+          <p>{de
+            ? "Listen, Fälligkeiten, Erinnerungen, Wiederholungen, Schritte, Notizen, Kategorien, Links und Dateianhänge. Änderungen landen sofort bei Microsoft und damit auf Handy und Web."
+            : "Lists, due dates, reminders, recurrence, steps, notes, categories, links and file attachments. Changes go straight to Microsoft and from there to your phone and the web."}</p>
+          <p><a href={url("features", lang)}>{de ? "Alle Funktionen" : "All features"} →</a></p>
+        </div>
+        <Screenshot view="details" lang={lang} sizes="(min-width: 860px) 640px, 100vw"
+          alt={de ? "Detailansicht einer Aufgabe" : "Task details"} />
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <h2>{t.nav.useCases}</h2>
+      <div class="grid">
+        {USE_CASES.map((u) => (
+          <a class="card" href={`${url("useCases", lang)}#${u.id}`} style="text-decoration:none;color:inherit">
+            <h3 style="color:var(--accent)">{u.text[lang].title}</h3>
+            <p>{u.text[lang].problem}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt">
+    <div class="wrap narrow">
+      <h2>{de ? "Frei und ohne Telemetrie" : "Free and without telemetry"}</h2>
+      <p>{de
+        ? "Merkzettel ist freie Software unter der GPL. Es spricht nur mit Microsoft, sammelt keine Nutzungsdaten und speichert dein Anmelde-Token im Schlüsselbund deines Systems."
+        : "Merkzettel is free software under the GPL. It only talks to Microsoft, collects no usage data and keeps your sign-in token in your system keychain."}</p>
+      <p>
+        <a href={url("openSource", lang)}>{t.nav.openSource}</a> ·
+        <a href={docsUrl(lang)}>{de ? "Dokumentation" : "Documentation"}</a> ·
+        <a href={REPO}>GitHub</a>
+      </p>
+    </div>
+  </section>
+</Base>

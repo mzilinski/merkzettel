@@ -1,0 +1,46 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+import Base from "../../layouts/Base.astro";
+import Screenshot from "../Screenshot.astro";
+import Video from "../Video.astro";
+import { docsUrl, type Lang } from "../../i18n";
+import { USE_CASES } from "../../usecases";
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const de = lang === "de";
+const L = de ? { p: "Problem", s: "Lösung", r: "Ergebnis", guide: "Schritt-für-Schritt-Anleitung" }
+             : { p: "Problem", s: "Solution", r: "Result", guide: "Step-by-step guide" };
+---
+<Base lang={lang} page="useCases" title={de ? "Anwendungsfälle" : "Use cases"}
+      description={de ? "Wie Merkzettel im Alltag hilft – jeweils mit Video und Anleitung."
+                      : "How Merkzettel helps every day – each with a video and a guide."}>
+  <div class="page-head">
+    <div class="wrap">
+      <h1>{de ? "Anwendungsfälle" : "Use cases"}</h1>
+      <p>{de ? "Fünf typische Situationen, jeweils mit kurzem Video (mit Untertiteln) und einer Anleitung in der Doku."
+             : "Five typical situations, each with a short video (with subtitles) and a guide in the docs."}</p>
+    </div>
+  </div>
+  <div class="wrap">
+    {USE_CASES.map((u) => {
+      const x = u.text[lang];
+      return (
+        <section class="usecase" id={u.id}>
+          <h2 style="margin-top:0">{x.title}</h2>
+          <div class="psr">
+            <div><strong>{L.p}</strong>{x.problem}</div>
+            <div><strong>{L.s}</strong>{x.solution}</div>
+            <div><strong>{L.r}</strong>{x.result}</div>
+          </div>
+          <div class="media">
+            <Video id={u.id} lang={lang} title={x.title} />
+            <Screenshot view={u.view} lang={lang} alt={x.alt} sizes="(min-width: 860px) 540px, 100vw" />
+          </div>
+          <p><a href={docsUrl(lang, `howto/${u.id}/`)}>{L.guide}: {x.title} →</a></p>
+        </section>
+      );
+    })}
+  </div>
+</Base>

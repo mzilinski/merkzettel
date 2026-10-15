@@ -1,0 +1,29 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+import Base from "../../layouts/Base.astro";
+import { url, REPO, EMAIL, type Lang } from "../../i18n";
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const de = lang === "de";
+---
+<Base lang={lang} page="contact" title={de ? "Kontakt" : "Contact"}>
+  <div class="page-head">
+    <div class="wrap"><h1>{de ? "Kontakt" : "Contact"}</h1></div>
+  </div>
+  <div class="wrap narrow prose">
+    <h2>{de ? "Fehler und Wünsche" : "Bugs and feature requests"}</h2>
+    <p>{de ? "Am schnellsten geht es über GitHub. Dort sehen auch andere, ob ein Problem schon bekannt ist."
+           : "GitHub is the fastest way. Others can see there whether a problem is already known."}</p>
+    <p><a href={`${REPO}/issues/new/choose`}>{de ? "Issue eröffnen" : "Open an issue"}</a></p>
+    <h2>{de ? "Sicherheitslücken" : "Security issues"}</h2>
+    <p>{de ? "Bitte nicht öffentlich melden, sondern wie in der Sicherheitsrichtlinie beschrieben:"
+           : "Please do not report them publicly; follow the security policy:"}
+      {" "}<a href={`${REPO}/blob/main/SECURITY.md`}>SECURITY.md</a></p>
+    <h2>E-Mail</h2>
+    <p>Malte Zilinski · <a href={`mailto:${EMAIL}`}>{EMAIL}</a></p>
+    <p class="muted">{de ? "Was mit deiner Nachricht passiert, steht in der " : "What happens to your message is described in the "}
+      <a href={url("privacy", lang)}>{de ? "Datenschutzerklärung" : "privacy policy"}</a>.</p>
+  </div>
+</Base>

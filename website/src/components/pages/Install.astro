@@ -1,0 +1,54 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+import Base from "../../layouts/Base.astro";
+import InstallButtons from "../InstallButtons.astro";
+import { docsUrl, REPO, type Lang } from "../../i18n";
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const de = lang === "de";
+---
+<Base lang={lang} page="install" title={de ? "Installation" : "Installation"}
+      description={de ? "Merkzettel über Flathub, das AUR oder aus dem Quellcode installieren."
+                      : "Install Merkzettel from Flathub, the AUR or from source."}>
+  <div class="page-head">
+    <div class="wrap">
+      <h1>{de ? "Installation" : "Installation"}</h1>
+      <p>{de ? "Merkzettel läuft auf jedem Linux-Desktop mit Qt 6 und KDE Frameworks 6 und passt am besten zu Plasma 6."
+             : "Merkzettel runs on any Linux desktop with Qt 6 and KDE Frameworks 6 and fits best into Plasma 6."}</p>
+    </div>
+  </div>
+  <div class="wrap narrow prose">
+    <InstallButtons lang={lang} />
+
+    <h2>Flathub {de ? "(empfohlen)" : "(recommended)"}</h2>
+    <p>{de ? "Das Flatpak läuft auf jeder Distribution und aktualisiert sich über Discover oder GNOME Software. Such dort nach „Merkzettel“ oder im Terminal:"
+           : "The Flatpak runs on every distribution and updates through Discover or GNOME Software. Search for “Merkzettel” there, or in a terminal:"}</p>
+    <pre><code>flatpak install flathub io.github.mzilinski.merkzettel
+flatpak run io.github.mzilinski.merkzettel</code></pre>
+
+    <h2>Arch Linux (AUR)</h2>
+    <pre><code>{de ? "# Release-Version" : "# release version"}
+paru -S merkzettel
+{de ? "# Entwicklungsstand des main-Zweigs" : "# development snapshot of the main branch"}
+paru -S merkzettel-git</code></pre>
+
+    <h2>{de ? "Aus dem Quellcode" : "From source"}</h2>
+    <p>{de ? "Du brauchst CMake, einen C++17-Compiler, Qt ≥ 6.6, KDE Frameworks ≥ 6.8, Kirigami Addons und QtKeychain. Die Paketlisten für Arch, Fedora, openSUSE und Ubuntu stehen in der Doku."
+           : "You need CMake, a C++17 compiler, Qt ≥ 6.6, KDE Frameworks ≥ 6.8, Kirigami Addons and QtKeychain. The package lists for Arch, Fedora, openSUSE and Ubuntu are in the docs."}</p>
+    <pre><code>git clone {REPO}.git
+cd merkzettel
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DMERKZETTEL_CLIENT_ID=&lt;client-id&gt;
+cmake --build build
+sudo cmake --install build</code></pre>
+    <p>{de ? "Für die Anmeldung braucht ein selbst gebautes Merkzettel die Client-ID einer eigenen, kostenlosen Azure-App-Registrierung. Ohne sie funktioniert der Demo-Modus."
+           : "To sign in, a self-built Merkzettel needs the client ID of your own free Azure app registration. Without it, the demo mode works."}
+      {" "}<a href={docsUrl(lang, "azure-setup/")}>{de ? "Azure einrichten" : "Azure setup"}</a></p>
+
+    <h2>{de ? "Ausprobieren ohne Konto" : "Try it without an account"}</h2>
+    <p>{de ? "Auf der Anmeldeseite wählst du „Demo ausprobieren“ oder startest " : "Choose “Try the demo” on the sign-in page or start "}<code>merkzettel --demo</code>.
+      {de ? " Beispieldaten, nichts wird an Microsoft gesendet." : " Sample data; nothing is sent to Microsoft."}</p>
+    <p><a href={docsUrl(lang, "installation/")}>{de ? "Ausführliche Installationsanleitung" : "Detailed installation guide"} →</a></p>
+  </div>
+</Base>

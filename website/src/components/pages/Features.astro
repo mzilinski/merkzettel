@@ -1,0 +1,98 @@
+---
+// SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+// SPDX-License-Identifier: GPL-3.0-or-later
+import Base from "../../layouts/Base.astro";
+import Screenshot from "../Screenshot.astro";
+import { docsUrl, type Lang } from "../../i18n";
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const de = lang === "de";
+
+const sections = de ? [
+  { view: "tasks", title: "Listen und Aufgaben wie in To Do",
+    alt: "Aufgabenliste mit Abschnitten nach Fälligkeit",
+    items: ["Alle Listen deines Kontos, auch geteilte; Listen anlegen, umbenennen und löschen",
+            "Abschnitte nach Fälligkeit: überfällig, heute, morgen, diese Woche, später, ohne Datum",
+            "Intelligente Listen: Mein Tag, Alle, Wichtig, Geplant, Erledigt",
+            "Sortieren nach Wichtigkeit, Fälligkeit, Titel oder Erstellung – pro Liste gemerkt",
+            "Suche über Titel, Notizen und Kategorien"] },
+  { view: "details", title: "Details, die mitwandern",
+    alt: "Detailansicht mit Fälligkeit, Wiederholung, Kategorien und Dateien",
+    items: ["Fälligkeit, Erinnerung mit Benachrichtigung und „Erledigt“-Knopf",
+            "Wiederholungen: täglich, werktags, wöchentlich, monatlich, jährlich oder eigene Regel",
+            "Schritte (Unteraufgaben), Notizen, Links und Outlook-Kategorien",
+            "Dateianhänge bis 25 MB: per Drag & Drop aus Dolphin, öffnen und speichern",
+            "Alles synchron mit Microsoft To Do auf Handy und im Web"] },
+  { view: "selection", title: "Schnell mit Tastatur und Mehrfachauswahl",
+    alt: "Zwei ausgewählte Aufgaben mit der Auswahlleiste",
+    items: ["Globales Tastenkürzel Meta+Alt+N zum Erfassen aus jeder Anwendung",
+            "Datumswörter im Titel: „morgen“, „fr“, „25.5.“ setzen die Fälligkeit",
+            "Strg+D erledigt, Strg+T legt in „Mein Tag“, Entf löscht – mit Rückgängig",
+            "Mehrere Aufgaben auf einmal erledigen, markieren, verschieben oder löschen",
+            "Aufgaben samt Schritten und Anhängen in andere Listen verschieben"] },
+  { view: "offline", title: "Zuhause auf Plasma, auch offline",
+    alt: "Offline-Hinweis über den gespeicherten Aufgaben",
+    items: ["Breeze-Optik, Hell/Dunkel nach dem Systemfarbschema, Plasma-Akzentfarbe",
+            "Symbol im Systemabschnitt mit der Zahl der heute fälligen Aufgaben",
+            "Lokale Kopie aller Listen: sofortiger Start und Lesen ohne Netz",
+            "Anmelde-Token im Schlüsselbund (KWallet oder Secret Service)",
+            "Private Microsoft-Konten und Microsoft 365 von Arbeit oder Schule"] },
+] : [
+  { view: "tasks", title: "Lists and tasks like in To Do",
+    alt: "Task list with due-date sections",
+    items: ["All lists of your account, including shared ones; create, rename and delete lists",
+            "Due-date sections: overdue, today, tomorrow, this week, later, no date",
+            "Smart lists: My Day, All, Important, Planned, Completed",
+            "Sort by importance, due date, title or creation – remembered per list",
+            "Search across titles, notes and categories"] },
+  { view: "details", title: "Details that travel with the task",
+    alt: "Task details with due date, recurrence, categories and files",
+    items: ["Due date, reminder with a notification and a Mark done button",
+            "Recurrence: daily, weekdays, weekly, monthly, yearly or a custom rule",
+            "Steps (subtasks), notes, links and Outlook categories",
+            "File attachments up to 25 MB: drag and drop from Dolphin, open and save",
+            "Everything in sync with Microsoft To Do on the phone and the web"] },
+  { view: "selection", title: "Fast with the keyboard and multi-selection",
+    alt: "Two selected tasks with the selection bar",
+    items: ["Global shortcut Meta+Alt+N to capture from any application",
+            "Date words in the title: “tomorrow”, “fri”, “25.5.” set the due date",
+            "Ctrl+D completes, Ctrl+T adds to My Day, Delete removes – with undo",
+            "Complete, star, move or delete several tasks at once",
+            "Move tasks with their steps and attachments to other lists"] },
+  { view: "offline", title: "At home on Plasma, even offline",
+    alt: "Offline banner above the saved tasks",
+    items: ["Breeze look, light/dark following the system colour scheme, Plasma accent colour",
+            "Tray icon showing how many tasks are due today",
+            "Local copy of all lists: instant start and reading without a network",
+            "Sign-in token in the keychain (KWallet or Secret Service)",
+            "Personal Microsoft accounts and Microsoft 365 work or school accounts"] },
+];
+---
+<Base lang={lang} page="features" title={de ? "Funktionen" : "Features"}
+      description={de ? "Was Merkzettel kann: Listen, Mein Tag, Erinnerungen, Wiederholungen, Anhänge, Tastenkürzel und Offline-Betrieb."
+                      : "What Merkzettel does: lists, My Day, reminders, recurrence, attachments, shortcuts and offline use."}>
+  <div class="page-head">
+    <div class="wrap">
+      <h1>{de ? "Funktionen" : "Features"}</h1>
+      <p>{de ? "Merkzettel bildet Microsoft To Do vollständig ab, soweit Microsoft Graph es erlaubt – und ergänzt, was ein Desktop braucht."
+             : "Merkzettel covers Microsoft To Do as far as Microsoft Graph allows – and adds what a desktop needs."}</p>
+    </div>
+  </div>
+  <div class="wrap">
+    {sections.map((s, i) => (
+      <div class={`split${i % 2 ? " reverse" : ""}`}>
+        <div>
+          <h2 style="margin-top:0">{s.title}</h2>
+          <ul>{s.items.map((it) => <li>{it}</li>)}</ul>
+        </div>
+        <Screenshot view={s.view} lang={lang} alt={s.alt} sizes="(min-width: 860px) 640px, 100vw" />
+      </div>
+    ))}
+    <h2>{de ? "Was Microsoft nicht anbietet" : "What Microsoft does not offer"}</h2>
+    <p>{de
+      ? "„Mein Tag“ ist über die offizielle Schnittstelle nicht erreichbar. Merkzettel speichert ihn deshalb nur auf diesem Rechner. Die Farben der Outlook-Kategorien liest Merkzettel derzeit nicht."
+      : "My Day is not available through the official interface, so Merkzettel stores it on this computer only. Merkzettel does not read the colours of Outlook categories yet."}
+      {" "}<a href={docsUrl(lang, "faq/")}>FAQ</a></p>
+  </div>
+</Base>
