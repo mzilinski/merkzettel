@@ -4,6 +4,8 @@
 #include <QString>
 #include <QList>
 #include <QHash>
+#include <QSet>
+#include <QDate>
 
 #include "graph/todoapi.h"
 
@@ -48,6 +50,14 @@ public:
     };
     // Open tasks across all lists whose reminder fires at or before `cutoff`.
     QList<ReminderHit> reminderHitsBefore(const QDateTime &cutoff) const;
+
+    // "My Day" membership. Kept only locally: MS To Do syncs it through a
+    // first-party-only API (substrate.office.com/todob2, committedDay), Graph
+    // has no field for it. Entries from earlier days are dropped.
+    QSet<QString> myDayTaskIds(const QDate &today);
+    void setInMyDay(const QStringList &taskIds, bool inMyDay, const QDate &today);
+    // A move re-creates the task under a new id; carry the membership over.
+    void renameMyDayTask(const QString &oldId, const QString &newId);
 
     QString deltaLink(const QString &listId) const;
     void setDeltaLink(const QString &listId, const QString &deltaLink);

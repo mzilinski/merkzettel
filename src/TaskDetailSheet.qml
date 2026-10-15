@@ -49,6 +49,17 @@ Kirigami.OverlaySheet {
             }
 
             RowLayout {
+                Kirigami.FormData.label: i18n("My Day:")
+                QQC2.ToolButton {
+                    icon.name: "weather-clear-symbolic"
+                    checkable: true
+                    checked: hasTask && task.inMyDay
+                    text: hasTask && task.inMyDay ? i18n("In My Day") : i18n("Add to My Day")
+                    onClicked: if (hasTask) app.setInMyDay([task.taskId], !task.inMyDay)
+                }
+            }
+
+            RowLayout {
                 Kirigami.FormData.label: i18n("Importance:")
                 QQC2.ToolButton {
                     icon.name: hasTask && task.important ? "starred-symbolic" : "non-starred-symbolic"

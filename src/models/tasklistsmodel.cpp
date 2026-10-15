@@ -8,7 +8,8 @@ TaskListsModel::TaskListsModel(QObject *parent) : QAbstractListModel(parent) {}
 
 bool TaskListsModel::isVirtualId(const QString &id)
 {
-    return id == QLatin1String(kVirtualAllId)
+    return id == QLatin1String(kVirtualMyDayId)
+        || id == QLatin1String(kVirtualAllId)
         || id == QLatin1String(kVirtualImportantId)
         || id == QLatin1String(kVirtualPlannedId)
         || id == QLatin1String(kVirtualCompletedId);
@@ -32,6 +33,7 @@ QVariant TaskListsModel::data(const QModelIndex &index, int role) const
     case IsSharedRole:    return l.isShared;
     case IsVirtualRole:   return l.isVirtual;
     case IconNameRole:
+        if (l.id == QLatin1String(kVirtualMyDayId))     return QStringLiteral("weather-clear-symbolic");
         if (l.id == QLatin1String(kVirtualAllId))       return QStringLiteral("view-list-icons");
         if (l.id == QLatin1String(kVirtualImportantId)) return QStringLiteral("starred-symbolic");
         if (l.id == QLatin1String(kVirtualPlannedId))   return QStringLiteral("view-calendar");
@@ -57,7 +59,7 @@ void TaskListsModel::setLists(const QList<TaskList> &lists)
 {
     beginResetModel();
     m_lists.clear();
-    m_lists.reserve(lists.size() + 4);
+    m_lists.reserve(lists.size() + 5);
     if (!lists.isEmpty()) {
         const auto addVirtual = [this](const char *id, const QString &name) {
             TaskList l;
@@ -66,6 +68,7 @@ void TaskListsModel::setLists(const QList<TaskList> &lists)
             l.isVirtual = true;
             m_lists.append(l);
         };
+        addVirtual(kVirtualMyDayId, i18n("My Day"));
         addVirtual(kVirtualAllId, i18n("All"));
         addVirtual(kVirtualImportantId, i18n("Important"));
         addVirtual(kVirtualPlannedId, i18n("Planned"));

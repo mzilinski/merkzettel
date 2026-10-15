@@ -123,6 +123,12 @@ void Database::createSchema()
     q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_linkres_task ON linked_resources(task_id)"));
     q.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_linkres_list ON linked_resources(list_id)"));
 
+    q.exec(QStringLiteral(
+        "CREATE TABLE IF NOT EXISTS my_day ("
+        "  task_id TEXT PRIMARY KEY,"
+        "  day TEXT NOT NULL"
+        ")"));
+
     // Migrate older schemas: add columns if missing.
     q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN importance TEXT NOT NULL DEFAULT 'normal'"));
     q.exec(QStringLiteral("ALTER TABLE tasks ADD COLUMN reminder_utc TEXT"));
@@ -172,6 +178,50 @@ QList<Database::ReminderHit> Database::reminderHitsBefore(const QDateTime &cutof
         result.append(h);
     }
     return result;
+}
+
+QSet<QString> Database::myDayTaskIds(const QDate &today)
+{
+    auto db = QSqlDatabase::database(m_connectionName);
+    const QString day = today.toString(Qt::ISODate);
+    QSqlQuery prune(db);
+    prune.prepare(QStringLiteral("DELETE FROM my_day WHERE day < ?"));
+    prune.bindValue(0, day);
+    prune.exec();
+
+    QSet<QString> ids;
+    QSqlQuery q(db);
+    q.prepare(QStringLiteral("SELECT task_id FROM my_day WHERE day = ?"));
+    q.bindValue(0, day);
+    q.exec();
+    while (q.next()) ids.insert(q.value(0).toString());
+    return ids;
+}
+
+void Database::setInMyDay(const QStringList &taskIds, bool inMyDay, const QDate &today)
+{
+    auto db = QSqlDatabase::database(m_connectionName);
+    QSqlQuery q(db);
+    if (inMyDay) {
+        q.prepare(QStringLiteral("INSERT OR REPLACE INTO my_day(task_id, day) VALUES(?, ?)"));
+    } else {
+        q.prepare(QStringLiteral("DELETE FROM my_day WHERE task_id = ?"));
+    }
+    for (const auto &id : taskIds) {
+        q.bindValue(0, id);
+        if (inMyDay) q.bindValue(1, today.toString(Qt::ISODate));
+        q.exec();
+    }
+}
+
+void Database::renameMyDayTask(const QString &oldId, const QString &newId)
+{
+    auto db = QSqlDatabase::database(m_connectionName);
+    QSqlQuery q(db);
+    q.prepare(QStringLiteral("UPDATE my_day SET task_id = ? WHERE task_id = ?"));
+    q.bindValue(0, newId);
+    q.bindValue(1, oldId);
+    q.exec();
 }
 
 QString Database::deltaLink(const QString &listId) const

@@ -233,7 +233,15 @@ App::App(QObject *parent)
         for (const auto &lid : std::as_const(m_moveTouchedLists)) m_todo->fetchTasks(lid);
         m_moveTouchedLists.clear();
     };
-    connect(m_todo.get(), &TodoApi::taskMoved, this, moveFinished);
+    connect(m_todo.get(), &TodoApi::taskMoved, this,
+            [this, moveFinished](const QString &, const QString &oldId, const QString &,
+                                 const QString &newId) {
+        if (!m_demoMode && m_tasksModel->isInMyDay(oldId)) {
+            m_db->renameMyDayTask(oldId, newId);
+            reloadMyDay();
+        }
+        moveFinished();
+    });
     connect(m_todo.get(), &TodoApi::taskMoveFailed, this,
             [this, moveFinished](const QString &, const QString &taskId, const QString &msg) {
         m_tasksModel->unhideTasks({taskId});
@@ -245,6 +253,10 @@ App::App(QObject *parent)
     m_reminderTimer = new QTimer(this);
     m_reminderTimer->setInterval(60 * 1000);  // 1 minute
     connect(m_reminderTimer, &QTimer::timeout, this, &App::checkReminders);
+    // My Day starts empty every day.
+    connect(m_reminderTimer, &QTimer::timeout, this, [this] {
+        if (m_myDayDate != QDate::currentDate()) reloadMyDay();
+    });
 }
 
 App::~App() = default;
@@ -255,6 +267,7 @@ void App::start()
         loadDemoData();
         m_tray->show();
         registerGlobalShortcuts();
+        reloadMyDay();
         m_tray->setOpenCount(0);
         Q_EMIT loggedInChanged();
         setStatus(i18n("Demo mode — no real data, all changes are local"));
@@ -264,6 +277,7 @@ void App::start()
     m_db->open();
     m_tray->show();
     registerGlobalShortcuts();
+    reloadMyDay();
 
     const auto cachedLists = m_db->lists();
     if (!cachedLists.isEmpty()) {
@@ -358,7 +372,8 @@ void App::applyListViewSettings()
 
     using SF = TasksModel::SmartFilter;
     SF filter = SF::None;
-    if (m_currentListId == QLatin1String(TaskListsModel::kVirtualImportantId)) filter = SF::Important;
+    if (m_currentListId == QLatin1String(TaskListsModel::kVirtualMyDayId)) filter = SF::MyDay;
+    else if (m_currentListId == QLatin1String(TaskListsModel::kVirtualImportantId)) filter = SF::Important;
     else if (m_currentListId == QLatin1String(TaskListsModel::kVirtualPlannedId)) filter = SF::Planned;
     else if (m_currentListId == QLatin1String(TaskListsModel::kVirtualCompletedId)) filter = SF::Completed;
     m_tasksModel->setSmartFilter(filter);
@@ -526,7 +541,11 @@ void App::addTask(const QString &input)
     if (m_currentListId == QLatin1String(TaskListsModel::kVirtualPlannedId) && !parsed.second.isValid()) {
         parsed.second = QDateTime(QDate::currentDate(), QTime(9, 0), QTimeZone::LocalTime);
     }
-    m_todo->addTask(targetList, parsed.first, parsed.second, important);
+    std::function<void(const QString &)> onCreated;
+    if (m_currentListId == QLatin1String(TaskListsModel::kVirtualMyDayId)) {
+        onCreated = [this](const QString &id) { setInMyDay({id}, true); };
+    }
+    m_todo->addTask(targetList, parsed.first, parsed.second, important, onCreated);
 }
 
 void App::completeTask(const QString &taskId)
@@ -630,6 +649,34 @@ void App::setTasksImportant(const QStringList &taskIds, bool important)
         m_todo->setTaskImportance(lid, id, important ? QStringLiteral("high")
                                                      : QStringLiteral("normal"));
     }
+}
+
+void App::reloadMyDay()
+{
+    m_myDayDate = QDate::currentDate();
+    m_tasksModel->setMyDayIds(m_demoMode ? m_demoMyDay : m_db->myDayTaskIds(m_myDayDate));
+    refreshDetailTaskFromModel();
+}
+
+void App::setInMyDay(const QStringList &taskIds, bool inMyDay)
+{
+    if (taskIds.isEmpty()) return;
+    if (m_demoMode) {
+        for (const auto &id : taskIds) {
+            if (inMyDay) m_demoMyDay.insert(id);
+            else m_demoMyDay.remove(id);
+        }
+    } else {
+        m_db->setInMyDay(taskIds, inMyDay, QDate::currentDate());
+    }
+    reloadMyDay();
+}
+
+void App::toggleMyDay(const QStringList &taskIds)
+{
+    bool allIn = !taskIds.isEmpty();
+    for (const auto &id : taskIds) allIn = allIn && m_tasksModel->isInMyDay(id);
+    setInMyDay(taskIds, !allIn);
 }
 
 void App::undo()
@@ -1272,6 +1319,8 @@ void App::loadDemoData()
     for (auto &tasks : m_demoTasks)
         for (auto &t : tasks)
             t.categories = demoCategories.value(t.id);
+
+    m_demoMyDay = {QStringLiteral("d2"), QStringLiteral("d3"), QStringLiteral("w1")};
 
     // Fake attachment metadata so the Files section can be shown.
     m_attachments.insert(QStringLiteral("d6"), {

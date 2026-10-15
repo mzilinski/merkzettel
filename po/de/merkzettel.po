@@ -694,3 +694,31 @@ msgstr "Hotelrechnung.pdf"
 
 msgid "Train ticket.png"
 msgstr "Bahnticket.png"
+
+# --- My Day (local only) ---
+msgid "My Day"
+msgstr "Mein Tag"
+
+msgid "My Day:"
+msgstr "Mein Tag:"
+
+msgid "Add to My Day"
+msgstr "Zu „Mein Tag“ hinzufügen"
+
+msgid "Remove from My Day"
+msgstr "Aus „Mein Tag“ entfernen"
+
+msgid "In My Day"
+msgstr "In „Mein Tag“"
+
+msgid "Only on this device"
+msgstr "Nur auf diesem Gerät"
+
+msgid "Microsoft syncs My Day through an internal API that other apps cannot use, so it is stored locally and starts empty every day."
+msgstr "Microsoft synchronisiert „Mein Tag“ über eine interne Schnittstelle, die andere Apps nicht nutzen können. Deshalb wird „Mein Tag“ lokal gespeichert und beginnt jeden Tag leer."
+
+msgid "Focus on your day"
+msgstr "Konzentriere dich auf deinen Tag"
+
+msgid "Add tasks here, or press Ctrl+T on a task in any list."
+msgstr "Füge hier Aufgaben hinzu oder drücke Strg+T auf einer Aufgabe in einer beliebigen Liste."

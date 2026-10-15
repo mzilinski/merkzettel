@@ -21,6 +21,7 @@ public:
 
     // Sentinel ids for the synthetic smart-list entries. They aggregate tasks
     // across every real list and filter them locally (see TasksModel).
+    static constexpr auto kVirtualMyDayId = "__myday__";
     static constexpr auto kVirtualAllId = "__all__";
     static constexpr auto kVirtualImportantId = "__important__";
     static constexpr auto kVirtualPlannedId = "__planned__";

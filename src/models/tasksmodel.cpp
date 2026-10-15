@@ -163,6 +163,7 @@ QVariant TasksModel::data(const QModelIndex &index, int role) const
     case ListNameRole:     return m_listNames.value(t.listId);
     case CategoriesRole:   return t.categories;
     case HasAttachmentsRole: return t.hasAttachments;
+    case InMyDayRole:      return m_myDayIds.contains(t.id);
     case ChecklistProgressRole: {
         if (t.totalChecklistCount <= 0) return QString();
         const int done = t.totalChecklistCount - t.openChecklistCount;
@@ -205,6 +206,7 @@ QHash<int, QByteArray> TasksModel::roleNames() const
         {ListNameRole, "listName"},
         {CategoriesRole, "categories"},
         {HasAttachmentsRole, "hasAttachments"},
+        {InMyDayRole, "inMyDay"},
     };
 }
 
@@ -245,6 +247,13 @@ void TasksModel::setTasks(const QList<Task> &tasks)
         for (const auto &t : tasks) present.insert(t.id);
         m_hiddenIds.intersect(present);
     }
+    applyFilter();
+}
+
+void TasksModel::setMyDayIds(const QSet<QString> &ids)
+{
+    if (ids == m_myDayIds) return;
+    m_myDayIds = ids;
     applyFilter();
 }
 
@@ -329,6 +338,9 @@ bool TasksModel::matchesFilter(const Task &t) const
     if (m_hiddenIds.contains(t.id)) return false;
     switch (m_smartFilter) {
     case SmartFilter::None:
+        break;
+    case SmartFilter::MyDay:
+        if (!m_myDayIds.contains(t.id)) return false;
         break;
     case SmartFilter::Important:
         if (!t.isImportant()) return false;
@@ -481,6 +493,7 @@ QVariantMap TasksModel::taskAt(int row) const
         {QStringLiteral("recurrence"), rec},
         {QStringLiteral("categories"), t.categories},
         {QStringLiteral("hasAttachments"), t.hasAttachments},
+        {QStringLiteral("inMyDay"), m_myDayIds.contains(t.id)},
         {QStringLiteral("linkedResources"), links},
         {QStringLiteral("linkedResourceCount"), int(t.linkedResources.size())},
         {QStringLiteral("listId"), t.listId},

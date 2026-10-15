@@ -100,6 +100,18 @@ Kirigami.ScrollablePage {
         sequences: [StandardKey.New]
         onActivated: page.focusAddField()
     }
+    // MS To Do: Ctrl+T adds to My Day (here it toggles, like the menu).
+    Shortcut {
+        sequence: "Ctrl+T"
+        onActivated: {
+            let ids = page.selectedIds.slice();
+            if (ids.length === 0) {
+                const t = page.shortcutTask();
+                if (t) ids = [t.taskId];
+            }
+            app.toggleMyDay(ids);
+        }
+    }
     Shortcut {
         sequence: "Ctrl+D"
         onActivated: {
@@ -145,6 +157,33 @@ Kirigami.ScrollablePage {
     header: QQC2.ToolBar {
         contentItem: ColumnLayout {
             spacing: Kirigami.Units.smallSpacing
+            // My Day banner: today's date and the reminder that, unlike in
+            // MS To Do, this list lives only on this device.
+            RowLayout {
+                Layout.fillWidth: true
+                visible: app.currentListId === "__myday__"
+                spacing: Kirigami.Units.smallSpacing
+                Kirigami.Icon {
+                    source: "weather-clear-symbolic"
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.smallMedium
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.smallMedium
+                }
+                Kirigami.Heading {
+                    level: 3
+                    text: Qt.locale().toString(new Date(), "dddd, d. MMMM")
+                }
+                Item { Layout.fillWidth: true }
+                QQC2.Label {
+                    text: i18n("Only on this device")
+                    color: Kirigami.Theme.disabledTextColor
+                    font: Kirigami.Theme.smallFont
+                    QQC2.ToolTip.text: i18n("Microsoft syncs My Day through an internal API that other apps cannot use, so it is stored locally and starts empty every day.")
+                    QQC2.ToolTip.visible: myDayHint.hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    HoverHandler { id: myDayHint }
+                }
+            }
+
             // Replaces the add row while tasks are selected; same height so
             // the list below doesn't jump between Ctrl+clicks.
             RowLayout {
@@ -162,6 +201,15 @@ Kirigami.ScrollablePage {
                     icon.name: "checkmark"
                     text: i18n("Complete")
                     onClicked: { app.completeTasks(page.selectedIds); page.clearSelection(); }
+                }
+                QQC2.ToolButton {
+                    icon.name: "weather-clear-symbolic"
+                    text: i18n("Add to My Day")
+                    display: QQC2.AbstractButton.IconOnly
+                    QQC2.ToolTip.text: text
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: app.setInMyDay(page.selectedIds, true)
                 }
                 QQC2.ToolButton {
                     icon.name: "starred-symbolic"
@@ -343,6 +391,7 @@ Kirigami.ScrollablePage {
             onToggleSelected: page.toggleSelected(index)
             onExtendSelection: page.extendSelection(index)
             onMoveTo: listId => { app.moveTasks(page.targetsFor(taskId), listId); page.clearSelection(); }
+            onToggleMyDay: app.toggleMyDay(page.targetsFor(taskId))
             onOpenDetails: {
                 tasksView.currentIndex = index;
                 app.openTaskDetails(index);
@@ -354,11 +403,15 @@ Kirigami.ScrollablePage {
             anchors.centerIn: parent
             width: parent.width - Kirigami.Units.gridUnit * 4
             visible: tasksView.count === 0
-            text: searchField.text.length > 0 ? i18n("No matching tasks") : i18n("No tasks")
+            readonly property bool myDay: app.currentListId === "__myday__" && searchField.text.length === 0
+            text: searchField.text.length > 0 ? i18n("No matching tasks")
+                : myDay ? i18n("Focus on your day") : i18n("No tasks")
             explanation: searchField.text.length > 0
                 ? i18n("Try a different search term.")
+                : myDay ? i18n("Add tasks here, or press Ctrl+T on a task in any list.")
                 : i18n("Type a task above and press Enter.")
-            icon.name: searchField.text.length > 0 ? "system-search" : "checkmark"
+            icon.name: searchField.text.length > 0 ? "system-search"
+                : myDay ? "weather-clear-symbolic" : "checkmark"
         }
     }
 }

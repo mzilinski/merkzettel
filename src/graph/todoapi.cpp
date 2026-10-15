@@ -180,7 +180,7 @@ void TodoApi::fetchTasks(const QString &listId)
 }
 
 void TodoApi::addTask(const QString &listId, const QString &title, const QDateTime &due,
-                      bool important)
+                      bool important, std::function<void(const QString &)> onCreated)
 {
     QJsonObject body;
     body.insert(QStringLiteral("title"), title);
@@ -191,8 +191,9 @@ void TodoApi::addTask(const QString &listId, const QString &title, const QDateTi
         body.insert(QStringLiteral("dueDateTime"), toGraphDateTime(due));
     }
     m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks").arg(listId), body,
-                  [this, listId](const QJsonValue &, const QString &err) {
+                  [this, listId, onCreated](const QJsonValue &created, const QString &err) {
         if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        if (onCreated) onCreated(created.toObject().value(QStringLiteral("id")).toString());
         Q_EMIT taskMutated(listId);
     });
 }

@@ -73,6 +73,10 @@ public Q_SLOTS:
     void completeTasks(const QStringList &taskIds);
     void setTasksImportant(const QStringList &taskIds, bool important);
     void undo();
+    // Local-only "My Day" (see Database::myDayTaskIds for why).
+    void setInMyDay(const QStringList &taskIds, bool inMyDay);
+    // Ctrl+T: add all to My Day, or remove them if all are already in it.
+    void toggleMyDay(const QStringList &taskIds);
     void createList(const QString &displayName);
     void deleteList(const QString &listId);
     void renameList(const QString &listId, const QString &newName);
@@ -144,6 +148,8 @@ private:
     void onAuthError(const QString &message);
     void setStatus(const QString &status);
     void registerGlobalShortcuts();
+    // Reload today's My Day ids into TasksModel (startup, changes, midnight).
+    void reloadMyDay();
     // Execute a delayed delete/move now (timer expiry, list switch, or a
     // new undoable operation replacing it).
     void commitPending();
@@ -200,6 +206,8 @@ private:
         bool pending = false;                  // Delete/Move not yet sent
     };
     QHash<QString, QList<Attachment>> m_attachments;  // taskId -> attachments
+    QSet<QString> m_demoMyDay;
+    QDate m_myDayDate;  // day the loaded My Day set belongs to
     UndoState m_undo;
     QTimer *m_commitTimer = nullptr;
     int m_movesInFlight = 0;

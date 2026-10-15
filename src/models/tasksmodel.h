@@ -20,7 +20,7 @@ class TasksModel : public QAbstractListModel
     Q_PROPERTY(bool sortDescending READ sortDescending WRITE setSortDescending NOTIFY sortDescendingChanged)
 public:
     // Local filter applied on top of the task set, driven by the smart-lists.
-    enum class SmartFilter { None, Important, Planned, Completed };
+    enum class SmartFilter { None, MyDay, Important, Planned, Completed };
 
     enum Roles {
         IdRole = Qt::UserRole + 1,
@@ -44,6 +44,7 @@ public:
         ListNameRole,
         CategoriesRole,
         HasAttachmentsRole,
+        InMyDayRole,
     };
 
     explicit TasksModel(QObject *parent = nullptr);
@@ -72,6 +73,10 @@ public:
     // Tasks with a pending (undoable) delete/move are hidden locally until
     // the operation is committed. Ids that no longer appear in a later
     // setTasks() are dropped from the hidden set automatically.
+    // Local "My Day" membership (see Database::myDayTaskIds).
+    void setMyDayIds(const QSet<QString> &ids);
+    bool isInMyDay(const QString &taskId) const { return m_myDayIds.contains(taskId); }
+
     void hideTasks(const QStringList &taskIds);
     void unhideTasks(const QStringList &taskIds);
 
@@ -113,6 +118,7 @@ private:
     QString m_sortScope;
     QHash<QString, QString> m_listNames;
     QSet<QString> m_hiddenIds;
+    QSet<QString> m_myDayIds;
 };
 
 } // namespace Merkzettel

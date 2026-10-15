@@ -15,6 +15,7 @@ QQC2.ItemDelegate {
     signal toggleSelected()
     signal extendSelection()
     signal moveTo(string listId)
+    signal toggleMyDay()
 
     // Set by the view; drives the highlight together with keyboard focus.
     property bool selected: false
@@ -65,8 +66,24 @@ QQC2.ItemDelegate {
                 spacing: Kirigami.Units.smallSpacing
                 visible: listLbl.visible || dueLbl.text.length > 0 || bodyHint.visible
                          || progressLbl.visible || delegate.categories.length > 0
-                         || model.hasAttachments
+                         || model.hasAttachments || myDayIcon.visible
 
+                // Like MS To Do: mark My Day tasks everywhere except in My Day.
+                Kirigami.Icon {
+                    id: myDayIcon
+                    visible: model.inMyDay && app.currentListId !== "__myday__"
+                    source: "weather-clear-symbolic"
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                    color: Kirigami.Theme.disabledTextColor
+                }
+                QQC2.Label {
+                    visible: myDayIcon.visible
+                    text: i18n("My Day")
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                    color: Kirigami.Theme.disabledTextColor
+                    rightPadding: Kirigami.Units.smallSpacing
+                }
                 Kirigami.Icon {
                     visible: listLbl.visible
                     source: "view-list-text"
@@ -211,6 +228,11 @@ QQC2.ItemDelegate {
 
     QQC2.Menu {
         id: ctxMenu
+        QQC2.MenuItem {
+            text: model.inMyDay ? i18n("Remove from My Day") : i18n("Add to My Day")
+            icon.name: "weather-clear-symbolic"
+            onTriggered: delegate.toggleMyDay()
+        }
         QQC2.MenuItem {
             text: model.important ? i18n("Unstar") : i18n("Mark as important")
             icon.name: model.important ? "non-starred-symbolic" : "starred-symbolic"

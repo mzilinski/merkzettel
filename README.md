@@ -25,11 +25,12 @@ Native KDE/Kirigami client for **Microsoft To Do**. Written in C++/Qt6, talks Mi
 - **Recurrence**: daily / weekdays / weekly / monthly / yearly presets plus a custom editor (every N days/weeks/months/years, weekday picker)
 - Date+time picker via [kirigami-addons](https://invent.kde.org/libraries/kirigami-addons) `DatePopup`/`TimePopup`
 - **Sectioned task view**: Overdue / Today / Tomorrow / This week / Later / No date / Completed
-- **Smart lists** across all lists: All / Important / Planned / Completed
+- **Smart lists** across all lists: My Day / All / Important / Planned / Completed
+- **My Day** (Ctrl+T, context menu, detail sheet): stored locally only — MS To Do syncs it through a first-party Substrate API (`committedDay`) that Graph doesn't expose — and cleared every day
 - Sort by importance, due date, title or creation date (ascending/descending); hide completed tasks — both remembered across launches
 - Date parsing in the add bar: `Buy milk tomorrow`, `Pay rent mo`, `Doctor 25.5.`
 - Right-click context menu, click-to-open detail sheet, hover-revealed star toggle
-- **Keyboard shortcuts** (MS To Do layout): Ctrl+N new task, Ctrl+L new list, Ctrl+F search, Ctrl+D complete, Ctrl+R/F5 sync, Alt+↑/↓ switch list, arrow keys + Enter/Delete in the task list
+- **Keyboard shortcuts** (MS To Do layout): Ctrl+N new task, Ctrl+L new list, Ctrl+F search, Ctrl+D complete, Ctrl+T My Day, Ctrl+R/F5 sync, Alt+↑/↓ switch list, arrow keys + Enter/Delete in the task list
 - **Global quick add** (default Meta+Alt+N, rebindable in System Settings → Shortcuts) via KGlobalAccel
 - **KStatusNotifierItem** tray icon with badge for tasks due today
 - `--tray` flag for minimised startup (also exposed as a `.desktop` action)
