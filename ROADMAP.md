@@ -32,11 +32,11 @@ progress summaries in [REPORT.md](REPORT.md).
   bounded retries
 - [x] P1 [AUTO] Network loss feedback: offline indicator, mutations while
   offline report a clear error instead of raw HTTP text
-- [ ] P1 [AUTO] Conflicts: define last-writer-wins behaviour for edits of a
+- [x] P1 [AUTO] Conflicts: define last-writer-wins behaviour for edits of a
   task changed remotely, document it
-- [ ] P1 [AUTO] Large lists (> 1000 tasks): verify model/cache performance
+- [x] P1 [AUTO] Large lists (> 1000 tasks): verify model/cache performance
   with a generated data set
-- [ ] P2 [AUTO] Startup time measurement and budget
+- [x] P2 [AUTO] Startup time measurement and budget
 
 ### Packaging and identity
 

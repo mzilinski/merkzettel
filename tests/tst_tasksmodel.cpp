@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <QElapsedTimer>
 #include <QStandardPaths>
 #include <QTest>
 
@@ -213,6 +214,32 @@ private Q_SLOTS:
             QCOMPARE(info.value(QStringLiteral("interval")).toInt(), interval);
             QVERIFY(!info.value(QStringLiteral("summary")).toString().isEmpty());
         }
+    }
+
+    void handlesLargeLists()
+    {
+        QList<Task> many;
+        many.reserve(5000);
+        for (int i = 0; i < 5000; ++i) {
+            Task t
+                = makeTask(QStringLiteral("id%1").arg(i), QStringLiteral("Task %1").arg(4999 - i),
+                           i % 3 == 0 ? INT_MIN : (i % 40) - 10, i % 7 == 0, i % 5 == 0);
+            t.categories = {QStringLiteral("Cat%1").arg(i % 10)};
+            many.append(t);
+        }
+        TasksModel m;
+        m.setSortScope(QStringLiteral("test-large"));
+        m.setShowCompleted(true);
+        QElapsedTimer timer;
+        timer.start();
+        m.setTasks(many);
+        for (const char *mode : {"importance", "dueDate", "title", "created", "default"})
+            m.setSortMode(QString::fromLatin1(mode));
+        m.setFilterText(QStringLiteral("cat7"));
+        QCOMPARE(m.rowCount(), 500); // every id ending in 7
+        m.setFilterText(QString());
+        QVERIFY2(timer.elapsed() < 2000,
+                 qPrintable(QStringLiteral("took %1 ms").arg(timer.elapsed())));
     }
 
     void listsModelHasSmartListsFirst()

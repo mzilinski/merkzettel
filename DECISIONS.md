@@ -101,3 +101,16 @@ release. Newest last. Each entry: context, decision, consequences.
   in a formatting-only commit listed in `.git-blame-ignore-revs`.
 - **Code of conduct:** written in the project's own words (not a verbatim
   third-party text) so no further license file is needed.
+
+## D11 — Concurrent edits and offline changes
+
+- **Context:** Microsoft To Do may change the same task on another device
+  while Merkzettel shows it; Graph offers no ETag-based conditional updates
+  for To Do tasks that are worth relying on.
+- **Decision:** Last writer wins **per field**: Merkzettel PATCHes only the
+  field the user changed (title, due date, importance, …), so a remote edit
+  of a different field is kept. The next delta sync (on every list switch,
+  manual sync and after each change) shows the server state. While offline,
+  changes are not queued; they fail with "No connection to Microsoft" and
+  the cached data stays read-only in practice. A persistent offline queue
+  is a candidate for v0.4.

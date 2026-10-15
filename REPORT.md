@@ -93,3 +93,13 @@ See [ROADMAP.md](ROADMAP.md); decisions in [DECISIONS.md](DECISIONS.md).
   attachment cache are owner-only (0600/0700).
 - **Dependencies:** Qt 6, KDE Frameworks 6 and QtKeychain 0.16.0 (pinned with
   SHA-256 in the Flatpak manifest); no bundled third-party code.
+
+### Performance (Phase 1)
+
+- Model: 5 000 tasks, five sort-mode switches and a category search in
+  ~180 ms (`tst_tasksmodel::handlesLargeLists`).
+- Cache: 2 000 tasks written and read back well under a second
+  (`tst_database::handlesLargeLists`).
+- Startup: the demo window is mapped ~0.5 s after launch (Xvfb, warm QML
+  cache, three runs). With an account the cached lists are shown before the
+  network answers.
