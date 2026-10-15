@@ -83,7 +83,7 @@ progress summaries in [REPORT.md](REPORT.md).
 
 ### Security
 
-- [ ] P1 [AUTO] Review OAuth loopback redirect (port, state, PKCE), never
+- [x] P1 [AUTO] Review OAuth loopback redirect (port, state, PKCE), never
   log tokens, validate attachment file names/paths, dependency audit
 
 ### Features from the v0.3 roadmap

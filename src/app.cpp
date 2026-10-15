@@ -1126,10 +1126,29 @@ void App::removeLinkedResource(const QString &taskId, const QString &resourceId)
     m_todo->removeLinkedResource(lid, taskId, resourceId);
 }
 
+QString App::plain(const QString &text)
+{
+    QString out = text;
+    return out.replace(QLatin1Char('<'), QStringLiteral("<\u200B"));
+}
+
 void App::openLinkedResource(const QString &webUrl)
 {
     if (webUrl.isEmpty()) return;
-    QDesktopServices::openUrl(QUrl(webUrl));
+    // Links may come from shared lists; only hand well-known schemes to the
+    // desktop so a crafted link cannot launch arbitrary URL handlers.
+    const QUrl url = QUrl::fromUserInput(webUrl);
+    static const QStringList kAllowed = {
+        QStringLiteral("https"),
+        QStringLiteral("http"),
+        QStringLiteral("mailto"),
+        QStringLiteral("file"),
+    };
+    if (!url.isValid() || !kAllowed.contains(url.scheme().toLower())) {
+        Q_EMIT errorOccurred(i18n("Refusing to open link with unsupported scheme: %1", webUrl));
+        return;
+    }
+    QDesktopServices::openUrl(url);
 }
 
 void App::openTaskDetails(int row)
@@ -1162,6 +1181,19 @@ void App::setDetailTask(const QVariantMap &task)
     }
     Q_EMIT detailTaskChanged();
 }
+
+namespace {
+// Attachment names come from the server (possibly a shared list): keep only
+// the last path component and never "", "." or "..".
+QString safeFileName(const QString &name)
+{
+    QString base = QFileInfo(name).fileName();
+    base.remove(QRegularExpression(QStringLiteral("[\\x00-\\x1f/\\\\]")));
+    if (base.isEmpty() || base == QLatin1String(".") || base == QLatin1String(".."))
+        return QStringLiteral("attachment");
+    return base;
+}
+} // namespace
 
 Attachment App::findAttachment(const QString &taskId, const QString &attachmentId) const
 {
@@ -1223,7 +1255,9 @@ void App::openAttachment(const QString &taskId, const QString &attachmentId)
             + QStringLiteral("/attachments/")
             + QString(att.id).replace(QLatin1Char('/'), QLatin1Char('_'));
         QDir().mkpath(dir);
-        QFile out(dir + QLatin1Char('/') + QFileInfo(att.name).fileName());
+        QFile::setPermissions(
+            dir, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
+        QFile out(dir + QLatin1Char('/') + safeFileName(att.name));
         if (!out.open(QIODevice::WriteOnly) || out.write(data) != data.size()) {
             Q_EMIT errorOccurred(i18n("Could not write \"%1\".", out.fileName()));
             return;
@@ -1363,7 +1397,8 @@ void App::checkReminders()
 
         auto *notif = new KNotification(QStringLiteral("reminder"), KNotification::CloseOnTimeout);
         notif->setTitle(i18n("Reminder"));
-        notif->setText(h.title);
+        // Notification bodies may contain markup; show the title verbatim.
+        notif->setText(h.title.toHtmlEscaped());
         notif->setIconName(QStringLiteral("task-reminder"));
 
         // "Mark done" closes the task right from the notification — single

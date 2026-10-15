@@ -66,6 +66,7 @@ QQC2.ItemDelegate {
             QQC2.Label {
                 Layout.fillWidth: true
                 text: model.title
+                textFormat: Text.PlainText
                 elide: Text.ElideRight
                 color: delegate.highlighted ? Kirigami.Theme.highlightedTextColor
                                             : Kirigami.Theme.textColor
@@ -106,6 +107,7 @@ QQC2.ItemDelegate {
                 QQC2.Label {
                     id: listLbl
                     text: model.listName || ""
+                    textFormat: Text.PlainText
                     // Originating list only matters in the aggregated view —
                     // hide for normal lists where every row shares the same.
                     visible: text.length > 0 && app.currentListVirtual
@@ -210,6 +212,7 @@ QQC2.ItemDelegate {
                             id: catLbl
                             anchors.centerIn: parent
                             text: parent.modelData
+                            textFormat: Text.PlainText
                             color: delegate.highlighted ? Kirigami.Theme.highlightedTextColor
                                                         : Kirigami.Theme.textColor
                             font.pointSize: Kirigami.Theme.smallFont.pointSize

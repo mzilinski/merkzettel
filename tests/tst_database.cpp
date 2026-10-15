@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QDir>
+#include <QFile>
 #include <QElapsedTimer>
 #include <QStandardPaths>
 #include <QTest>
@@ -66,6 +67,17 @@ private Q_SLOTS:
         QCOMPARE(it->totalChecklistCount, 1);
         QCOMPARE(it->openChecklistCount, 0);
         QCOMPARE(db.allTasks().size(), 2);
+    }
+
+    void cacheIsPrivate()
+    {
+        Database db;
+        QVERIFY(db.open());
+        const QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+            + QStringLiteral("/cache.sqlite");
+        const auto perms = QFile::permissions(path);
+        QVERIFY(perms & QFileDevice::ReadOwner);
+        QVERIFY(!(perms & (QFileDevice::ReadGroup | QFileDevice::ReadOther)));
     }
 
     void fullFetchReplacesList()

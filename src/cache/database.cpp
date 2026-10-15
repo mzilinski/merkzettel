@@ -5,6 +5,7 @@
 #include <QSqlError>
 #include <QStandardPaths>
 #include <QDir>
+#include <QFile>
 #include <QDateTime>
 #include <QDebug>
 #include <QVariant>
@@ -50,6 +51,11 @@ bool Database::open()
         qWarning() << "Failed to open cache db:" << db.lastError().text();
         return false;
     }
+    // The cache holds all task data: keep it private even if the home
+    // directory is world-readable.
+    QFile::setPermissions(dataDir,
+                          QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
+    QFile::setPermissions(path, QFileDevice::ReadOwner | QFileDevice::WriteOwner);
     createSchema();
     return true;
 }

@@ -72,3 +72,24 @@ else: no telemetry, no crash reporting, no update checks.
 ### Plan
 
 See [ROADMAP.md](ROADMAP.md); decisions in [DECISIONS.md](DECISIONS.md).
+
+### Security review (Phase 1)
+
+- **OAuth:** authorization code + PKCE (S256, added by QtNetworkAuth ≥ 6.5),
+  `state` verified by Qt, loopback handler bound to 127.0.0.1:53682 only and
+  closed again by Qt after the redirect. Tokens are never logged.
+- **Markup injection (fixed):** QML labels default to `Text.AutoText`, so a
+  task title, list name, category or file name containing HTML — e.g. from a
+  list shared by someone else — was rendered as rich text and `<img>` sources
+  were fetched (verified: three requests to a test server, i.e. a tracking
+  pixel). Data labels now use `Text.PlainText`; style-owned labels get
+  `App::plain()`; the clickable link label escapes name and URL; reminder
+  notification bodies are HTML-escaped. Re-test: zero requests.
+- **Links (fixed):** only `https`, `http`, `mailto` and `file` URLs are handed
+  to the desktop.
+- **Attachment names (fixed):** reduced to a safe base name before writing to
+  the cache directory.
+- **File permissions (fixed):** cache database, its directory and the
+  attachment cache are owner-only (0600/0700).
+- **Dependencies:** Qt 6, KDE Frameworks 6 and QtKeychain 0.16.0 (pinned with
+  SHA-256 in the Flatpak manifest); no bundled third-party code.

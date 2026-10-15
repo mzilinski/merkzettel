@@ -23,7 +23,7 @@ QQC2.Menu {
             required property string iconName
             required property bool isVirtual
 
-            text: displayName
+            text: app.plain(displayName)
             icon.name: iconName
             enabled: listId !== menu.excludedListId
             // Smart-lists aren't move targets. Collapse instead of removing so

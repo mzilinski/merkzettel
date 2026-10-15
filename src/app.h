@@ -84,6 +84,10 @@ public:
 
     // Every category name used on any cached task, for autocompletion.
     Q_INVOKABLE QStringList knownCategories() const;
+    // Text for components whose labels interpret HTML (Text.AutoText):
+    // breaks every '<' with a zero-width space so remote data such as a task
+    // title from a shared list can never render markup or load images.
+    Q_INVOKABLE static QString plain(const QString &text);
 
 public Q_SLOTS:
     void login();

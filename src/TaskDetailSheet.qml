@@ -28,6 +28,11 @@ Kirigami.OverlaySheet {
                                + loc.timeFormat(Locale.ShortFormat));
     }
 
+    function escapeHtml(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
     function openDatePicker(initial) {
         datePickerRequested(initial);
     }
@@ -39,7 +44,7 @@ Kirigami.OverlaySheet {
 
     onClosed: app.closeTaskDetails()
 
-    title: hasTask ? task.title : ""
+    title: hasTask ? app.plain(task.title) : ""
 
     ColumnLayout {
         Layout.preferredWidth: Kirigami.Units.gridUnit * 30
@@ -180,7 +185,7 @@ Kirigami.OverlaySheet {
                         model: hasTask ? (task.categories || []) : []
                         Kirigami.Chip {
                             required property string modelData
-                            text: modelData
+                            text: app.plain(modelData)
                             closable: true
                             checkable: false
                             onRemoved: app.setTaskCategories(task.taskId,
@@ -194,12 +199,16 @@ Kirigami.OverlaySheet {
                 // Outlook master-category scope, so suggestions come from the cache.
                 QQC2.ComboBox {
                     id: categoryInput
+                    textRole: "label"
+                    valueRole: "value"
                     Layout.fillWidth: true
                     editable: true
                     model: []
                     function refreshSuggestions() {
                         const used = hasTask ? (task.categories || []) : [];
-                        model = app.knownCategories().filter(c => used.indexOf(c) < 0);
+                        // Labels are display-safe, values are the real names.
+                        model = app.knownCategories().filter(c => used.indexOf(c) < 0)
+                                   .map(c => ({ label: app.plain(c), value: c }));
                         currentIndex = -1;
                         editText = "";
                     }
@@ -215,7 +224,7 @@ Kirigami.OverlaySheet {
                         function onTaskChanged() { categoryInput.refreshSuggestions(); }
                     }
                     onAccepted: addCategory(editText)
-                    onActivated: addCategory(currentText)
+                    onActivated: addCategory(currentValue)
                     QQC2.Label {
                         anchors.fill: parent.contentItem
                         leftPadding: Kirigami.Units.smallSpacing
@@ -383,7 +392,9 @@ Kirigami.OverlaySheet {
                     }
                     QQC2.Label {
                         Layout.fillWidth: true
-                        text: `<a href="${modelData.webUrl}">${modelData.displayName || modelData.webUrl}</a>`
+                        // Rich text on purpose (clickable); escape both parts
+                        // so a crafted name or URL cannot inject markup.
+                        text: `<a href="${sheet.escapeHtml(modelData.webUrl)}">${sheet.escapeHtml(modelData.displayName || modelData.webUrl)}</a>`
                         textFormat: Text.RichText
                         elide: Text.ElideRight
                         onLinkActivated: link => app.openLinkedResource(link)
@@ -466,6 +477,7 @@ Kirigami.OverlaySheet {
                         QQC2.Label {
                             Layout.fillWidth: true
                             text: modelData.name
+                            textFormat: Text.PlainText
                             elide: Text.ElideMiddle
                         }
                         QQC2.Label {
@@ -568,6 +580,7 @@ Kirigami.OverlaySheet {
 
             component MetaLabel: QQC2.Label {
                 Layout.fillWidth: true
+                textFormat: Text.PlainText
                 color: Kirigami.Theme.disabledTextColor
                 font: Kirigami.Theme.smallFont
                 elide: Text.ElideRight
@@ -651,7 +664,7 @@ Kirigami.OverlaySheet {
         property string fileName: ""
         parent: QQC2.Overlay.overlay
         title: i18n("Delete file?")
-        subtitle: i18n("\"%1\" will be removed from the task. This cannot be undone.", fileName)
+        subtitle: i18n("\"%1\" will be removed from the task. This cannot be undone.", app.plain(fileName))
         standardButtons: Kirigami.PromptDialog.NoButton
         customFooterActions: [
             Kirigami.Action {

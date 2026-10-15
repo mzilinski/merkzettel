@@ -52,11 +52,11 @@ Kirigami.ApplicationWindow {
             root.requestActivate();
         }
         function onErrorOccurred(message) {
-            errorBanner.text = message;
+            errorBanner.text = app.plain(message);
             errorBanner.visible = true;
         }
         function onUndoOffered(message, timeoutMs) {
-            showPassiveNotification(message, timeoutMs, i18n("Undo"), () => app.undo());
+            showPassiveNotification(app.plain(message), timeoutMs, i18n("Undo"), () => app.undo());
         }
         function onQuickAddRequested() {
             while (root.pageStack.layers.depth > 1) root.pageStack.layers.pop();
@@ -234,15 +234,15 @@ Kirigami.ApplicationWindow {
                 delegate: QQC2.ItemDelegate {
                     id: listItem
                     Layout.fillWidth: true
-                    text: root.globalDrawer.collapsed ? "" : model.displayName
+                    text: root.globalDrawer.collapsed ? "" : app.plain(model.displayName)
                     icon.name: model.iconName
                     display: root.globalDrawer.collapsed
                              ? QQC2.AbstractButton.IconOnly
                              : QQC2.AbstractButton.TextBesideIcon
                     highlighted: app.currentListId === model.listId
                     QQC2.ToolTip.text: model.isShared
-                                       ? i18n("%1 (shared)", model.displayName)
-                                       : model.displayName
+                                       ? i18n("%1 (shared)", app.plain(model.displayName))
+                                       : app.plain(model.displayName)
                     QQC2.ToolTip.visible: hovered && root.globalDrawer.collapsed
                     QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
                     onClicked: {
@@ -366,7 +366,7 @@ Kirigami.ApplicationWindow {
         target: app
         function onStatusChanged() {
             if (app.status.length > 0) {
-                showPassiveNotification(app.status, "short");
+                showPassiveNotification(app.plain(app.status), "short");
             }
         }
     }
@@ -435,7 +435,7 @@ Kirigami.ApplicationWindow {
         property string listName: ""
         parent: root.overlay
         title: i18n("Delete list?")
-        subtitle: i18n("This will permanently delete the list \"%1\" and all of its tasks. This cannot be undone.", listName)
+        subtitle: i18n("This will permanently delete the list \"%1\" and all of its tasks. This cannot be undone.", app.plain(listName))
         standardButtons: Kirigami.PromptDialog.NoButton
         customFooterActions: [
             Kirigami.Action {
