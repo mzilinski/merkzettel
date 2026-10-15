@@ -1,0 +1,71 @@
+1
+00:00:00,350 --> 00:00:03,763
+Im Zug oder im Flugzeug ist das Netz mal
+da, mal weg.
+
+2
+00:00:04,063 --> 00:00:06,861
+Trotzdem willst du sehen, was auf deiner
+Liste steht.
+
+3
+00:00:08,350 --> 00:00:11,194
+Merkzettel hält eine lokale Kopie all
+deiner Listen.
+
+4
+00:00:11,494 --> 00:00:15,163
+Es startet ohne Netz, und ein Hinweis sagt
+dir, dass du offline bist.
+
+5
+00:00:18,350 --> 00:00:22,274
+Listen, Aufgaben, Schritte, Notizen und
+Kategorien sind alle da.
+
+6
+00:00:26,350 --> 00:00:29,868
+Suche, Sortierung und „Mein Tag“
+funktionieren auch offline.
+
+7
+00:00:33,350 --> 00:00:35,765
+Änderungen an Aufgaben brauchen eine
+Verbindung.
+
+8
+00:00:36,065 --> 00:00:39,902
+Merkzettel sammelt sie nicht heimlich,
+sondern sagt dir, wenn etwas nicht
+
+9
+00:00:39,952 --> 00:00:41,336
+gespeichert werden konnte.
+
+10
+00:00:45,350 --> 00:00:49,156
+Wieder online, verbindet sich Merkzettel
+von selbst, oder du wählst Erneut
+
+11
+00:00:49,206 --> 00:00:49,977
+verbinden.
+
+12
+00:00:50,027 --> 00:00:52,686
+Dann holt es alles, was sich inzwischen
+geändert hat.
+
+13
+00:00:56,350 --> 00:01:00,054
+Ein Tipp für unterwegs: Öffne vor der
+Abfahrt einmal die Liste Alle.
+
+14
+00:01:00,354 --> 00:01:02,501
+Sie aktualisiert alle Listen auf einmal.
+
+15
+00:01:06,350 --> 00:01:08,475
+So arbeitest du mit Merkzettel offline.
+

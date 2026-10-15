@@ -1,0 +1,74 @@
+1
+00:00:00,350 --> 00:00:04,216
+A task comes to mind while you are writing
+an e-mail or reading a web page.
+
+2
+00:00:06,350 --> 00:00:09,566
+Switching to a browser tab and finding the
+right list breaks your flow.
+
+3
+00:00:09,866 --> 00:00:11,828
+With Merkzettel, it takes one shortcut.
+
+4
+00:00:16,350 --> 00:00:18,382
+Press Meta, Alt and N in any application.
+
+5
+00:00:18,682 --> 00:00:22,118
+Merkzettel comes to the front, with the
+cursor in the new task field.
+
+6
+00:00:26,350 --> 00:00:27,550
+Type the task.
+
+7
+00:00:27,602 --> 00:00:32,214
+A date word at the end sets the due date:
+tomorrow, a weekday, or a date like the
+
+8
+00:00:32,264 --> 00:00:33,464
+25th of May.
+
+9
+00:00:37,350 --> 00:00:38,343
+Press Enter.
+
+10
+00:00:38,393 --> 00:00:41,818
+The date word disappears from the title,
+and the task is due tomorrow.
+
+11
+00:00:45,350 --> 00:00:48,589
+Weekdays work the same way: this task is
+due on Friday.
+
+12
+00:00:53,350 --> 00:00:55,579
+Close the window, and you are back where
+you left off.
+
+13
+00:00:55,879 --> 00:00:58,085
+Merkzettel keeps running in the system
+tray.
+
+14
+00:01:02,350 --> 00:01:05,647
+Let Merkzettel start with your session,
+and the shortcut is always ready.
+
+15
+00:01:05,947 --> 00:01:07,863
+You can change it in the system settings.
+
+16
+00:01:13,350 --> 00:01:15,347
+That is how you capture tasks from
+anywhere.
+

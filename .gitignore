@@ -11,6 +11,6 @@ website/node_modules/
 website/dist/
 website/.astro/
 website/public/docs/
-website/public/videos/
 flatpak/.local-build.yml
 .flatpak-builder/
+website/public/favicon.svg

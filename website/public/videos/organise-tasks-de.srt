@@ -1,0 +1,83 @@
+1
+00:00:00,350 --> 00:00:04,474
+Manche Aufgaben brauchen mehr als einen
+Titel: den Beleg für die Reisekosten, eine
+
+2
+00:00:04,524 --> 00:00:07,374
+Kategorie, eine Erinnerung, die jeden
+Monat wiederkommt.
+
+3
+00:00:09,350 --> 00:00:13,495
+Ein Klick auf die Aufgabe, oder Auswählen
+und Enter, öffnet die Details.
+
+4
+00:00:16,350 --> 00:00:18,057
+Unter Dateien findest du die Anhänge.
+
+5
+00:00:18,357 --> 00:00:22,455
+Zieh Dateien aus Dolphin auf diesen
+Bereich, oder wähle Datei hinzufügen.
+
+6
+00:00:26,350 --> 00:00:28,835
+Öffnen zeigt eine Datei in ihrer
+Anwendung.
+
+7
+00:00:29,135 --> 00:00:31,677
+Speichern unter legt eine Kopie ab, wo du
+willst.
+
+8
+00:00:35,350 --> 00:00:38,241
+Kategorien fassen zusammengehörige
+Aufgaben zusammen.
+
+9
+00:00:38,541 --> 00:00:41,664
+Tipp einen Namen und drück Enter, oder
+wähl eine vorhandene.
+
+10
+00:00:45,350 --> 00:00:49,353
+Unter Wiederholung wählst du täglich,
+werktags, wöchentlich, monatlich oder
+
+11
+00:00:49,403 --> 00:00:50,140
+jährlich.
+
+12
+00:00:50,190 --> 00:00:54,508
+Benutzerdefiniert erlaubt Regeln wie alle
+zwei Wochen am Montag und Donnerstag.
+
+13
+00:00:57,350 --> 00:01:00,485
+Schalte die Erinnerung ein und wähle Datum
+und Uhrzeit.
+
+14
+00:01:00,785 --> 00:01:04,186
+Die Benachrichtigung hat einen Knopf, mit
+dem du die Aufgabe abhakst.
+
+15
+00:01:07,350 --> 00:01:11,518
+Alles wird mit Microsoft To Do
+synchronisiert, auf dem Handy und im Web.
+
+16
+00:01:14,350 --> 00:01:17,322
+Und das Suchfeld findet Aufgaben auch über
+ihre Kategorie.
+
+17
+00:01:21,350 --> 00:01:23,753
+So organisierst du Aufgaben mit
+Merkzettel.
+

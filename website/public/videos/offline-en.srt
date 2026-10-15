@@ -1,0 +1,67 @@
+1
+00:00:00,350 --> 00:00:03,264
+On the train or on a plane, the connection
+comes and goes.
+
+2
+00:00:03,564 --> 00:00:05,352
+You still want to see what is on your
+list.
+
+3
+00:00:08,350 --> 00:00:10,823
+Merkzettel keeps a local copy of all your
+lists.
+
+4
+00:00:11,123 --> 00:00:14,618
+It starts without a network, and a banner
+tells you that you are offline.
+
+5
+00:00:18,350 --> 00:00:21,520
+Lists, tasks, steps, notes and categories
+are all there.
+
+6
+00:00:26,350 --> 00:00:28,614
+Search, sorting and My Day work offline,
+too.
+
+7
+00:00:33,350 --> 00:00:35,103
+Changing tasks needs a connection.
+
+8
+00:00:35,403 --> 00:00:37,470
+Merkzettel does not queue changes
+silently.
+
+9
+00:00:37,770 --> 00:00:39,767
+It tells you when something could not be
+saved.
+
+10
+00:00:45,350 --> 00:00:49,007
+Back online, Merkzettel reconnects by
+itself, or you choose Reconnect.
+
+11
+00:00:49,307 --> 00:00:51,745
+Then it fetches everything that changed in
+the meantime.
+
+12
+00:00:56,350 --> 00:00:59,763
+A tip for the road: open the All list once
+before you leave.
+
+13
+00:01:00,063 --> 00:01:01,851
+It updates every list at once.
+
+14
+00:01:06,350 --> 00:01:08,057
+That is how Merkzettel works offline.
+

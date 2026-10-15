@@ -1,0 +1,76 @@
+1
+00:00:00,350 --> 00:00:04,878
+Some tasks need more than a title: the
+receipt for the expense report, a
+category, a
+
+2
+00:00:04,928 --> 00:00:06,944
+reminder that comes back every month.
+
+3
+00:00:09,350 --> 00:00:12,914
+Click a task, or select it and press
+Enter, to open its details.
+
+4
+00:00:16,350 --> 00:00:18,277
+Under Files you find its attachments.
+
+5
+00:00:18,577 --> 00:00:21,619
+Drag files from Dolphin onto this area, or
+choose Add file.
+
+6
+00:00:26,350 --> 00:00:28,428
+Open shows a file in its application.
+
+7
+00:00:28,728 --> 00:00:30,818
+Save as stores a copy wherever you like.
+
+8
+00:00:35,350 --> 00:00:37,254
+Categories group related tasks.
+
+9
+00:00:37,554 --> 00:00:40,120
+Type a name and press Enter, or pick one
+you used before.
+
+10
+00:00:45,350 --> 00:00:48,694
+Under Repeat, choose daily, weekdays,
+weekly, monthly or yearly.
+
+11
+00:00:48,994 --> 00:00:52,604
+Custom allows rules like every two weeks
+on Monday and Thursday.
+
+12
+00:00:57,350 --> 00:00:59,486
+Switch on the reminder and pick a date and
+time.
+
+13
+00:00:59,786 --> 00:01:02,480
+The notification has a button to mark the
+task as done.
+
+14
+00:01:07,350 --> 00:01:10,891
+Everything is synchronised with Microsoft
+To Do, on your phone and on the web.
+
+15
+00:01:14,350 --> 00:01:17,276
+And the search field finds tasks by their
+category, too.
+
+16
+00:01:21,350 --> 00:01:23,579
+That is how you organise tasks with
+Merkzettel.
+

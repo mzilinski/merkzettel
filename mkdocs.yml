@@ -14,6 +14,7 @@ docs_dir: docs
 site_dir: website/public/docs
 exclude_docs: |
   /diagrams/
+  /videos/
 
 theme:
   name: material
