@@ -12,6 +12,7 @@ include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(ECMQmlModule)
+include(ECMAddTests)
 include(FeatureSummary)
 
 find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS
@@ -25,6 +26,9 @@ find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS
     Sql
     Widgets
 )
+if(BUILD_TESTING)
+    find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS Test)
+endif()
 
 find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS
     CoreAddons
@@ -56,6 +60,9 @@ endif()
 
 add_subdirectory(src)
 add_subdirectory(po)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
 
 install(FILES org.kde.merkzettel.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 install(FILES org.kde.merkzettel.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR})

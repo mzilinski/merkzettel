@@ -5,6 +5,7 @@
 #include <QList>
 #include <QDateTime>
 #include <QJsonObject>
+#include <QUrl>
 #include <QStringList>
 #include <functional>
 
@@ -172,6 +173,13 @@ Q_SIGNALS:
     void errorOccurred(const QString &message);
 
 private:
+    // Follow @odata.nextLink until the last page. pageDone gets every page's
+    // JSON object; finished runs once after the last page (with the error,
+    // if a page failed). Recursion goes through this member, not through a
+    // self-referencing closure, so nothing outlives the request chain.
+    void fetchAllPages(const QUrl &url,
+                       std::function<void(const QJsonObject &page)> pageDone,
+                       std::function<void(const QJsonObject &lastPage, const QString &error)> finished);
     void uploadAttachmentImpl(const QString &listId, const QString &taskId, const QString &name,
                               const QString &contentType, const QByteArray &data,
                               std::function<void(const QString &error)> done);

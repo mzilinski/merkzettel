@@ -4,6 +4,7 @@
 #include <QString>
 #include <QJsonValue>
 #include <QJsonObject>
+#include <QUrl>
 #include <QUrlQuery>
 #include <functional>
 #include <QList>
@@ -23,6 +24,10 @@ class GraphClient : public QObject
     Q_OBJECT
 public:
     explicit GraphClient(AuthManager *auth, QObject *parent = nullptr);
+
+    // Absolute URL for a Graph path; the base is overridable for tests.
+    QUrl url(const QString &path, const QUrlQuery &query = {}) const;
+    void setBaseUrl(const QString &baseUrl) { m_baseUrl = baseUrl; }
 
     void get(const QString &path, const QUrlQuery &query, GraphCallback cb);
     void post(const QString &path, const QJsonObject &body, GraphCallback cb);
@@ -70,6 +75,7 @@ private:
     // `again`; false if the caller should handle the reply itself.
     bool retryIfThrottled(QNetworkReply *reply, int throttleAttempt, std::function<void()> again);
 
+    QString m_baseUrl;
     QList<Job> m_queue;
     int m_inFlight = 0;
     bool m_paused = false;

@@ -36,7 +36,15 @@ QString errorMessage(int status, const QByteArray &data, QNetworkReply *reply)
 
 GraphClient::GraphClient(AuthManager *auth, QObject *parent)
     : QObject(parent), m_auth(auth), m_nam(new QNetworkAccessManager(this))
+    , m_baseUrl(QString::fromLatin1(kGraphBase))
 {
+}
+
+QUrl GraphClient::url(const QString &path, const QUrlQuery &query) const
+{
+    QUrl u(m_baseUrl + path);
+    if (!query.isEmpty()) u.setQuery(query);
+    return u;
 }
 
 void GraphClient::get(const QString &path, const QUrlQuery &query, GraphCallback cb)
@@ -67,11 +75,7 @@ void GraphClient::getAbsolute(const QString &absoluteUrl, GraphCallback cb)
 void GraphClient::send(Method method, const QString &path, const QUrlQuery &query,
                        const QJsonObject &body, GraphCallback cb, int retries)
 {
-    QUrl url(QString::fromLatin1(kGraphBase) + path);
-    if (!query.isEmpty()) {
-        url.setQuery(query);
-    }
-    sendUrl(method, url, body, std::move(cb), retries);
+    sendUrl(method, url(path, query), body, std::move(cb), retries);
 }
 
 void GraphClient::sendUrl(Method method, const QUrl &url, const QJsonObject &body,
@@ -135,8 +139,8 @@ bool GraphClient::retryIfThrottled(QNetworkReply *reply, int throttleAttempt,
     qInfo() << "Graph throttled (HTTP" << status << "), pausing" << seconds << "s";
 
     // Pause everything, not just this request: other requests would hit the
-    // same per-mailbox limit and only extend the throttling.
-    again();
+    // same per-mailbox limit and only extend the throttling. Pause *before*
+    // re-queuing, otherwise dispatch() would start the retry right away.
     if (!m_paused) {
         m_paused = true;
         QTimer::singleShot(seconds * 1000, this, [this] {
@@ -144,6 +148,7 @@ bool GraphClient::retryIfThrottled(QNetworkReply *reply, int throttleAttempt,
             pump();
         });
     }
+    again();
     return true;
 }
 
@@ -192,7 +197,7 @@ void GraphClient::getBytes(const QString &path, GraphBytesCallback cb, int retri
                            int throttleAttempt)
 {
     dispatch([this, path]() -> QNetworkReply * {
-        QNetworkRequest req(QUrl(QString::fromLatin1(kGraphBase) + path));
+        QNetworkRequest req(url(path));
         req.setRawHeader("Authorization",
                          QByteArray("Bearer ") + m_auth->accessToken().toUtf8());
         return m_nam->get(req);

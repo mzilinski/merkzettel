@@ -142,16 +142,34 @@ TaskList parseList(const QJsonObject &obj)
 TodoApi::TodoApi(GraphClient *graph, QObject *parent)
     : QObject(parent), m_graph(graph) {}
 
+void TodoApi::fetchAllPages(const QUrl &url,
+                            std::function<void(const QJsonObject &)> pageDone,
+                            std::function<void(const QJsonObject &, const QString &)> finished)
+{
+    m_graph->getAbsolute(url.toString(QUrl::FullyEncoded),
+                         [this, pageDone, finished](const QJsonValue &val, const QString &err) {
+        if (!err.isEmpty()) { finished({}, err); return; }
+        const QJsonObject page = val.toObject();
+        pageDone(page);
+        const QString next = page.value(QStringLiteral("@odata.nextLink")).toString();
+        if (next.isEmpty()) {
+            finished(page, QString());
+        } else {
+            fetchAllPages(QUrl(next), pageDone, finished);
+        }
+    });
+}
+
 void TodoApi::fetchLists()
 {
-    m_graph->get(QStringLiteral("/me/todo/lists"), {},
-                 [this](const QJsonValue &val, const QString &err) {
+    auto lists = std::make_shared<QList<TaskList>>();
+    fetchAllPages(m_graph->url(QStringLiteral("/me/todo/lists")),
+                  [lists](const QJsonObject &page) {
+        for (const auto &v : page.value(QStringLiteral("value")).toArray())
+            lists->append(parseList(v.toObject()));
+    }, [this, lists](const QJsonObject &, const QString &err) {
         if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
-        QList<TaskList> lists;
-        for (const auto &v : val.toObject().value(QStringLiteral("value")).toArray()) {
-            lists.append(parseList(v.toObject()));
-        }
-        Q_EMIT listsReceived(lists);
+        Q_EMIT listsReceived(*lists);
     });
 }
 
@@ -161,21 +179,23 @@ void TodoApi::fetchTasks(const QString &listId)
     q.addQueryItem(QStringLiteral("$top"), QStringLiteral("200"));
     q.addQueryItem(QStringLiteral("$orderby"), QStringLiteral("createdDateTime desc"));
     // $expand keeps subtasks in the same roundtrip. Worst case is 200 tasks * 20
-    // checklist items = 4000 sub-objects per fetch, which is acceptable. Switch
-    // to lazy load (only when the detail sheet opens) if this becomes a hotspot.
+    // checklist items = 4000 sub-objects per page, which is acceptable.
     q.addQueryItem(QStringLiteral("$expand"),
                    QStringLiteral("checklistItems,linkedResources"));
 
-    m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks").arg(listId), q,
-                 [this, listId](const QJsonValue &val, const QString &err) {
-        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
-        QList<Task> tasks;
-        for (const auto &v : val.toObject().value(QStringLiteral("value")).toArray()) {
+    // All pages must be collected before emitting: the cache replaces the
+    // whole list with what it receives, so a partial result would drop tasks.
+    auto tasks = std::make_shared<QList<Task>>();
+    fetchAllPages(m_graph->url(QStringLiteral("/me/todo/lists/%1/tasks").arg(listId), q),
+                  [tasks, listId](const QJsonObject &page) {
+        for (const auto &v : page.value(QStringLiteral("value")).toArray()) {
             Task t = parseTask(v.toObject());
             t.listId = listId;
-            tasks.append(std::move(t));
+            tasks->append(std::move(t));
         }
-        Q_EMIT tasksReceived(listId, tasks);
+    }, [this, tasks, listId](const QJsonObject &, const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT errorOccurred(err); return; }
+        Q_EMIT tasksReceived(listId, *tasks);
     });
 }
 
@@ -340,21 +360,11 @@ void TodoApi::syncTasks(const QString &listId, const QString &deltaLink)
         QStringList deleted;
     };
     auto state = std::make_shared<DeltaState>();
-    auto handler = std::make_shared<std::function<void(const QJsonValue &, const QString &)>>();
-    *handler = [this, listId, state, handler](const QJsonValue &val, const QString &err) {
-        if (!err.isEmpty()) {
-            // 410 means the delta token is no longer valid — caller must drop
-            // it and run a full fetchTasks fallback.
-            if (err.contains(QStringLiteral("HTTP 410"))) {
-                Q_EMIT tasksDeltaExpired(listId);
-            } else {
-                Q_EMIT errorOccurred(err);
-            }
-            return;
-        }
-        const auto obj = val.toObject();
-        const auto items = obj.value(QStringLiteral("value")).toArray();
-        for (const auto &v : items) {
+    const QUrl first = deltaLink.isEmpty()
+        ? m_graph->url(QStringLiteral("/me/todo/lists/%1/tasks/delta").arg(listId))
+        : QUrl(deltaLink);
+    fetchAllPages(first, [state, listId](const QJsonObject &page) {
+        for (const auto &v : page.value(QStringLiteral("value")).toArray()) {
             const auto taskObj = v.toObject();
             // Tasks removed since the last delta carry the @removed annotation
             // (Graph quirk: it's a top-level key, not inside the task body).
@@ -366,20 +376,20 @@ void TodoApi::syncTasks(const QString &listId, const QString &deltaLink)
                 state->changed.append(std::move(t));
             }
         }
-        const QString nextLink = obj.value(QStringLiteral("@odata.nextLink")).toString();
-        if (!nextLink.isEmpty()) {
-            m_graph->getAbsolute(nextLink, *handler);
+    }, [this, state, listId](const QJsonObject &lastPage, const QString &err) {
+        if (!err.isEmpty()) {
+            // 410 means the delta token is no longer valid — caller must drop
+            // it and run a full fetchTasks fallback.
+            if (err.contains(QStringLiteral("HTTP 410"))) {
+                Q_EMIT tasksDeltaExpired(listId);
+            } else {
+                Q_EMIT errorOccurred(err);
+            }
             return;
         }
-        const QString newDeltaLink = obj.value(QStringLiteral("@odata.deltaLink")).toString();
-        Q_EMIT tasksDelta(listId, state->changed, state->deleted, newDeltaLink);
-    };
-
-    if (deltaLink.isEmpty()) {
-        m_graph->get(QStringLiteral("/me/todo/lists/%1/tasks/delta").arg(listId), {}, *handler);
-    } else {
-        m_graph->getAbsolute(deltaLink, *handler);
-    }
+        Q_EMIT tasksDelta(listId, state->changed, state->deleted,
+                          lastPage.value(QStringLiteral("@odata.deltaLink")).toString());
+    });
 }
 
 void TodoApi::bootstrapDeltaLink(const QString &listId)

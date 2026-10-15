@@ -158,7 +158,6 @@ private:
     // new undoable operation replacing it).
     void commitPending();
     QString listDisplayName(const QString &listId) const;
-    QPair<QString, QDateTime> parseAddInput(const QString &raw) const;
     void loadDemoData();
     void switchDemoList(const QString &id);
 
