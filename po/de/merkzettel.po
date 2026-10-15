@@ -2,782 +2,1145 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 msgid ""
 msgstr ""
-"Project-Id-Version: merkzettel 0.2\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: merkzettel\n"
+"Report-Msgid-Bugs-To: https://github.com/mzilinski/merkzettel/issues\n"
 "POT-Creation-Date: 2026-05-01\n"
-"PO-Revision-Date: 2026-05-01\n"
+"PO-Revision-Date: 2026-10-15\n"
 "Last-Translator: Malte Zilinski <malte@zilinski.eu>\n"
-"Language-Team: German\n"
+"Language-Team: German <malte@zilinski.eu>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-# --- main.cpp ---
-msgid "Merkzettel"
-msgstr "Merkzettel"
-
-msgid "Microsoft To Do client for KDE"
-msgstr "Microsoft-To-Do-Client für KDE"
-
-# --- app.cpp / status messages ---
-msgid "Signed out"
-msgstr "Abgemeldet"
-
-msgid "Lists updated"
-msgstr "Listen aktualisiert"
-
-msgid "%1 tasks"
-msgstr "%1 Aufgaben"
-
-msgid "Error: %1"
-msgstr "Fehler: %1"
-
-msgid "Synchronizing ..."
-msgstr "Synchronisiere ..."
-
-msgid "Signed in, loading lists ..."
-msgstr "Angemeldet, lade Listen ..."
-
-msgid "Sign-in error: %1"
-msgstr "Anmeldefehler: %1"
-
-# --- auth ---
-msgid "Network error"
-msgstr "Netzwerkfehler"
-
-msgid "Server error"
-msgstr "Serverfehler"
-
-msgid "Token not received"
-msgstr "Token nicht erhalten"
-
-msgid "Token secret missing"
-msgstr "Token-Secret fehlt"
-
-msgid "Callback not verified"
-msgstr "Callback nicht verifiziert"
-
-msgid "Unknown error %1"
-msgstr "Unbekannter Fehler %1"
-
-msgid "MERKZETTEL_CLIENT_ID not set — see docs/azure-setup.md"
-msgstr "MERKZETTEL_CLIENT_ID nicht gesetzt — siehe docs/azure-setup.md"
-
-msgid "Port %1 in use — close other instances or programs"
-msgstr "Port %1 belegt — schließe andere Instanzen oder Programme"
-
-# --- tasksmodel section labels ---
-msgid "Overdue"
-msgstr "Überfällig"
-
-msgid "Today"
-msgstr "Heute"
-
-msgid "Tomorrow"
-msgstr "Morgen"
-
-msgid "This week"
-msgstr "Diese Woche"
-
-msgid "Later"
-msgstr "Später"
-
-msgid "No date"
-msgstr "Ohne Datum"
-
-msgid "Completed"
-msgstr "Erledigt"
-
-msgid "Yesterday"
-msgstr "Gestern"
-
-# --- tray ---
-msgid "Show/hide window"
-msgstr "Fenster anzeigen / verbergen"
-
-msgid "Synchronize"
-msgstr "Synchronisieren"
-
-msgid "Quit"
-msgstr "Beenden"
-
-msgid "Microsoft To Do"
-msgstr "Microsoft To Do"
-
-msgid "%1 open task due today"
-msgid_plural "%1 open tasks due today"
-msgstr[0] "%1 offene Aufgabe heute fällig"
-msgstr[1] "%1 offene Aufgaben heute fällig"
-
-msgid "No tasks due"
-msgstr "Keine fälligen Aufgaben"
-
-# --- LoginPage.qml ---
-msgid "Sign in"
-msgstr "Anmelden"
-
-msgid "Sign in with Microsoft"
-msgstr "Mit Microsoft anmelden"
-
-msgid "Merkzettel synchronizes your tasks with Microsoft To Do. The default browser will open for sign-in."
-msgstr "Merkzettel synchronisiert deine Aufgaben mit Microsoft To Do. Es öffnet sich der Standardbrowser für die Anmeldung."
-
-# --- TasksPage.qml ---
-msgid "Tasks"
-msgstr "Aufgaben"
-
-msgid "Sync"
-msgstr "Synchronisieren"
-
-msgid "New task ... (\"tomorrow\", \"mo\", \"25.5.\" at end for due date)"
-msgstr "Neue Aufgabe ... (\"morgen\", \"mo\", \"25.5.\" am Ende für Fälligkeit)"
-
-msgid "No tasks"
-msgstr "Keine Aufgaben"
-
-msgid "Type a task above and press Enter."
-msgstr "Tippe oben eine Aufgabe ein und drücke Enter."
-
-# --- TaskDelegate.qml ---
-msgid "Mark as important"
-msgstr "Als wichtig markieren"
-
-msgid "Remove importance"
-msgstr "Wichtigkeit entfernen"
-
-msgid "Unstar"
-msgstr "Stern entfernen"
-
-msgid "Due: Today"
-msgstr "Fällig: Heute"
-
-msgid "Due: Tomorrow"
-msgstr "Fällig: Morgen"
-
-msgid "Pick date ..."
-msgstr "Datum wählen ..."
-
-msgid "Clear date"
-msgstr "Datum entfernen"
-
-msgid "Delete"
-msgstr "Löschen"
-
-# --- TaskDetailSheet.qml ---
-msgid "Title:"
-msgstr "Titel:"
-
-msgid "Importance:"
-msgstr "Wichtigkeit:"
-
-msgid "Important"
-msgstr "Wichtig"
-
-msgid "Normal"
-msgstr "Normal"
-
-msgid "Due:"
-msgstr "Fällig:"
-
-msgid "no date"
-msgstr "kein Datum"
-
-msgid "Reminder:"
-msgstr "Erinnerung:"
-
-msgid "off"
-msgstr "aus"
-
-msgid "Change date ..."
-msgstr "Datum ändern ..."
-
-msgid "Change time ..."
-msgstr "Uhrzeit ändern ..."
-
-msgid "Notes ..."
-msgstr "Notizen ..."
-
-msgid "Mark done"
-msgstr "Erledigt"
-
-msgid "Reopen"
-msgstr "Wiederherstellen"
-
-# --- Main.qml ---
-msgid "Lists"
-msgstr "Listen"
-
-msgid "Sign out"
-msgstr "Abmelden"
-
-msgid "Donate ..."
-msgstr "Spenden ..."
-
-msgid "About Merkzettel"
-msgstr "Über Merkzettel"
-
-msgid "Author"
-msgstr "Autor"
-
-msgid "Built with Kirigami, KDE Frameworks 6 and Qt 6.\n\nIf Merkzettel is useful to you, consider tipping the author: https://paypal.me/eit31\n\nThe underlying KDE/Qt stack is maintained by KDE e.V.: https://kde.org/community/donations/\n\nDisclaimer: This program is provided \"as is\", without warranty of any kind. The author accepts no liability for any data loss, missed appointments or other damages arising from its use, except in cases of intent or gross negligence, or for damages to life, body or health. See the GPL-3.0 license, sections 15 and 16, for the full disclaimer."
-msgstr "Gebaut mit Kirigami, KDE Frameworks 6 und Qt 6.\n\nWenn dir Merkzettel nützt, freut sich der Autor über eine Spende: https://paypal.me/eit31\n\nDer KDE/Qt-Unterbau wird von KDE e.V. gepflegt: https://kde.org/community/donations/\n\nHaftungsausschluss: Diese Software wird unentgeltlich und ohne jegliche Gewährleistung bereitgestellt. Eine Haftung für Sach- und Rechtsmängel ist gemäß §§ 521, 523 BGB ausgeschlossen, soweit Mängel nicht arglistig verschwiegen wurden. Der Autor haftet nicht für Schäden — insbesondere Datenverluste, versäumte Termine oder Folgeschäden — die durch die Nutzung entstehen, soweit nicht Vorsatz oder grobe Fahrlässigkeit vorliegen oder Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit resultieren. Siehe GPL-3.0-Lizenz, Sektionen 15 und 16, für den vollständigen Ausschluss."
-
-msgid "Start hidden in the system tray"
-msgstr "Versteckt im System-Tray starten"
-
-# --- Demo mode ---
-msgid "Run with built-in demo data, no sign-in or network access"
-msgstr "Mit eingebauten Demo-Daten starten, ohne Anmeldung oder Netzwerkzugriff"
-
-msgid "Demo mode — no real data, all changes are local"
-msgstr "Demo-Modus — keine echten Daten, alle Änderungen nur lokal"
-
-msgid "Demo mode — change not applied"
-msgstr "Demo-Modus — Änderung nicht übernommen"
-
-msgid "Demo mode — nothing to sync"
-msgstr "Demo-Modus — nichts zu synchronisieren"
-
-# Demo lists
-msgid "Work"
-msgstr "Arbeit"
-
-msgid "Home"
-msgstr "Privat"
-
-msgid "Shopping"
-msgstr "Einkaufen"
-
-msgid "Learning"
-msgstr "Lernen"
-
-# Demo tasks
-msgid "Pay electricity bill"
-msgstr "Stromrechnung bezahlen"
-
-msgid "Reply to Anna about the proposal"
-msgstr "Anna wegen des Angebots antworten"
-
-msgid "Buy groceries"
-msgstr "Einkaufen gehen"
-
-msgid "milk, bread, coffee, oranges"
-msgstr "Milch, Brot, Kaffee, Orangen"
-
-msgid "Team standup"
-msgstr "Team-Standup"
-
-msgid "Pick up parcel from the post office"
-msgstr "Paket bei der Post abholen"
-
-msgid "Submit travel expenses"
-msgstr "Reisekosten einreichen"
-
-msgid "Read 'The Pragmatic Programmer' ch.4"
-msgstr "„Der pragmatische Programmierer\" Kapitel 4 lesen"
-
-msgid "Focus on the chapter on orthogonality."
-msgstr "Schwerpunkt auf das Kapitel zur Orthogonalität."
-
-msgid "Plan summer holiday"
-msgstr "Sommerurlaub planen"
-
-msgid "Learn Rust"
-msgstr "Rust lernen"
-
-msgid "Start with the official book."
-msgstr "Mit dem offiziellen Buch anfangen."
-
-msgid "Refactor printer driver"
-msgstr "Druckertreiber refaktorieren"
-
-msgid "Update CV"
-msgstr "Lebenslauf aktualisieren"
-
-msgid "Renew library card"
-msgstr "Bibliotheksausweis verlängern"
-
-msgid "Quarterly report"
-msgstr "Quartalsbericht"
-
-msgid "Code review for Markus"
-msgstr "Code-Review für Markus"
-
-msgid "1:1 with manager"
-msgstr "1:1 mit Vorgesetztem"
-
-msgid "Water the plants"
-msgstr "Pflanzen gießen"
-
-msgid "Fix the bathroom faucet"
-msgstr "Wasserhahn im Bad reparieren"
-
-msgid "New running shoes"
-msgstr "Neue Laufschuhe"
-
-msgid "Birthday present for Mum"
-msgstr "Geburtstagsgeschenk für Mama"
-
-msgid "Finish KDE Frameworks 6 tutorial"
-msgstr "KDE-Frameworks-6-Tutorial fertig machen"
-
-msgid "Watch Qt 6.6 release video"
-msgstr "Qt-6.6-Release-Video ansehen"
-
-# --- List dialogs ---
-msgid "Delete list ..."
-msgstr "Liste löschen ..."
-
-msgid "Delete list?"
-msgstr "Liste löschen?"
-
-msgid "This will permanently delete the list \"%1\" and all of its tasks. This cannot be undone."
-msgstr "Dies löscht die Liste „%1\" und alle enthaltenen Aufgaben dauerhaft. Das kann nicht rückgängig gemacht werden."
-
-msgid "Cancel"
-msgstr "Abbrechen"
-
-msgid "Rename list ..."
-msgstr "Liste umbenennen ..."
-
-msgid "Rename list"
-msgstr "Liste umbenennen"
-
-msgid "Rename"
-msgstr "Umbenennen"
-
-msgid "New list name"
-msgstr "Neuer Listenname"
-
-msgid "Subtasks"
-msgstr "Unteraufgaben"
-
-msgid "Add subtask ..."
-msgstr "Unteraufgabe hinzufügen ..."
-
-msgid "Delete subtask"
-msgstr "Unteraufgabe löschen"
-
-msgid "Maximum of 20 subtasks reached."
-msgstr "Maximal 20 Unteraufgaben erreicht."
-
-msgid "Share ..."
-msgstr "Teilen ..."
-
-msgid "%1 (shared)"
-msgstr "%1 (geteilt)"
-
-msgid "Sharing happens in the official Microsoft To Do web app. After the invitation is accepted, the list will appear here automatically."
-msgstr "Das Teilen läuft über die offizielle Microsoft-To-Do-Web-App. Sobald die Einladung angenommen wurde, erscheint die Liste hier automatisch."
-
-msgid "Open To Do web"
-msgstr "To-Do-Web öffnen"
-
-msgid "Don't show again"
-msgstr "Nicht mehr anzeigen"
-
-msgid "Repeat:"
-msgstr "Wiederholung:"
-
-msgid "Never"
-msgstr "Nie"
-
-msgid "Daily"
-msgstr "Täglich"
-
-msgid "Weekly"
-msgstr "Wöchentlich"
-
-msgid "Monthly"
-msgstr "Monatlich"
-
-msgid "Yearly"
-msgstr "Jährlich"
-
-msgid "(custom)"
-msgstr "(angepasst)"
-
-msgid "Reminder"
-msgstr "Erinnerung"
-
-msgid "Links"
-msgstr "Verknüpfungen"
-
-msgid "Remove link"
-msgstr "Verknüpfung entfernen"
-
-msgid "https://... or file path"
-msgstr "https://... oder Dateipfad"
-
-msgid "Label (optional)"
-msgstr "Beschriftung (optional)"
-
-msgid "New list ..."
-msgstr "Neue Liste ..."
-
-msgid "New list"
-msgstr "Neue Liste"
-
-msgid "List name"
-msgstr "Listenname"
-
-msgid "Create"
-msgstr "Erstellen"
-
-# --- smart-lists, sorting, completed filter ---
-msgid "Planned"
-msgstr "Geplant"
-
-msgid "Sort"
-msgstr "Sortieren"
-
-msgid "Importance"
-msgstr "Wichtigkeit"
-
-msgid "Due date"
-msgstr "Fälligkeitsdatum"
-
-msgid "Alphabetically"
-msgstr "Alphabetisch"
-
-msgid "Creation date"
-msgstr "Erstellungsdatum"
-
-msgid "Show completed tasks"
-msgstr "Erledigte Aufgaben anzeigen"
-
-# --- previously untranslated strings ---
-msgid "All"
-msgstr "Alle"
-
-msgid "Search tasks ..."
-msgstr "Aufgaben suchen ..."
-
-msgid "Search across all lists ..."
-msgstr "In allen Listen suchen ..."
-
-msgid "No matching tasks"
-msgstr "Keine passenden Aufgaben"
-
-msgid "Try a different search term."
-msgstr "Versuche einen anderen Suchbegriff."
-
-msgid "Appearance"
-msgstr "Erscheinungsbild"
-
-msgid "Follow system"
-msgstr "Systemeinstellung folgen"
-
-msgid "Light"
-msgstr "Hell"
-
-msgid "Dark"
-msgstr "Dunkel"
-
-msgid "Created: %1"
-msgstr "Erstellt: %1"
-
-msgid "Last modified: %1"
-msgstr "Zuletzt geändert: %1"
-
-msgid "List: %1"
-msgstr "Liste: %1"
-
-msgid "Synced — %1 changed, %2 removed"
-msgstr "Synchronisiert — %1 geändert, %2 entfernt"
-
-msgid "Sorted by importance"
-msgstr "Nach Wichtigkeit sortiert"
-
-msgid "Sorted by due date"
-msgstr "Nach Fälligkeitsdatum sortiert"
-
-msgid "Sorted alphabetically"
-msgstr "Alphabetisch sortiert"
-
-msgid "Sorted by creation date"
-msgstr "Nach Erstellungsdatum sortiert"
-
-msgid "Reverse sort order"
-msgstr "Sortierreihenfolge umkehren"
-
-msgid "Remove sort order"
-msgstr "Sortierung entfernen"
-
-# --- keyboard shortcuts ---
-msgid "Quick add task"
-msgstr "Aufgabe schnell hinzufügen"
-
-
-# --- multi-selection, move, undo ---
-msgid "%1 selected"
-msgid_plural "%1 selected"
-msgstr[0] "%1 ausgewählt"
-msgstr[1] "%1 ausgewählt"
-
-msgid "Complete"
-msgstr "Erledigen"
-
-msgid "Move to"
-msgstr "Verschieben nach"
-
-msgid "Clear selection"
-msgstr "Auswahl aufheben"
-
-msgid "Undo"
-msgstr "Rückgängig"
-
-msgid "Task deleted"
-msgid_plural "%1 tasks deleted"
-msgstr[0] "Aufgabe gelöscht"
-msgstr[1] "%1 Aufgaben gelöscht"
-
-msgid "Task moved to \"%2\""
-msgid_plural "%1 tasks moved to \"%2\""
-msgstr[0] "Aufgabe nach „%2“ verschoben"
-msgstr[1] "%1 Aufgaben nach „%2“ verschoben"
-
-msgid "Task completed"
-msgid_plural "%1 tasks completed"
-msgstr[0] "Aufgabe erledigt"
-msgstr[1] "%1 Aufgaben erledigt"
-
-
-# --- categories, custom recurrence ---
-msgid "Categories:"
-msgstr "Kategorien:"
-
-msgid "Add category ..."
-msgstr "Kategorie hinzufügen ..."
-
-msgid "Finance"
-msgstr "Finanzen"
-
-msgid "Family"
-msgstr "Familie"
-
-msgid "Weekdays"
-msgstr "Werktags"
-
-msgid "Custom"
-msgstr "Benutzerdefiniert"
-
-msgid "Custom ..."
-msgstr "Benutzerdefiniert ..."
-
+#: src/CustomRecurrenceDialog.qml:30
 msgid "Custom repeat"
 msgstr "Benutzerdefinierte Wiederholung"
 
-msgid "Edit repeat ..."
-msgstr "Wiederholung bearbeiten ..."
+#: src/CustomRecurrenceDialog.qml:36 src/Main.qml:442 src/Main.qml:482
+#: src/Main.qml:526 src/TaskDetailSheet.qml:658
+msgid "Cancel"
+msgstr "Abbrechen"
 
+#: src/CustomRecurrenceDialog.qml:41
 msgid "Save"
 msgstr "Speichern"
 
-msgid "Anchored on the task's due date (or today if it has none)."
-msgstr "Bezogen auf das Fälligkeitsdatum der Aufgabe (oder heute, falls keines gesetzt ist)."
-
-msgid "Every day"
-msgid_plural "Every %1 days"
-msgstr[0] "Jeden Tag"
-msgstr[1] "Alle %1 Tage"
-
-msgid "Every week"
-msgid_plural "Every %1 weeks"
-msgstr[0] "Jede Woche"
-msgstr[1] "Alle %1 Wochen"
-
-msgid "Every week on %2"
-msgid_plural "Every %1 weeks on %2"
-msgstr[0] "Jede Woche am %2"
-msgstr[1] "Alle %1 Wochen am %2"
-
-msgid "Every month"
-msgid_plural "Every %1 months"
-msgstr[0] "Jeden Monat"
-msgstr[1] "Alle %1 Monate"
-
-msgid "Every year"
-msgid_plural "Every %1 years"
-msgstr[0] "Jedes Jahr"
-msgstr[1] "Alle %1 Jahre"
-
+#: src/CustomRecurrenceDialog.qml:56
 msgctxt "Repeat every [N] [weeks]"
 msgid "Every"
 msgstr "Alle"
 
+#: src/CustomRecurrenceDialog.qml:71
 msgctxt "Repeat every N ..."
 msgid "day"
 msgid_plural "days"
 msgstr[0] "Tag"
 msgstr[1] "Tage"
 
+#: src/CustomRecurrenceDialog.qml:72
 msgctxt "Repeat every N ..."
 msgid "week"
 msgid_plural "weeks"
 msgstr[0] "Woche"
 msgstr[1] "Wochen"
 
+#: src/CustomRecurrenceDialog.qml:73
 msgctxt "Repeat every N ..."
 msgid "month"
 msgid_plural "months"
 msgstr[0] "Monat"
 msgstr[1] "Monate"
 
+#: src/CustomRecurrenceDialog.qml:74
 msgctxt "Repeat every N ..."
 msgid "year"
 msgid_plural "years"
 msgstr[0] "Jahr"
 msgstr[1] "Jahre"
 
+#: src/CustomRecurrenceDialog.qml:117
+msgid "Anchored on the task's due date (or today if it has none)."
+msgstr "Bezogen auf das Fälligkeitsdatum der Aufgabe (oder heute, falls keines gesetzt ist)."
+
+# --- LoginPage.qml ---
+#: src/LoginPage.qml:7 src/LoginPage.qml:54
+msgid "Sign in"
+msgstr "Anmelden"
+
+#: src/LoginPage.qml:23
+msgid "Sign in with Microsoft"
+msgstr "Mit Microsoft anmelden"
+
+#: src/LoginPage.qml:29
+msgid "Merkzettel synchronizes your tasks with Microsoft To Do. The default browser will open for sign-in."
+msgstr "Merkzettel synchronisiert deine Aufgaben mit Microsoft To Do. Es öffnet sich der Standardbrowser für die Anmeldung."
+
+# --- login page / demo ---
+#: src/LoginPage.qml:45
+msgid "This build has no Microsoft app registration, so signing in is not possible. Rebuild with your own client ID or try the demo."
+msgstr "Diesem Build fehlt eine Microsoft-App-Registrierung, daher ist keine Anmeldung möglich. Baue ihn mit deiner eigenen Client-ID neu oder probiere die Demo aus."
+
+#: src/LoginPage.qml:47
+msgid "Setup guide"
+msgstr "Einrichtungsanleitung"
+
+#: src/LoginPage.qml:62
+msgid "Try the demo"
+msgstr "Demo ausprobieren"
+
+#: src/LoginPage.qml:67
+msgid "Explore Merkzettel with sample tasks. Nothing is sent to Microsoft."
+msgstr "Lerne Merkzettel mit Beispielaufgaben kennen. Es wird nichts an Microsoft gesendet."
+
+#: src/LoginPage.qml:81
+msgid "What Merkzettel asks Microsoft for"
+msgstr "Was Merkzettel bei Microsoft anfragt"
+
+#: src/LoginPage.qml:92
+msgid "Read and change your tasks and lists in Microsoft To Do (Tasks.ReadWrite)"
+msgstr "Deine Aufgaben und Listen in Microsoft To Do lesen und ändern (Tasks.ReadWrite)"
+
+#: src/LoginPage.qml:93
+msgid "Your name and sign-in address to identify the account (User.Read, profile)"
+msgstr "Deinen Namen und deine Anmeldeadresse, um das Konto zu erkennen (User.Read, profile)"
+
+#: src/LoginPage.qml:94
+msgid "Stay signed in between sessions; the token is kept in your system keychain (offline_access)"
+msgstr "Angemeldet bleiben; das Token liegt im Schlüsselbund deines Systems (offline_access)"
+
+#: src/LoginPage.qml:120
+msgid "Merkzettel only talks to Microsoft. There is no telemetry and no other server involved."
+msgstr "Merkzettel spricht nur mit Microsoft. Es gibt keine Telemetrie und keinen weiteren Server."
+
+# --- main.cpp ---
+#: src/Main.qml:11 src/main.cpp:105 src/tray/trayicon.cpp:21
+#: src/tray/trayicon.cpp:50 src/tray/trayicon.cpp:54
+#, kde-format
+msgid "Merkzettel"
+msgstr "Merkzettel"
+
+#: src/Main.qml:59
+msgid "Undo"
+msgstr "Rückgängig"
+
+# --- Main.qml ---
+#: src/Main.qml:115
+msgid "Lists"
+msgstr "Listen"
+
+#: src/Main.qml:137
+msgid "Sharing happens in the official Microsoft To Do web app. After the invitation is accepted, the list will appear here automatically."
+msgstr "Das Teilen läuft über die offizielle Microsoft-To-Do-Web-App. Sobald die Einladung angenommen wurde, erscheint die Liste hier automatisch."
+
+#: src/Main.qml:140
+msgid "Open To Do web"
+msgstr "To-Do-Web öffnen"
+
+#: src/Main.qml:149
+msgid "Don't show again"
+msgstr "Nicht mehr anzeigen"
+
+#: src/Main.qml:162
+msgid "New list ..."
+msgstr "Neue Liste ..."
+
+#: src/Main.qml:168 src/TasksPage.qml:152
+msgid "Sync"
+msgstr "Synchronisieren"
+
+#: src/Main.qml:174
+msgid "Leave demo"
+msgstr "Demo beenden"
+
+#: src/Main.qml:180
+msgid "Sign out"
+msgstr "Abmelden"
+
+#: src/Main.qml:188
+msgid "Appearance"
+msgstr "Erscheinungsbild"
+
+#: src/Main.qml:191
+msgid "Follow system"
+msgstr "Systemeinstellung folgen"
+
+#: src/Main.qml:198
+msgid "Light"
+msgstr "Hell"
+
+#: src/Main.qml:205
+msgid "Dark"
+msgstr "Dunkel"
+
+#: src/Main.qml:213
+msgid "Donate ..."
+msgstr "Spenden ..."
+
+#: src/Main.qml:218
+msgid "About Merkzettel"
+msgstr "Über Merkzettel"
+
+#: src/Main.qml:244
+msgid "%1 (shared)"
+msgstr "%1 (geteilt)"
+
+#: src/Main.qml:275
+msgid "Share ..."
+msgstr "Teilen ..."
+
+#: src/Main.qml:281
+msgid "Rename list ..."
+msgstr "Liste umbenennen ..."
+
+# --- List dialogs ---
+#: src/Main.qml:291
+msgid "Delete list ..."
+msgstr "Liste löschen ..."
+
+#: src/Main.qml:331 src/main.cpp:106
+#, kde-format
+msgid "Microsoft To Do client for KDE"
+msgstr "Microsoft-To-Do-Client für KDE"
+
+#: src/Main.qml:335
+msgid ""
+"Built with Kirigami, KDE Frameworks 6 and Qt 6.\n"
+"\n"
+"If Merkzettel is useful to you, consider tipping the author: https://paypal.me/eit31\n"
+"\n"
+"The underlying KDE/Qt stack is maintained by KDE e.V.: https://kde.org/community/donations/\n"
+"\n"
+"Disclaimer: This program is provided \"as is\", without warranty of any kind. The author accepts no liability for any data loss, missed appointments or other damages arising from its use, except in cases of intent or gross negligence, or for damages to life, body or health. See the GPL-3.0 license, sections 15 and 16, for the full disclaimer."
+msgstr ""
+"Gebaut mit Kirigami, KDE Frameworks 6 und Qt 6.\n"
+"\n"
+"Wenn dir Merkzettel nützt, freut sich der Autor über eine Spende: https://paypal.me/eit31\n"
+"\n"
+"Der KDE/Qt-Unterbau wird von KDE e.V. gepflegt: https://kde.org/community/donations/\n"
+"\n"
+"Haftungsausschluss: Diese Software wird unentgeltlich und ohne jegliche Gewährleistung bereitgestellt. Eine Haftung für Sach- und Rechtsmängel ist gemäß §§ 521, 523 BGB ausgeschlossen, soweit Mängel nicht arglistig verschwiegen wurden. Der Autor haftet nicht für Schäden — insbesondere Datenverluste, versäumte Termine oder Folgeschäden — die durch die Nutzung entstehen, soweit nicht Vorsatz oder grobe Fahrlässigkeit vorliegen oder Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit resultieren. Siehe GPL-3.0-Lizenz, Sektionen 15 und 16, für den vollständigen Ausschluss."
+
+#: src/Main.qml:340 src/main.cpp:114
+#, kde-format
+msgid "Author"
+msgstr "Autor"
+
+#: src/Main.qml:437
+msgid "Delete list?"
+msgstr "Liste löschen?"
+
+#: src/Main.qml:438
+msgid "This will permanently delete the list \"%1\" and all of its tasks. This cannot be undone."
+msgstr "Dies löscht die Liste „%1\" und alle enthaltenen Aufgaben dauerhaft. Das kann nicht rückgängig gemacht werden."
+
+#: src/Main.qml:447 src/TaskDelegate.qml:290 src/TaskDetailSheet.qml:621
+#: src/TaskDetailSheet.qml:663 src/TasksPage.qml:261
+msgid "Delete"
+msgstr "Löschen"
+
+#: src/Main.qml:460
+msgid "New list"
+msgstr "Neue Liste"
+
+#: src/Main.qml:471
+msgid "List name"
+msgstr "Listenname"
+
+#: src/Main.qml:487
+msgid "Create"
+msgstr "Erstellen"
+
+#: src/Main.qml:503
+msgid "Rename list"
+msgstr "Liste umbenennen"
+
+#: src/Main.qml:515
+msgid "New list name"
+msgstr "Neuer Listenname"
+
+#: src/Main.qml:531
+msgid "Rename"
+msgstr "Umbenennen"
+
+#: src/MoveToListMenu.qml:15 src/TasksPage.qml:244
+msgid "Move to"
+msgstr "Verschieben nach"
+
+# --- My Day (local only) ---
+#: src/TaskDelegate.qml:94 src/models/tasklistsmodel.cpp:69
+#, kde-format
+msgid "My Day"
+msgstr "Mein Tag"
+
+# --- TaskDelegate.qml ---
+#: src/TaskDelegate.qml:229 src/TaskDelegate.qml:252 src/TasksPage.qml:236
+msgid "Mark as important"
+msgstr "Als wichtig markieren"
+
+#: src/TaskDelegate.qml:229
+msgid "Remove importance"
+msgstr "Wichtigkeit entfernen"
+
+#: src/TaskDelegate.qml:247 src/TaskDetailSheet.qml:69 src/TasksPage.qml:225
+msgid "Add to My Day"
+msgstr "Zu „Mein Tag“ hinzufügen"
+
+#: src/TaskDelegate.qml:247
+msgid "Remove from My Day"
+msgstr "Aus „Mein Tag“ entfernen"
+
+#: src/TaskDelegate.qml:252
+msgid "Unstar"
+msgstr "Stern entfernen"
+
+#: src/TaskDelegate.qml:258
+msgid "Due: Today"
+msgstr "Fällig: Heute"
+
+#: src/TaskDelegate.qml:263
+msgid "Due: Tomorrow"
+msgstr "Fällig: Morgen"
+
+#: src/TaskDelegate.qml:273 src/TaskDetailSheet.qml:110
+msgid "Pick date ..."
+msgstr "Datum wählen ..."
+
+#: src/TaskDelegate.qml:278
+msgid "Clear date"
+msgstr "Datum entfernen"
+
+# --- TaskDetailSheet.qml ---
+#: src/TaskDetailSheet.qml:53
+msgid "Title:"
+msgstr "Titel:"
+
+#: src/TaskDetailSheet.qml:64
+msgid "My Day:"
+msgstr "Mein Tag:"
+
+#: src/TaskDetailSheet.qml:69
+msgid "In My Day"
+msgstr "In „Mein Tag“"
+
+#: src/TaskDetailSheet.qml:75
+msgid "Importance:"
+msgstr "Wichtigkeit:"
+
+#: src/TaskDetailSheet.qml:78 src/TasksPage.qml:234
+#: src/models/tasklistsmodel.cpp:71
+#, kde-format
+msgid "Important"
+msgstr "Wichtig"
+
+#: src/TaskDetailSheet.qml:78
+msgid "Normal"
+msgstr "Normal"
+
+#: src/TaskDetailSheet.qml:84
+msgid "Due:"
+msgstr "Fällig:"
+
+#: src/TaskDetailSheet.qml:90 src/TaskDetailSheet.qml:91
+msgid "no date"
+msgstr "kein Datum"
+
+#: src/TaskDetailSheet.qml:95 src/models/tasksmodel.cpp:132
+#: src/models/tasksmodel.cpp:179
+#, kde-format
+msgid "Today"
+msgstr "Heute"
+
+#: src/TaskDetailSheet.qml:100 src/models/tasksmodel.cpp:133
+#: src/models/tasksmodel.cpp:180
+#, kde-format
+msgid "Tomorrow"
+msgstr "Morgen"
+
+#: src/TaskDetailSheet.qml:128
+msgid "Repeat:"
+msgstr "Wiederholung:"
+
+#: src/TaskDetailSheet.qml:137
+msgid "Never"
+msgstr "Nie"
+
+#: src/TaskDetailSheet.qml:138
+msgid "Daily"
+msgstr "Täglich"
+
+#: src/TaskDetailSheet.qml:139 src/models/tasksmodel.cpp:454
+#, kde-format
+msgid "Weekdays"
+msgstr "Werktags"
+
+#: src/TaskDetailSheet.qml:140
+msgid "Weekly"
+msgstr "Wöchentlich"
+
+#: src/TaskDetailSheet.qml:141
+msgid "Monthly"
+msgstr "Monatlich"
+
+#: src/TaskDetailSheet.qml:142
+msgid "Yearly"
+msgstr "Jährlich"
+
+#: src/TaskDetailSheet.qml:145
+msgid "Custom ..."
+msgstr "Benutzerdefiniert ..."
+
+#: src/TaskDetailSheet.qml:163
+msgid "Edit repeat ..."
+msgstr "Wiederholung bearbeiten ..."
+
+# --- categories, custom recurrence ---
+#: src/TaskDetailSheet.qml:171
+msgid "Categories:"
+msgstr "Kategorien:"
+
+#: src/TaskDetailSheet.qml:224
+msgid "Add category ..."
+msgstr "Kategorie hinzufügen ..."
+
+#: src/TaskDetailSheet.qml:231
+msgid "Reminder:"
+msgstr "Erinnerung:"
+
+#: src/TaskDetailSheet.qml:255
+msgid "off"
+msgstr "aus"
+
+#: src/TaskDetailSheet.qml:262
+msgid "Change date ..."
+msgstr "Datum ändern ..."
+
+#: src/TaskDetailSheet.qml:275
+msgid "Change time ..."
+msgstr "Uhrzeit ändern ..."
+
+#: src/TaskDetailSheet.qml:292
+msgid "Subtasks"
+msgstr "Unteraufgaben"
+
+#: src/TaskDetailSheet.qml:323
+msgid "Delete subtask"
+msgstr "Unteraufgabe löschen"
+
+#: src/TaskDetailSheet.qml:336
+msgid "Add subtask ..."
+msgstr "Unteraufgabe hinzufügen ..."
+
+#: src/TaskDetailSheet.qml:357
+msgid "Maximum of 20 subtasks reached."
+msgstr "Maximal 20 Unteraufgaben erreicht."
+
+#: src/TaskDetailSheet.qml:367
+msgid "Links"
+msgstr "Verknüpfungen"
+
+#: src/TaskDetailSheet.qml:398
+msgid "Remove link"
+msgstr "Verknüpfung entfernen"
+
+#: src/TaskDetailSheet.qml:411
+msgid "https://... or file path"
+msgstr "https://... oder Dateipfad"
+
+#: src/TaskDetailSheet.qml:424
+msgid "Label (optional)"
+msgstr "Beschriftung (optional)"
+
 # --- file attachments ---
+#: src/TaskDetailSheet.qml:439
 msgid "Files"
 msgstr "Dateien"
 
-msgid "Add file ..."
-msgstr "Datei hinzufügen ..."
-
-msgid "or drop files here (max. 25 MB each)"
-msgstr "oder Dateien hierher ziehen (max. 25 MB pro Datei)"
-
-msgid "Attach files"
-msgstr "Dateien anhängen"
-
+#: src/TaskDetailSheet.qml:478
 msgid "Open"
 msgstr "Öffnen"
 
+#: src/TaskDetailSheet.qml:485
 msgid "Save as ..."
 msgstr "Speichern unter ..."
 
-msgid "Save file"
-msgstr "Datei speichern"
-
+#: src/TaskDetailSheet.qml:497
 msgid "Delete file"
 msgstr "Datei löschen"
 
+#: src/TaskDetailSheet.qml:512
+msgid "Add file ..."
+msgstr "Datei hinzufügen ..."
+
+#: src/TaskDetailSheet.qml:518
+msgid "or drop files here (max. 25 MB each)"
+msgstr "oder Dateien hierher ziehen (max. 25 MB pro Datei)"
+
+#: src/TaskDetailSheet.qml:553
+msgid "Notes ..."
+msgstr "Notizen ..."
+
+#: src/TaskDetailSheet.qml:579
+msgid "List: %1"
+msgstr "Liste: %1"
+
+#: src/TaskDetailSheet.qml:583
+msgid "Created: %1"
+msgstr "Erstellt: %1"
+
+#: src/TaskDetailSheet.qml:589
+msgid "Last modified: %1"
+msgstr "Zuletzt geändert: %1"
+
+#: src/TaskDetailSheet.qml:600
+msgid "OK"
+msgstr "OK"
+
+#: src/TaskDetailSheet.qml:607 src/app.cpp:1374
+#, kde-format
+msgid "Mark done"
+msgstr "Erledigt"
+
+#: src/TaskDetailSheet.qml:607
+msgid "Reopen"
+msgstr "Wiederherstellen"
+
+#: src/TaskDetailSheet.qml:635
+msgid "Attach files"
+msgstr "Dateien anhängen"
+
+#: src/TaskDetailSheet.qml:643
+msgid "Save file"
+msgstr "Datei speichern"
+
+#: src/TaskDetailSheet.qml:653
 msgid "Delete file?"
 msgstr "Datei löschen?"
 
+#: src/TaskDetailSheet.qml:654
 msgid "\"%1\" will be removed from the task. This cannot be undone."
 msgstr "„%1“ wird von der Aufgabe entfernt. Das kann nicht rückgängig gemacht werden."
 
-msgid "\"%1\" is larger than 25 MB, the Microsoft To Do limit."
-msgstr "„%1“ ist größer als 25 MB, die Obergrenze von Microsoft To Do."
+#: src/TasksPage.qml:134
+msgid "Sort"
+msgstr "Sortieren"
 
+#: src/TasksPage.qml:137
+msgid "Importance"
+msgstr "Wichtigkeit"
+
+#: src/TasksPage.qml:138
+msgid "Due date"
+msgstr "Fälligkeitsdatum"
+
+#: src/TasksPage.qml:139
+msgid "Alphabetically"
+msgstr "Alphabetisch"
+
+#: src/TasksPage.qml:140
+msgid "Creation date"
+msgstr "Erstellungsdatum"
+
+#: src/TasksPage.qml:143
+msgid "Show completed tasks"
+msgstr "Erledigte Aufgaben anzeigen"
+
+# --- offline / session handling ---
+#: src/TasksPage.qml:166
+msgid "Offline — showing saved data. Changes need a connection."
+msgstr "Offline — gespeicherte Daten werden angezeigt. Änderungen brauchen eine Verbindung."
+
+#: src/TasksPage.qml:168
+msgid "Reconnect"
+msgstr "Erneut verbinden"
+
+#: src/TasksPage.qml:195
+msgid "Only on this device"
+msgstr "Nur auf diesem Gerät"
+
+#: src/TasksPage.qml:198
+msgid "Microsoft syncs My Day through an internal API that other apps cannot use, so it is stored locally and starts empty every day."
+msgstr "Microsoft synchronisiert „Mein Tag“ über eine interne Schnittstelle, die andere Apps nicht nutzen können. Deshalb wird „Mein Tag“ lokal gespeichert und beginnt jeden Tag leer."
+
+# --- multi-selection, move, undo ---
+#: src/TasksPage.qml:214
+msgid "%1 selected"
+msgid_plural "%1 selected"
+msgstr[0] "%1 ausgewählt"
+msgstr[1] "%1 ausgewählt"
+
+#: src/TasksPage.qml:220
+msgid "Complete"
+msgstr "Erledigen"
+
+#: src/TasksPage.qml:270
+msgid "Clear selection"
+msgstr "Auswahl aufheben"
+
+#: src/TasksPage.qml:286
+msgid "New task ... (\"tomorrow\", \"mo\", \"25.5.\" at end for due date)"
+msgstr "Neue Aufgabe ... (\"morgen\", \"mo\", \"25.5.\" am Ende für Fälligkeit)"
+
+#: src/TasksPage.qml:306
+msgid "Search across all lists ..."
+msgstr "In allen Listen suchen ..."
+
+#: src/TasksPage.qml:307
+msgid "Search tasks ..."
+msgstr "Aufgaben suchen ..."
+
+#: src/TasksPage.qml:319
+msgid "Sorted by importance"
+msgstr "Nach Wichtigkeit sortiert"
+
+#: src/TasksPage.qml:320
+msgid "Sorted by due date"
+msgstr "Nach Fälligkeitsdatum sortiert"
+
+#: src/TasksPage.qml:321
+msgid "Sorted alphabetically"
+msgstr "Alphabetisch sortiert"
+
+#: src/TasksPage.qml:322
+msgid "Sorted by creation date"
+msgstr "Nach Erstellungsdatum sortiert"
+
+#: src/TasksPage.qml:332
+msgid "Reverse sort order"
+msgstr "Sortierreihenfolge umkehren"
+
+#: src/TasksPage.qml:342
+msgid "Remove sort order"
+msgstr "Sortierung entfernen"
+
+#: src/TasksPage.qml:422
+msgid "No matching tasks"
+msgstr "Keine passenden Aufgaben"
+
+#: src/TasksPage.qml:423
+msgid "Focus on your day"
+msgstr "Konzentriere dich auf deinen Tag"
+
+#: src/TasksPage.qml:423
+msgid "No tasks"
+msgstr "Keine Aufgaben"
+
+#: src/TasksPage.qml:425
+msgid "Try a different search term."
+msgstr "Versuche einen anderen Suchbegriff."
+
+#: src/TasksPage.qml:426
+msgid "Add tasks here, or press Ctrl+T on a task in any list."
+msgstr "Füge hier Aufgaben hinzu oder drücke Strg+T auf einer Aufgabe in einer beliebigen Liste."
+
+#: src/TasksPage.qml:427
+msgid "Type a task above and press Enter."
+msgstr "Tippe oben eine Aufgabe ein und drücke Enter."
+
+# --- app.cpp / status messages ---
+#: src/app.cpp:73
+#, kde-format
+msgid "Signed out"
+msgstr "Abgemeldet"
+
+#: src/app.cpp:86
+#, kde-format
+msgid "Offline — showing saved data"
+msgstr "Offline — gespeicherte Daten werden angezeigt"
+
+#: src/app.cpp:112
+#, kde-format
+msgid "Lists updated"
+msgstr "Listen aktualisiert"
+
+#: src/app.cpp:126
+#, kde-format
+msgid "%1 tasks"
+msgstr "%1 Aufgaben"
+
+#: src/app.cpp:184
+#, kde-format
+msgid "Synced — %1 changed, %2 removed"
+msgstr "Synchronisiert — %1 geändert, %2 entfernt"
+
+#: src/app.cpp:225 src/app.cpp:273
+#, kde-format
+msgid "Error: %1"
+msgstr "Fehler: %1"
+
+#: src/app.cpp:244
+#, kde-format
+msgid "Attachments updated"
+msgstr "Anhänge aktualisiert"
+
+#: src/app.cpp:298 src/app.cpp:524
+#, kde-format
+msgid "Demo mode — no real data, all changes are local"
+msgstr "Demo-Modus — keine echten Daten, alle Änderungen nur lokal"
+
+# --- keyboard shortcuts ---
+#: src/app.cpp:346
+#, kde-format
+msgid "Quick add task"
+msgstr "Aufgabe schnell hinzufügen"
+
+#: src/app.cpp:549
+#, kde-format
+msgid "Demo mode — nothing to sync"
+msgstr "Demo-Modus — nichts zu synchronisieren"
+
+#: src/app.cpp:556
+#, kde-format
+msgid "Connecting to Microsoft ..."
+msgstr "Verbindung zu Microsoft wird hergestellt ..."
+
+#: src/app.cpp:560
+#, kde-format
+msgid "Synchronizing ..."
+msgstr "Synchronisiere ..."
+
+#: src/app.cpp:578 src/app.cpp:622 src/app.cpp:633 src/app.cpp:700
+#: src/app.cpp:721 src/app.cpp:820 src/app.cpp:830 src/app.cpp:840
+#: src/app.cpp:851 src/app.cpp:873 src/app.cpp:884 src/app.cpp:895
+#: src/app.cpp:906 src/app.cpp:917 src/app.cpp:928 src/app.cpp:939
+#: src/app.cpp:950 src/app.cpp:972 src/app.cpp:983 src/app.cpp:995
+#: src/app.cpp:1021 src/app.cpp:1072 src/app.cpp:1107 src/app.cpp:1123
+#: src/app.cpp:1180 src/app.cpp:1265
+#, kde-format
+msgid "Demo mode — change not applied"
+msgstr "Demo-Modus — Änderung nicht übernommen"
+
+#: src/app.cpp:669
+#, kde-format
+msgid "Task deleted"
+msgid_plural "%1 tasks deleted"
+msgstr[0] "Aufgabe gelöscht"
+msgstr[1] "%1 Aufgaben gelöscht"
+
+#: src/app.cpp:692
+#, kde-format
+msgid "Task moved to \"%2\""
+msgid_plural "%1 tasks moved to \"%2\""
+msgstr[0] "Aufgabe nach „%2“ verschoben"
+msgstr[1] "%1 Aufgaben nach „%2“ verschoben"
+
+#: src/app.cpp:714
+#, kde-format
+msgid "Task completed"
+msgid_plural "%1 tasks completed"
+msgstr[0] "Aufgabe erledigt"
+msgstr[1] "%1 Aufgaben erledigt"
+
+#: src/app.cpp:1188
+#, kde-format
 msgid "Could not read \"%1\"."
 msgstr "„%1“ konnte nicht gelesen werden."
 
-msgid "Could not write \"%1\"."
-msgstr "„%1“ konnte nicht geschrieben werden."
+#: src/app.cpp:1194 src/graph/todoapi.cpp:663
+#, kde-format
+msgid "\"%1\" is larger than 25 MB, the Microsoft To Do limit."
+msgstr "„%1“ ist größer als 25 MB, die Obergrenze von Microsoft To Do."
 
+#: src/app.cpp:1201
+#, kde-format
 msgid "Uploading %1 file ..."
 msgid_plural "Uploading %1 files ..."
 msgstr[0] "%1 Datei wird hochgeladen ..."
 msgstr[1] "%1 Dateien werden hochgeladen ..."
 
-msgid "Downloading \"%1\" ..."
-msgstr "„%1“ wird heruntergeladen ..."
-
-msgid "Saved \"%1\""
-msgstr "„%1“ gespeichert"
-
-msgid "Attachments updated"
-msgstr "Anhänge aktualisiert"
-
+#: src/app.cpp:1210 src/app.cpp:1242
+#, kde-format
 msgid "Demo mode — files are not available"
 msgstr "Demo-Modus — Dateien sind nicht verfügbar"
 
+#: src/app.cpp:1213
+#, kde-format
+msgid "Downloading \"%1\" ..."
+msgstr "„%1“ wird heruntergeladen ..."
+
+#: src/app.cpp:1228 src/app.cpp:1253
+#, kde-format
+msgid "Could not write \"%1\"."
+msgstr "„%1“ konnte nicht geschrieben werden."
+
+#: src/app.cpp:1256
+#, kde-format
+msgid "Saved \"%1\""
+msgstr "„%1“ gespeichert"
+
+#: src/app.cpp:1365
+#, kde-format
+msgid "Reminder"
+msgstr "Erinnerung"
+
+# --- TasksPage.qml ---
+#: src/app.cpp:1386
+#, kde-format
+msgid "Tasks"
+msgstr "Aufgaben"
+
+# Demo lists
+#: src/app.cpp:1387 src/app.cpp:1501 src/app.cpp:1502
+#, kde-format
+msgid "Work"
+msgstr "Arbeit"
+
+#: src/app.cpp:1388
+#, kde-format
+msgid "Home"
+msgstr "Privat"
+
+#: src/app.cpp:1389
+#, kde-format
+msgid "Shopping"
+msgstr "Einkaufen"
+
+#: src/app.cpp:1390
+#, kde-format
+msgid "Learning"
+msgstr "Lernen"
+
+# Demo tasks
+#: src/app.cpp:1431
+#, kde-format
+msgid "Pay electricity bill"
+msgstr "Stromrechnung bezahlen"
+
+#: src/app.cpp:1433
+#, kde-format
+msgid "Reply to Anna about the proposal"
+msgstr "Anna wegen des Angebots antworten"
+
+#: src/app.cpp:1435
+#, kde-format
+msgid "Buy groceries"
+msgstr "Einkaufen gehen"
+
+#: src/app.cpp:1436
+#, kde-format
+msgid "milk, bread, coffee, oranges"
+msgstr "Milch, Brot, Kaffee, Orangen"
+
+#: src/app.cpp:1443
+#, kde-format
+msgid "Team standup"
+msgstr "Team-Standup"
+
+#: src/app.cpp:1445
+#, kde-format
+msgid "Pick up parcel from the post office"
+msgstr "Paket bei der Post abholen"
+
+#: src/app.cpp:1447
+#, kde-format
+msgid "Submit travel expenses"
+msgstr "Reisekosten einreichen"
+
+#: src/app.cpp:1449
+#, kde-format
+msgid "Read 'The Pragmatic Programmer' ch.4"
+msgstr "„Der pragmatische Programmierer\" Kapitel 4 lesen"
+
+#: src/app.cpp:1450
+#, kde-format
+msgid "Focus on the chapter on orthogonality."
+msgstr "Schwerpunkt auf das Kapitel zur Orthogonalität."
+
+#: src/app.cpp:1451
+#, kde-format
+msgid "Plan summer holiday"
+msgstr "Sommerurlaub planen"
+
+#: src/app.cpp:1459
+#, kde-format
+msgid "Learn Rust"
+msgstr "Rust lernen"
+
+#: src/app.cpp:1459
+#, kde-format
+msgid "Start with the official book."
+msgstr "Mit dem offiziellen Buch anfangen."
+
+#: src/app.cpp:1461
+#, kde-format
+msgid "Refactor printer driver"
+msgstr "Druckertreiber refaktorieren"
+
+#: src/app.cpp:1462
+#, kde-format
+msgid "Update CV"
+msgstr "Lebenslauf aktualisieren"
+
+#: src/app.cpp:1463
+#, kde-format
+msgid "Renew library card"
+msgstr "Bibliotheksausweis verlängern"
+
+#: src/app.cpp:1468
+#, kde-format
+msgid "Quarterly report"
+msgstr "Quartalsbericht"
+
+#: src/app.cpp:1475
+#, kde-format
+msgid "Code review for Markus"
+msgstr "Code-Review für Markus"
+
+#: src/app.cpp:1477
+#, kde-format
+msgid "1:1 with manager"
+msgstr "1:1 mit Vorgesetztem"
+
+#: src/app.cpp:1482
+#, kde-format
+msgid "Water the plants"
+msgstr "Pflanzen gießen"
+
+#: src/app.cpp:1483
+#, kde-format
+msgid "Fix the bathroom faucet"
+msgstr "Wasserhahn im Bad reparieren"
+
+#: src/app.cpp:1487
+#, kde-format
+msgid "New running shoes"
+msgstr "Neue Laufschuhe"
+
+#: src/app.cpp:1488
+#, kde-format
+msgid "Birthday present for Mum"
+msgstr "Geburtstagsgeschenk für Mama"
+
+#: src/app.cpp:1493
+#, kde-format
+msgid "Finish KDE Frameworks 6 tutorial"
+msgstr "KDE-Frameworks-6-Tutorial fertig machen"
+
+#: src/app.cpp:1495
+#, kde-format
+msgid "Watch Qt 6.6 release video"
+msgstr "Qt-6.6-Release-Video ansehen"
+
+#: src/app.cpp:1500 src/app.cpp:1501
+#, kde-format
+msgid "Finance"
+msgstr "Finanzen"
+
+#: src/app.cpp:1503
+#, kde-format
+msgid "Family"
+msgstr "Familie"
+
+#: src/app.cpp:1515
+#, kde-format
 msgid "Hotel receipt.pdf"
 msgstr "Hotelrechnung.pdf"
 
+#: src/app.cpp:1517
+#, kde-format
 msgid "Train ticket.png"
 msgstr "Bahnticket.png"
 
-# --- My Day (local only) ---
-msgid "My Day"
-msgstr "Mein Tag"
+#: src/app.cpp:1549
+#, kde-format
+msgid "Signed in, loading lists ..."
+msgstr "Angemeldet, lade Listen ..."
 
-msgid "My Day:"
-msgstr "Mein Tag:"
+#: src/app.cpp:1555
+#, kde-format
+msgid "Sign-in error: %1"
+msgstr "Anmeldefehler: %1"
 
-msgid "Add to My Day"
-msgstr "Zu „Mein Tag“ hinzufügen"
-
-msgid "Remove from My Day"
-msgstr "Aus „Mein Tag“ entfernen"
-
-msgid "In My Day"
-msgstr "In „Mein Tag“"
-
-msgid "Only on this device"
-msgstr "Nur auf diesem Gerät"
-
-msgid "Microsoft syncs My Day through an internal API that other apps cannot use, so it is stored locally and starts empty every day."
-msgstr "Microsoft synchronisiert „Mein Tag“ über eine interne Schnittstelle, die andere Apps nicht nutzen können. Deshalb wird „Mein Tag“ lokal gespeichert und beginnt jeden Tag leer."
-
-msgid "Focus on your day"
-msgstr "Konzentriere dich auf deinen Tag"
-
-msgid "Add tasks here, or press Ctrl+T on a task in any list."
-msgstr "Füge hier Aufgaben hinzu oder drücke Strg+T auf einer Aufgabe in einer beliebigen Liste."
-
-# --- offline / session handling ---
-msgid "Offline — showing saved data. Changes need a connection."
-msgstr "Offline — gespeicherte Daten werden angezeigt. Änderungen brauchen eine Verbindung."
-
-msgid "Reconnect"
-msgstr "Erneut verbinden"
-
-msgid "Offline — showing saved data"
-msgstr "Offline — gespeicherte Daten werden angezeigt"
-
-msgid "Connecting to Microsoft ..."
-msgstr "Verbindung zu Microsoft wird hergestellt ..."
-
-msgid "No connection to Microsoft"
-msgstr "Keine Verbindung zu Microsoft"
-
-msgid "No connection to Microsoft (%1)"
-msgstr "Keine Verbindung zu Microsoft (%1)"
-
-msgid "Microsoft sign-in is temporarily unavailable"
-msgstr "Die Microsoft-Anmeldung ist vorübergehend nicht erreichbar"
-
+#: src/auth/authmanager.cpp:88
+#, kde-format
 msgid "Your Microsoft sign-in has expired or was revoked. Please sign in again."
 msgstr "Deine Microsoft-Anmeldung ist abgelaufen oder wurde widerrufen. Bitte melde dich erneut an."
 
+#: src/auth/authmanager.cpp:115
+#, kde-format
+msgid "No connection to Microsoft"
+msgstr "Keine Verbindung zu Microsoft"
+
+#: src/auth/authmanager.cpp:116
+#, kde-format
+msgid "Microsoft sign-in is temporarily unavailable"
+msgstr "Die Microsoft-Anmeldung ist vorübergehend nicht erreichbar"
+
+# --- auth ---
+#: src/auth/authmanager.cpp:122
+#, kde-format
+msgid "Network error"
+msgstr "Netzwerkfehler"
+
+#: src/auth/authmanager.cpp:123
+#, kde-format
+msgid "Server error"
+msgstr "Serverfehler"
+
+#: src/auth/authmanager.cpp:125
+#, kde-format
+msgid "Token not received"
+msgstr "Token nicht erhalten"
+
+#: src/auth/authmanager.cpp:128
+#, kde-format
+msgid "Token secret missing"
+msgstr "Token-Secret fehlt"
+
+#: src/auth/authmanager.cpp:131
+#, kde-format
+msgid "Callback not verified"
+msgstr "Callback nicht verifiziert"
+
+#: src/auth/authmanager.cpp:133
+#, kde-format
+msgid "Unknown error %1"
+msgstr "Unbekannter Fehler %1"
+
+#: src/auth/authmanager.cpp:148
+#, kde-format
+msgid "MERKZETTEL_CLIENT_ID not set — see docs/azure-setup.md"
+msgstr "MERKZETTEL_CLIENT_ID nicht gesetzt — siehe docs/azure-setup.md"
+
+#: src/auth/authmanager.cpp:163
+#, kde-format
+msgid "Port %1 in use — close other instances or programs"
+msgstr "Port %1 belegt — schließe andere Instanzen oder Programme"
+
+#: src/auth/authmanager.cpp:212
+#, kde-format
 msgid "Not signed in"
 msgstr "Nicht angemeldet"
 
-# --- login page / demo ---
-msgid "This build has no Microsoft app registration, so signing in is not possible. Rebuild with your own client ID or try the demo."
-msgstr "Diesem Build fehlt eine Microsoft-App-Registrierung, daher ist keine Anmeldung möglich. Baue ihn mit deiner eigenen Client-ID neu oder probiere die Demo aus."
+#: src/graph/graphclient.cpp:28
+#, kde-format
+msgid "No connection to Microsoft (%1)"
+msgstr "Keine Verbindung zu Microsoft (%1)"
 
-msgid "Setup guide"
-msgstr "Einrichtungsanleitung"
+#: src/main.cpp:121
+#, kde-format
+msgid "Start hidden in the system tray"
+msgstr "Versteckt im System-Tray starten"
 
-msgid "Try the demo"
-msgstr "Demo ausprobieren"
+# --- Demo mode ---
+#: src/main.cpp:123
+#, kde-format
+msgid "Run with built-in demo data, no sign-in or network access"
+msgstr "Mit eingebauten Demo-Daten starten, ohne Anmeldung oder Netzwerkzugriff"
 
-msgid "Explore Merkzettel with sample tasks. Nothing is sent to Microsoft."
-msgstr "Lerne Merkzettel mit Beispielaufgaben kennen. Es wird nichts an Microsoft gesendet."
+# --- previously untranslated strings ---
+#: src/models/tasklistsmodel.cpp:70
+#, kde-format
+msgid "All"
+msgstr "Alle"
 
-msgid "What Merkzettel asks Microsoft for"
-msgstr "Was Merkzettel bei Microsoft anfragt"
+# --- smart-lists, sorting, completed filter ---
+#: src/models/tasklistsmodel.cpp:72
+#, kde-format
+msgid "Planned"
+msgstr "Geplant"
 
-msgid "Read and change your tasks and lists in Microsoft To Do (Tasks.ReadWrite)"
-msgstr "Deine Aufgaben und Listen in Microsoft To Do lesen und ändern (Tasks.ReadWrite)"
+#: src/models/tasklistsmodel.cpp:73 src/models/tasksmodel.cpp:137
+#, kde-format
+msgid "Completed"
+msgstr "Erledigt"
 
-msgid "Your name and sign-in address to identify the account (User.Read, profile)"
-msgstr "Deinen Namen und deine Anmeldeadresse, um das Konto zu erkennen (User.Read, profile)"
+# --- tasksmodel section labels ---
+#: src/models/tasksmodel.cpp:131
+#, kde-format
+msgid "Overdue"
+msgstr "Überfällig"
 
-msgid "Stay signed in between sessions; the token is kept in your system keychain (offline_access)"
-msgstr "Angemeldet bleiben; das Token liegt im Schlüsselbund deines Systems (offline_access)"
+#: src/models/tasksmodel.cpp:134
+#, kde-format
+msgid "This week"
+msgstr "Diese Woche"
 
-msgid "Merkzettel only talks to Microsoft. There is no telemetry and no other server involved."
-msgstr "Merkzettel spricht nur mit Microsoft. Es gibt keine Telemetrie und keinen weiteren Server."
+#: src/models/tasksmodel.cpp:135
+#, kde-format
+msgid "Later"
+msgstr "Später"
 
-msgid "Leave demo"
-msgstr "Demo beenden"
+#: src/models/tasksmodel.cpp:136
+#, kde-format
+msgid "No date"
+msgstr "Ohne Datum"
+
+#: src/models/tasksmodel.cpp:181
+#, kde-format
+msgid "Yesterday"
+msgstr "Gestern"
+
+#: src/models/tasksmodel.cpp:447
+#, kde-format
+msgid "Every day"
+msgid_plural "Every %1 days"
+msgstr[0] "Jeden Tag"
+msgstr[1] "Alle %1 Tage"
+
+#: src/models/tasksmodel.cpp:455
+#, kde-format
+msgid "Every week"
+msgid_plural "Every %1 weeks"
+msgstr[0] "Jede Woche"
+msgstr[1] "Alle %1 Wochen"
+
+#: src/models/tasksmodel.cpp:456
+#, kde-format
+msgid "Every week on %2"
+msgid_plural "Every %1 weeks on %2"
+msgstr[0] "Jede Woche am %2"
+msgstr[1] "Alle %1 Wochen am %2"
+
+#: src/models/tasksmodel.cpp:459
+#, kde-format
+msgid "Every month"
+msgid_plural "Every %1 months"
+msgstr[0] "Jeden Monat"
+msgstr[1] "Alle %1 Monate"
+
+#: src/models/tasksmodel.cpp:461
+#, kde-format
+msgid "Every year"
+msgid_plural "Every %1 years"
+msgstr[0] "Jedes Jahr"
+msgstr[1] "Alle %1 Jahre"
+
+#: src/models/tasksmodel.cpp:463
+#, kde-format
+msgid "Custom"
+msgstr "Benutzerdefiniert"
+
+#: src/tray/trayicon.cpp:21
+#, kde-format
+msgid "Microsoft To Do"
+msgstr "Microsoft To Do"
+
+# --- tray ---
+#: src/tray/trayicon.cpp:25
+#, kde-format
+msgid "Show/hide window"
+msgstr "Fenster anzeigen / verbergen"
+
+#: src/tray/trayicon.cpp:27
+#, kde-format
+msgid "Synchronize"
+msgstr "Synchronisieren"
+
+#: src/tray/trayicon.cpp:30
+#, kde-format
+msgid "Quit"
+msgstr "Beenden"
+
+#: src/tray/trayicon.cpp:51
+#, kde-format
+msgid "%1 open task due today"
+msgid_plural "%1 open tasks due today"
+msgstr[0] "%1 offene Aufgabe heute fällig"
+msgstr[1] "%1 offene Aufgaben heute fällig"
+
+#: src/tray/trayicon.cpp:54
+#, kde-format
+msgid "No tasks due"
+msgstr "Keine fälligen Aufgaben"

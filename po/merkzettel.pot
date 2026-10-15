@@ -1,0 +1,1118 @@
+# Translation template for Merkzettel.
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: merkzettel\n"
+"Report-Msgid-Bugs-To: https://github.com/mzilinski/merkzettel/issues\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: src/CustomRecurrenceDialog.qml:30
+msgid "Custom repeat"
+msgstr ""
+
+#: src/CustomRecurrenceDialog.qml:36 src/Main.qml:442 src/Main.qml:482
+#: src/Main.qml:526 src/TaskDetailSheet.qml:658
+msgid "Cancel"
+msgstr ""
+
+#: src/CustomRecurrenceDialog.qml:41
+msgid "Save"
+msgstr ""
+
+#: src/CustomRecurrenceDialog.qml:56
+msgctxt "Repeat every [N] [weeks]"
+msgid "Every"
+msgstr ""
+
+#: src/CustomRecurrenceDialog.qml:71
+msgctxt "Repeat every N ..."
+msgid "day"
+msgid_plural "days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/CustomRecurrenceDialog.qml:72
+msgctxt "Repeat every N ..."
+msgid "week"
+msgid_plural "weeks"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/CustomRecurrenceDialog.qml:73
+msgctxt "Repeat every N ..."
+msgid "month"
+msgid_plural "months"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/CustomRecurrenceDialog.qml:74
+msgctxt "Repeat every N ..."
+msgid "year"
+msgid_plural "years"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/CustomRecurrenceDialog.qml:117
+msgid "Anchored on the task's due date (or today if it has none)."
+msgstr ""
+
+#: src/LoginPage.qml:7 src/LoginPage.qml:54
+msgid "Sign in"
+msgstr ""
+
+#: src/LoginPage.qml:23
+msgid "Sign in with Microsoft"
+msgstr ""
+
+#: src/LoginPage.qml:29
+msgid "Merkzettel synchronizes your tasks with Microsoft To Do. The default browser will open for sign-in."
+msgstr ""
+
+#: src/LoginPage.qml:45
+msgid "This build has no Microsoft app registration, so signing in is not possible. Rebuild with your own client ID or try the demo."
+msgstr ""
+
+#: src/LoginPage.qml:47
+msgid "Setup guide"
+msgstr ""
+
+#: src/LoginPage.qml:62
+msgid "Try the demo"
+msgstr ""
+
+#: src/LoginPage.qml:67
+msgid "Explore Merkzettel with sample tasks. Nothing is sent to Microsoft."
+msgstr ""
+
+#: src/LoginPage.qml:81
+msgid "What Merkzettel asks Microsoft for"
+msgstr ""
+
+#: src/LoginPage.qml:92
+msgid "Read and change your tasks and lists in Microsoft To Do (Tasks.ReadWrite)"
+msgstr ""
+
+#: src/LoginPage.qml:93
+msgid "Your name and sign-in address to identify the account (User.Read, profile)"
+msgstr ""
+
+#: src/LoginPage.qml:94
+msgid "Stay signed in between sessions; the token is kept in your system keychain (offline_access)"
+msgstr ""
+
+#: src/LoginPage.qml:120
+msgid "Merkzettel only talks to Microsoft. There is no telemetry and no other server involved."
+msgstr ""
+
+#: src/Main.qml:11 src/main.cpp:105 src/tray/trayicon.cpp:21
+#: src/tray/trayicon.cpp:50 src/tray/trayicon.cpp:54
+#, kde-format
+msgid "Merkzettel"
+msgstr ""
+
+#: src/Main.qml:59
+msgid "Undo"
+msgstr ""
+
+#: src/Main.qml:115
+msgid "Lists"
+msgstr ""
+
+#: src/Main.qml:137
+msgid "Sharing happens in the official Microsoft To Do web app. After the invitation is accepted, the list will appear here automatically."
+msgstr ""
+
+#: src/Main.qml:140
+msgid "Open To Do web"
+msgstr ""
+
+#: src/Main.qml:149
+msgid "Don't show again"
+msgstr ""
+
+#: src/Main.qml:162
+msgid "New list ..."
+msgstr ""
+
+#: src/Main.qml:168 src/TasksPage.qml:152
+msgid "Sync"
+msgstr ""
+
+#: src/Main.qml:174
+msgid "Leave demo"
+msgstr ""
+
+#: src/Main.qml:180
+msgid "Sign out"
+msgstr ""
+
+#: src/Main.qml:188
+msgid "Appearance"
+msgstr ""
+
+#: src/Main.qml:191
+msgid "Follow system"
+msgstr ""
+
+#: src/Main.qml:198
+msgid "Light"
+msgstr ""
+
+#: src/Main.qml:205
+msgid "Dark"
+msgstr ""
+
+#: src/Main.qml:213
+msgid "Donate ..."
+msgstr ""
+
+#: src/Main.qml:218
+msgid "About Merkzettel"
+msgstr ""
+
+#: src/Main.qml:244
+msgid "%1 (shared)"
+msgstr ""
+
+#: src/Main.qml:275
+msgid "Share ..."
+msgstr ""
+
+#: src/Main.qml:281
+msgid "Rename list ..."
+msgstr ""
+
+#: src/Main.qml:291
+msgid "Delete list ..."
+msgstr ""
+
+#: src/Main.qml:331 src/main.cpp:106
+#, kde-format
+msgid "Microsoft To Do client for KDE"
+msgstr ""
+
+#: src/Main.qml:335
+msgid ""
+"Built with Kirigami, KDE Frameworks 6 and Qt 6.\n"
+"\n"
+"If Merkzettel is useful to you, consider tipping the author: https://paypal.me/eit31\n"
+"\n"
+"The underlying KDE/Qt stack is maintained by KDE e.V.: https://kde.org/community/donations/\n"
+"\n"
+"Disclaimer: This program is provided \"as is\", without warranty of any kind. The author accepts no liability for any data loss, missed appointments or other damages arising from its use, except in cases of intent or gross negligence, or for damages to life, body or health. See the GPL-3.0 license, sections 15 and 16, for the full disclaimer."
+msgstr ""
+
+#: src/Main.qml:340 src/main.cpp:114
+#, kde-format
+msgid "Author"
+msgstr ""
+
+#: src/Main.qml:437
+msgid "Delete list?"
+msgstr ""
+
+#: src/Main.qml:438
+msgid "This will permanently delete the list \"%1\" and all of its tasks. This cannot be undone."
+msgstr ""
+
+#: src/Main.qml:447 src/TaskDelegate.qml:290 src/TaskDetailSheet.qml:621
+#: src/TaskDetailSheet.qml:663 src/TasksPage.qml:261
+msgid "Delete"
+msgstr ""
+
+#: src/Main.qml:460
+msgid "New list"
+msgstr ""
+
+#: src/Main.qml:471
+msgid "List name"
+msgstr ""
+
+#: src/Main.qml:487
+msgid "Create"
+msgstr ""
+
+#: src/Main.qml:503
+msgid "Rename list"
+msgstr ""
+
+#: src/Main.qml:515
+msgid "New list name"
+msgstr ""
+
+#: src/Main.qml:531
+msgid "Rename"
+msgstr ""
+
+#: src/MoveToListMenu.qml:15 src/TasksPage.qml:244
+msgid "Move to"
+msgstr ""
+
+#: src/TaskDelegate.qml:94 src/models/tasklistsmodel.cpp:69
+#, kde-format
+msgid "My Day"
+msgstr ""
+
+#: src/TaskDelegate.qml:229 src/TaskDelegate.qml:252 src/TasksPage.qml:236
+msgid "Mark as important"
+msgstr ""
+
+#: src/TaskDelegate.qml:229
+msgid "Remove importance"
+msgstr ""
+
+#: src/TaskDelegate.qml:247 src/TaskDetailSheet.qml:69 src/TasksPage.qml:225
+msgid "Add to My Day"
+msgstr ""
+
+#: src/TaskDelegate.qml:247
+msgid "Remove from My Day"
+msgstr ""
+
+#: src/TaskDelegate.qml:252
+msgid "Unstar"
+msgstr ""
+
+#: src/TaskDelegate.qml:258
+msgid "Due: Today"
+msgstr ""
+
+#: src/TaskDelegate.qml:263
+msgid "Due: Tomorrow"
+msgstr ""
+
+#: src/TaskDelegate.qml:273 src/TaskDetailSheet.qml:110
+msgid "Pick date ..."
+msgstr ""
+
+#: src/TaskDelegate.qml:278
+msgid "Clear date"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:53
+msgid "Title:"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:64
+msgid "My Day:"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:69
+msgid "In My Day"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:75
+msgid "Importance:"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:78 src/TasksPage.qml:234
+#: src/models/tasklistsmodel.cpp:71
+#, kde-format
+msgid "Important"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:78
+msgid "Normal"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:84
+msgid "Due:"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:90 src/TaskDetailSheet.qml:91
+msgid "no date"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:95 src/models/tasksmodel.cpp:132
+#: src/models/tasksmodel.cpp:179
+#, kde-format
+msgid "Today"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:100 src/models/tasksmodel.cpp:133
+#: src/models/tasksmodel.cpp:180
+#, kde-format
+msgid "Tomorrow"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:128
+msgid "Repeat:"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:137
+msgid "Never"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:138
+msgid "Daily"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:139 src/models/tasksmodel.cpp:454
+#, kde-format
+msgid "Weekdays"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:140
+msgid "Weekly"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:141
+msgid "Monthly"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:142
+msgid "Yearly"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:145
+msgid "Custom ..."
+msgstr ""
+
+#: src/TaskDetailSheet.qml:163
+msgid "Edit repeat ..."
+msgstr ""
+
+#: src/TaskDetailSheet.qml:171
+msgid "Categories:"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:224
+msgid "Add category ..."
+msgstr ""
+
+#: src/TaskDetailSheet.qml:231
+msgid "Reminder:"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:255
+msgid "off"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:262
+msgid "Change date ..."
+msgstr ""
+
+#: src/TaskDetailSheet.qml:275
+msgid "Change time ..."
+msgstr ""
+
+#: src/TaskDetailSheet.qml:292
+msgid "Subtasks"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:323
+msgid "Delete subtask"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:336
+msgid "Add subtask ..."
+msgstr ""
+
+#: src/TaskDetailSheet.qml:357
+msgid "Maximum of 20 subtasks reached."
+msgstr ""
+
+#: src/TaskDetailSheet.qml:367
+msgid "Links"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:398
+msgid "Remove link"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:411
+msgid "https://... or file path"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:424
+msgid "Label (optional)"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:439
+msgid "Files"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:478
+msgid "Open"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:485
+msgid "Save as ..."
+msgstr ""
+
+#: src/TaskDetailSheet.qml:497
+msgid "Delete file"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:512
+msgid "Add file ..."
+msgstr ""
+
+#: src/TaskDetailSheet.qml:518
+msgid "or drop files here (max. 25 MB each)"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:553
+msgid "Notes ..."
+msgstr ""
+
+#: src/TaskDetailSheet.qml:579
+msgid "List: %1"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:583
+msgid "Created: %1"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:589
+msgid "Last modified: %1"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:600
+msgid "OK"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:607 src/app.cpp:1374
+#, kde-format
+msgid "Mark done"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:607
+msgid "Reopen"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:635
+msgid "Attach files"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:643
+msgid "Save file"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:653
+msgid "Delete file?"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:654
+msgid "\"%1\" will be removed from the task. This cannot be undone."
+msgstr ""
+
+#: src/TasksPage.qml:134
+msgid "Sort"
+msgstr ""
+
+#: src/TasksPage.qml:137
+msgid "Importance"
+msgstr ""
+
+#: src/TasksPage.qml:138
+msgid "Due date"
+msgstr ""
+
+#: src/TasksPage.qml:139
+msgid "Alphabetically"
+msgstr ""
+
+#: src/TasksPage.qml:140
+msgid "Creation date"
+msgstr ""
+
+#: src/TasksPage.qml:143
+msgid "Show completed tasks"
+msgstr ""
+
+#: src/TasksPage.qml:166
+msgid "Offline — showing saved data. Changes need a connection."
+msgstr ""
+
+#: src/TasksPage.qml:168
+msgid "Reconnect"
+msgstr ""
+
+#: src/TasksPage.qml:195
+msgid "Only on this device"
+msgstr ""
+
+#: src/TasksPage.qml:198
+msgid "Microsoft syncs My Day through an internal API that other apps cannot use, so it is stored locally and starts empty every day."
+msgstr ""
+
+#: src/TasksPage.qml:214
+msgid "%1 selected"
+msgid_plural "%1 selected"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/TasksPage.qml:220
+msgid "Complete"
+msgstr ""
+
+#: src/TasksPage.qml:270
+msgid "Clear selection"
+msgstr ""
+
+#: src/TasksPage.qml:286
+msgid "New task ... (\"tomorrow\", \"mo\", \"25.5.\" at end for due date)"
+msgstr ""
+
+#: src/TasksPage.qml:306
+msgid "Search across all lists ..."
+msgstr ""
+
+#: src/TasksPage.qml:307
+msgid "Search tasks ..."
+msgstr ""
+
+#: src/TasksPage.qml:319
+msgid "Sorted by importance"
+msgstr ""
+
+#: src/TasksPage.qml:320
+msgid "Sorted by due date"
+msgstr ""
+
+#: src/TasksPage.qml:321
+msgid "Sorted alphabetically"
+msgstr ""
+
+#: src/TasksPage.qml:322
+msgid "Sorted by creation date"
+msgstr ""
+
+#: src/TasksPage.qml:332
+msgid "Reverse sort order"
+msgstr ""
+
+#: src/TasksPage.qml:342
+msgid "Remove sort order"
+msgstr ""
+
+#: src/TasksPage.qml:422
+msgid "No matching tasks"
+msgstr ""
+
+#: src/TasksPage.qml:423
+msgid "Focus on your day"
+msgstr ""
+
+#: src/TasksPage.qml:423
+msgid "No tasks"
+msgstr ""
+
+#: src/TasksPage.qml:425
+msgid "Try a different search term."
+msgstr ""
+
+#: src/TasksPage.qml:426
+msgid "Add tasks here, or press Ctrl+T on a task in any list."
+msgstr ""
+
+#: src/TasksPage.qml:427
+msgid "Type a task above and press Enter."
+msgstr ""
+
+#: src/app.cpp:73
+#, kde-format
+msgid "Signed out"
+msgstr ""
+
+#: src/app.cpp:86
+#, kde-format
+msgid "Offline — showing saved data"
+msgstr ""
+
+#: src/app.cpp:112
+#, kde-format
+msgid "Lists updated"
+msgstr ""
+
+#: src/app.cpp:126
+#, kde-format
+msgid "%1 tasks"
+msgstr ""
+
+#: src/app.cpp:184
+#, kde-format
+msgid "Synced — %1 changed, %2 removed"
+msgstr ""
+
+#: src/app.cpp:225 src/app.cpp:273
+#, kde-format
+msgid "Error: %1"
+msgstr ""
+
+#: src/app.cpp:244
+#, kde-format
+msgid "Attachments updated"
+msgstr ""
+
+#: src/app.cpp:298 src/app.cpp:524
+#, kde-format
+msgid "Demo mode — no real data, all changes are local"
+msgstr ""
+
+#: src/app.cpp:346
+#, kde-format
+msgid "Quick add task"
+msgstr ""
+
+#: src/app.cpp:549
+#, kde-format
+msgid "Demo mode — nothing to sync"
+msgstr ""
+
+#: src/app.cpp:556
+#, kde-format
+msgid "Connecting to Microsoft ..."
+msgstr ""
+
+#: src/app.cpp:560
+#, kde-format
+msgid "Synchronizing ..."
+msgstr ""
+
+#: src/app.cpp:578 src/app.cpp:622 src/app.cpp:633 src/app.cpp:700
+#: src/app.cpp:721 src/app.cpp:820 src/app.cpp:830 src/app.cpp:840
+#: src/app.cpp:851 src/app.cpp:873 src/app.cpp:884 src/app.cpp:895
+#: src/app.cpp:906 src/app.cpp:917 src/app.cpp:928 src/app.cpp:939
+#: src/app.cpp:950 src/app.cpp:972 src/app.cpp:983 src/app.cpp:995
+#: src/app.cpp:1021 src/app.cpp:1072 src/app.cpp:1107 src/app.cpp:1123
+#: src/app.cpp:1180 src/app.cpp:1265
+#, kde-format
+msgid "Demo mode — change not applied"
+msgstr ""
+
+#: src/app.cpp:669
+#, kde-format
+msgid "Task deleted"
+msgid_plural "%1 tasks deleted"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/app.cpp:692
+#, kde-format
+msgid "Task moved to \"%2\""
+msgid_plural "%1 tasks moved to \"%2\""
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/app.cpp:714
+#, kde-format
+msgid "Task completed"
+msgid_plural "%1 tasks completed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/app.cpp:1188
+#, kde-format
+msgid "Could not read \"%1\"."
+msgstr ""
+
+#: src/app.cpp:1194 src/graph/todoapi.cpp:663
+#, kde-format
+msgid "\"%1\" is larger than 25 MB, the Microsoft To Do limit."
+msgstr ""
+
+#: src/app.cpp:1201
+#, kde-format
+msgid "Uploading %1 file ..."
+msgid_plural "Uploading %1 files ..."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/app.cpp:1210 src/app.cpp:1242
+#, kde-format
+msgid "Demo mode — files are not available"
+msgstr ""
+
+#: src/app.cpp:1213
+#, kde-format
+msgid "Downloading \"%1\" ..."
+msgstr ""
+
+#: src/app.cpp:1228 src/app.cpp:1253
+#, kde-format
+msgid "Could not write \"%1\"."
+msgstr ""
+
+#: src/app.cpp:1256
+#, kde-format
+msgid "Saved \"%1\""
+msgstr ""
+
+#: src/app.cpp:1365
+#, kde-format
+msgid "Reminder"
+msgstr ""
+
+#: src/app.cpp:1386
+#, kde-format
+msgid "Tasks"
+msgstr ""
+
+#: src/app.cpp:1387 src/app.cpp:1501 src/app.cpp:1502
+#, kde-format
+msgid "Work"
+msgstr ""
+
+#: src/app.cpp:1388
+#, kde-format
+msgid "Home"
+msgstr ""
+
+#: src/app.cpp:1389
+#, kde-format
+msgid "Shopping"
+msgstr ""
+
+#: src/app.cpp:1390
+#, kde-format
+msgid "Learning"
+msgstr ""
+
+#: src/app.cpp:1431
+#, kde-format
+msgid "Pay electricity bill"
+msgstr ""
+
+#: src/app.cpp:1433
+#, kde-format
+msgid "Reply to Anna about the proposal"
+msgstr ""
+
+#: src/app.cpp:1435
+#, kde-format
+msgid "Buy groceries"
+msgstr ""
+
+#: src/app.cpp:1436
+#, kde-format
+msgid "milk, bread, coffee, oranges"
+msgstr ""
+
+#: src/app.cpp:1443
+#, kde-format
+msgid "Team standup"
+msgstr ""
+
+#: src/app.cpp:1445
+#, kde-format
+msgid "Pick up parcel from the post office"
+msgstr ""
+
+#: src/app.cpp:1447
+#, kde-format
+msgid "Submit travel expenses"
+msgstr ""
+
+#: src/app.cpp:1449
+#, kde-format
+msgid "Read 'The Pragmatic Programmer' ch.4"
+msgstr ""
+
+#: src/app.cpp:1450
+#, kde-format
+msgid "Focus on the chapter on orthogonality."
+msgstr ""
+
+#: src/app.cpp:1451
+#, kde-format
+msgid "Plan summer holiday"
+msgstr ""
+
+#: src/app.cpp:1459
+#, kde-format
+msgid "Learn Rust"
+msgstr ""
+
+#: src/app.cpp:1459
+#, kde-format
+msgid "Start with the official book."
+msgstr ""
+
+#: src/app.cpp:1461
+#, kde-format
+msgid "Refactor printer driver"
+msgstr ""
+
+#: src/app.cpp:1462
+#, kde-format
+msgid "Update CV"
+msgstr ""
+
+#: src/app.cpp:1463
+#, kde-format
+msgid "Renew library card"
+msgstr ""
+
+#: src/app.cpp:1468
+#, kde-format
+msgid "Quarterly report"
+msgstr ""
+
+#: src/app.cpp:1475
+#, kde-format
+msgid "Code review for Markus"
+msgstr ""
+
+#: src/app.cpp:1477
+#, kde-format
+msgid "1:1 with manager"
+msgstr ""
+
+#: src/app.cpp:1482
+#, kde-format
+msgid "Water the plants"
+msgstr ""
+
+#: src/app.cpp:1483
+#, kde-format
+msgid "Fix the bathroom faucet"
+msgstr ""
+
+#: src/app.cpp:1487
+#, kde-format
+msgid "New running shoes"
+msgstr ""
+
+#: src/app.cpp:1488
+#, kde-format
+msgid "Birthday present for Mum"
+msgstr ""
+
+#: src/app.cpp:1493
+#, kde-format
+msgid "Finish KDE Frameworks 6 tutorial"
+msgstr ""
+
+#: src/app.cpp:1495
+#, kde-format
+msgid "Watch Qt 6.6 release video"
+msgstr ""
+
+#: src/app.cpp:1500 src/app.cpp:1501
+#, kde-format
+msgid "Finance"
+msgstr ""
+
+#: src/app.cpp:1503
+#, kde-format
+msgid "Family"
+msgstr ""
+
+#: src/app.cpp:1515
+#, kde-format
+msgid "Hotel receipt.pdf"
+msgstr ""
+
+#: src/app.cpp:1517
+#, kde-format
+msgid "Train ticket.png"
+msgstr ""
+
+#: src/app.cpp:1549
+#, kde-format
+msgid "Signed in, loading lists ..."
+msgstr ""
+
+#: src/app.cpp:1555
+#, kde-format
+msgid "Sign-in error: %1"
+msgstr ""
+
+#: src/auth/authmanager.cpp:88
+#, kde-format
+msgid "Your Microsoft sign-in has expired or was revoked. Please sign in again."
+msgstr ""
+
+#: src/auth/authmanager.cpp:115
+#, kde-format
+msgid "No connection to Microsoft"
+msgstr ""
+
+#: src/auth/authmanager.cpp:116
+#, kde-format
+msgid "Microsoft sign-in is temporarily unavailable"
+msgstr ""
+
+#: src/auth/authmanager.cpp:122
+#, kde-format
+msgid "Network error"
+msgstr ""
+
+#: src/auth/authmanager.cpp:123
+#, kde-format
+msgid "Server error"
+msgstr ""
+
+#: src/auth/authmanager.cpp:125
+#, kde-format
+msgid "Token not received"
+msgstr ""
+
+#: src/auth/authmanager.cpp:128
+#, kde-format
+msgid "Token secret missing"
+msgstr ""
+
+#: src/auth/authmanager.cpp:131
+#, kde-format
+msgid "Callback not verified"
+msgstr ""
+
+#: src/auth/authmanager.cpp:133
+#, kde-format
+msgid "Unknown error %1"
+msgstr ""
+
+#: src/auth/authmanager.cpp:148
+#, kde-format
+msgid "MERKZETTEL_CLIENT_ID not set — see docs/azure-setup.md"
+msgstr ""
+
+#: src/auth/authmanager.cpp:163
+#, kde-format
+msgid "Port %1 in use — close other instances or programs"
+msgstr ""
+
+#: src/auth/authmanager.cpp:212
+#, kde-format
+msgid "Not signed in"
+msgstr ""
+
+#: src/graph/graphclient.cpp:28
+#, kde-format
+msgid "No connection to Microsoft (%1)"
+msgstr ""
+
+#: src/main.cpp:121
+#, kde-format
+msgid "Start hidden in the system tray"
+msgstr ""
+
+#: src/main.cpp:123
+#, kde-format
+msgid "Run with built-in demo data, no sign-in or network access"
+msgstr ""
+
+#: src/models/tasklistsmodel.cpp:70
+#, kde-format
+msgid "All"
+msgstr ""
+
+#: src/models/tasklistsmodel.cpp:72
+#, kde-format
+msgid "Planned"
+msgstr ""
+
+#: src/models/tasklistsmodel.cpp:73 src/models/tasksmodel.cpp:137
+#, kde-format
+msgid "Completed"
+msgstr ""
+
+#: src/models/tasksmodel.cpp:131
+#, kde-format
+msgid "Overdue"
+msgstr ""
+
+#: src/models/tasksmodel.cpp:134
+#, kde-format
+msgid "This week"
+msgstr ""
+
+#: src/models/tasksmodel.cpp:135
+#, kde-format
+msgid "Later"
+msgstr ""
+
+#: src/models/tasksmodel.cpp:136
+#, kde-format
+msgid "No date"
+msgstr ""
+
+#: src/models/tasksmodel.cpp:181
+#, kde-format
+msgid "Yesterday"
+msgstr ""
+
+#: src/models/tasksmodel.cpp:447
+#, kde-format
+msgid "Every day"
+msgid_plural "Every %1 days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/models/tasksmodel.cpp:455
+#, kde-format
+msgid "Every week"
+msgid_plural "Every %1 weeks"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/models/tasksmodel.cpp:456
+#, kde-format
+msgid "Every week on %2"
+msgid_plural "Every %1 weeks on %2"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/models/tasksmodel.cpp:459
+#, kde-format
+msgid "Every month"
+msgid_plural "Every %1 months"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/models/tasksmodel.cpp:461
+#, kde-format
+msgid "Every year"
+msgid_plural "Every %1 years"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/models/tasksmodel.cpp:463
+#, kde-format
+msgid "Custom"
+msgstr ""
+
+#: src/tray/trayicon.cpp:21
+#, kde-format
+msgid "Microsoft To Do"
+msgstr ""
+
+#: src/tray/trayicon.cpp:25
+#, kde-format
+msgid "Show/hide window"
+msgstr ""
+
+#: src/tray/trayicon.cpp:27
+#, kde-format
+msgid "Synchronize"
+msgstr ""
+
+#: src/tray/trayicon.cpp:30
+#, kde-format
+msgid "Quit"
+msgstr ""
+
+#: src/tray/trayicon.cpp:51
+#, kde-format
+msgid "%1 open task due today"
+msgid_plural "%1 open tasks due today"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/tray/trayicon.cpp:54
+#, kde-format
+msgid "No tasks due"
+msgstr ""
