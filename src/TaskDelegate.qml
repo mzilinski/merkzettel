@@ -19,6 +19,9 @@ QQC2.ItemDelegate {
 
     // Set by the view; drives the highlight together with keyboard focus.
     property bool selected: false
+    Accessible.name: model.title
+    Accessible.description: [model.dueLabel, model.important ? i18n("Important") : "",
+                             model.completed ? i18n("Completed") : ""].filter(s => s).join(", ")
     // Secondary text/icons; on a highlighted (selected/current) row the grey
     // would vanish into the highlight, so switch to the highlighted text colour.
     readonly property color metaColor: highlighted
@@ -55,6 +58,7 @@ QQC2.ItemDelegate {
         spacing: Kirigami.Units.largeSpacing
 
         QQC2.CheckBox {
+            Accessible.name: model.title
             checked: model.completed
             onToggled: delegate.check()
         }
@@ -224,6 +228,7 @@ QQC2.ItemDelegate {
         }
 
         QQC2.ToolButton {
+            Accessible.name: QQC2.ToolTip.text
             icon.name: model.important ? "starred-symbolic" : "non-starred-symbolic"
             icon.color: model.important ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
             display: QQC2.AbstractButton.IconOnly
@@ -236,6 +241,7 @@ QQC2.ItemDelegate {
         }
 
         QQC2.ToolButton {
+            Accessible.name: i18n("Delete task")
             icon.name: "edit-delete"
             display: QQC2.AbstractButton.IconOnly
             opacity: delegate.hovered ? 1.0 : 0.0

@@ -21,7 +21,7 @@ msgid "Custom repeat"
 msgstr ""
 
 #: src/CustomRecurrenceDialog.qml:36 src/Main.qml:442 src/Main.qml:482
-#: src/Main.qml:526 src/TaskDetailSheet.qml:671
+#: src/Main.qml:526 src/TaskDetailSheet.qml:685
 msgid "Cancel"
 msgstr ""
 
@@ -225,8 +225,8 @@ msgstr ""
 msgid "This will permanently delete the list \"%1\" and all of its tasks. This cannot be undone."
 msgstr ""
 
-#: src/Main.qml:447 src/TaskDelegate.qml:293 src/TaskDetailSheet.qml:634
-#: src/TaskDetailSheet.qml:676 src/TasksPage.qml:261
+#: src/Main.qml:447 src/TaskDelegate.qml:299 src/TaskDetailSheet.qml:648
+#: src/TaskDetailSheet.qml:690 src/TasksPage.qml:261
 msgid "Delete"
 msgstr ""
 
@@ -258,44 +258,60 @@ msgstr ""
 msgid "Move to"
 msgstr ""
 
-#: src/TaskDelegate.qml:95 src/models/tasklistsmodel.cpp:69
+#: src/TaskDelegate.qml:23 src/TaskDetailSheet.qml:83 src/TasksPage.qml:234
+#: src/models/tasklistsmodel.cpp:71
+#, kde-format
+msgid "Important"
+msgstr ""
+
+#: src/TaskDelegate.qml:24 src/models/tasklistsmodel.cpp:73
+#: src/models/tasksmodel.cpp:137
+#, kde-format
+msgid "Completed"
+msgstr ""
+
+#: src/TaskDelegate.qml:99 src/models/tasklistsmodel.cpp:69
 #, kde-format
 msgid "My Day"
 msgstr ""
 
-#: src/TaskDelegate.qml:232 src/TaskDelegate.qml:255 src/TasksPage.qml:236
+#: src/TaskDelegate.qml:237 src/TaskDelegate.qml:261 src/TasksPage.qml:236
 msgid "Mark as important"
 msgstr ""
 
-#: src/TaskDelegate.qml:232
+#: src/TaskDelegate.qml:237
 msgid "Remove importance"
 msgstr ""
 
-#: src/TaskDelegate.qml:250 src/TaskDetailSheet.qml:74 src/TasksPage.qml:225
+#: src/TaskDelegate.qml:244
+msgid "Delete task"
+msgstr ""
+
+#: src/TaskDelegate.qml:256 src/TaskDetailSheet.qml:74 src/TasksPage.qml:225
 msgid "Add to My Day"
 msgstr ""
 
-#: src/TaskDelegate.qml:250
+#: src/TaskDelegate.qml:256
 msgid "Remove from My Day"
 msgstr ""
 
-#: src/TaskDelegate.qml:255
+#: src/TaskDelegate.qml:261
 msgid "Unstar"
 msgstr ""
 
-#: src/TaskDelegate.qml:261
+#: src/TaskDelegate.qml:267
 msgid "Due: Today"
 msgstr ""
 
-#: src/TaskDelegate.qml:266
+#: src/TaskDelegate.qml:272
 msgid "Due: Tomorrow"
 msgstr ""
 
-#: src/TaskDelegate.qml:276 src/TaskDetailSheet.qml:115
+#: src/TaskDelegate.qml:282 src/TaskDetailSheet.qml:116
 msgid "Pick date ..."
 msgstr ""
 
-#: src/TaskDelegate.qml:281
+#: src/TaskDelegate.qml:287
 msgid "Clear date"
 msgstr ""
 
@@ -313,12 +329,6 @@ msgstr ""
 
 #: src/TaskDetailSheet.qml:80
 msgid "Importance:"
-msgstr ""
-
-#: src/TaskDetailSheet.qml:83 src/TasksPage.qml:234
-#: src/models/tasklistsmodel.cpp:71
-#, kde-format
-msgid "Important"
 msgstr ""
 
 #: src/TaskDetailSheet.qml:83
@@ -345,165 +355,182 @@ msgstr ""
 msgid "Tomorrow"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:133
+#: src/TaskDetailSheet.qml:127
+msgid "Remove due date"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:135
 msgid "Repeat:"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:142
+#: src/TaskDetailSheet.qml:144
 msgid "Never"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:143
+#: src/TaskDetailSheet.qml:145
 msgid "Daily"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:144 src/models/tasksmodel.cpp:454
+#: src/TaskDetailSheet.qml:146 src/models/tasksmodel.cpp:454
 #, kde-format
 msgid "Weekdays"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:145
+#: src/TaskDetailSheet.qml:147
 msgid "Weekly"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:146
+#: src/TaskDetailSheet.qml:148
 msgid "Monthly"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:147
+#: src/TaskDetailSheet.qml:149
 msgid "Yearly"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:150
+#: src/TaskDetailSheet.qml:152
 msgid "Custom ..."
 msgstr ""
 
-#: src/TaskDetailSheet.qml:168
+#: src/TaskDetailSheet.qml:171
 msgid "Edit repeat ..."
 msgstr ""
 
-#: src/TaskDetailSheet.qml:176
+#: src/TaskDetailSheet.qml:179
 msgid "Categories:"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:233
+#: src/TaskDetailSheet.qml:236
 msgid "Add category ..."
 msgstr ""
 
-#: src/TaskDetailSheet.qml:240
+#: src/TaskDetailSheet.qml:243
 msgid "Reminder:"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:264
+#: src/TaskDetailSheet.qml:246 src/app.cpp:1400
+#, kde-format
+msgid "Reminder"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:268
 msgid "off"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:271
+#: src/TaskDetailSheet.qml:276
 msgid "Change date ..."
 msgstr ""
 
-#: src/TaskDetailSheet.qml:284
+#: src/TaskDetailSheet.qml:290
 msgid "Change time ..."
 msgstr ""
 
-#: src/TaskDetailSheet.qml:301
+#: src/TaskDetailSheet.qml:307
 msgid "Subtasks"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:332
+#: src/TaskDetailSheet.qml:340
 msgid "Delete subtask"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:345
+#: src/TaskDetailSheet.qml:353
 msgid "Add subtask ..."
 msgstr ""
 
 #: src/TaskDetailSheet.qml:366
+msgid "Add subtask"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:375
 msgid "Maximum of 20 subtasks reached."
 msgstr ""
 
-#: src/TaskDetailSheet.qml:376
+#: src/TaskDetailSheet.qml:385
 msgid "Links"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:409
+#: src/TaskDetailSheet.qml:419
 msgid "Remove link"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:422
+#: src/TaskDetailSheet.qml:432
 msgid "https://... or file path"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:435
+#: src/TaskDetailSheet.qml:445
 msgid "Label (optional)"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:450
+#: src/TaskDetailSheet.qml:449
+msgid "Add link"
+msgstr ""
+
+#: src/TaskDetailSheet.qml:461
 msgid "Files"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:490
+#: src/TaskDetailSheet.qml:502
 msgid "Open"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:497
+#: src/TaskDetailSheet.qml:510
 msgid "Save as ..."
 msgstr ""
 
-#: src/TaskDetailSheet.qml:509
+#: src/TaskDetailSheet.qml:523
 msgid "Delete file"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:524
+#: src/TaskDetailSheet.qml:538
 msgid "Add file ..."
 msgstr ""
 
-#: src/TaskDetailSheet.qml:530
+#: src/TaskDetailSheet.qml:544
 msgid "or drop files here (max. 25 MB each)"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:565
+#: src/TaskDetailSheet.qml:579
 msgid "Notes ..."
 msgstr ""
 
-#: src/TaskDetailSheet.qml:592
+#: src/TaskDetailSheet.qml:606
 msgid "List: %1"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:596
+#: src/TaskDetailSheet.qml:610
 msgid "Created: %1"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:602
+#: src/TaskDetailSheet.qml:616
 msgid "Last modified: %1"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:613
+#: src/TaskDetailSheet.qml:627
 msgid "OK"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:620 src/app.cpp:1409
+#: src/TaskDetailSheet.qml:634 src/app.cpp:1410
 #, kde-format
 msgid "Mark done"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:620
+#: src/TaskDetailSheet.qml:634
 msgid "Reopen"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:648
+#: src/TaskDetailSheet.qml:662
 msgid "Attach files"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:656
+#: src/TaskDetailSheet.qml:670
 msgid "Save file"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:666
+#: src/TaskDetailSheet.qml:680
 msgid "Delete file?"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:667
+#: src/TaskDetailSheet.qml:681
 msgid "\"%1\" will be removed from the task. This cannot be undone."
 msgstr ""
 
@@ -565,59 +592,63 @@ msgstr ""
 msgid "New task ... (\"tomorrow\", \"mo\", \"25.5.\" at end for due date)"
 msgstr ""
 
-#: src/TasksPage.qml:306
-msgid "Search across all lists ..."
+#: src/TasksPage.qml:297
+msgid "Add task"
 msgstr ""
 
 #: src/TasksPage.qml:307
+msgid "Search across all lists ..."
+msgstr ""
+
+#: src/TasksPage.qml:308
 msgid "Search tasks ..."
 msgstr ""
 
-#: src/TasksPage.qml:319
+#: src/TasksPage.qml:320
 msgid "Sorted by importance"
 msgstr ""
 
-#: src/TasksPage.qml:320
+#: src/TasksPage.qml:321
 msgid "Sorted by due date"
 msgstr ""
 
-#: src/TasksPage.qml:321
+#: src/TasksPage.qml:322
 msgid "Sorted alphabetically"
 msgstr ""
 
-#: src/TasksPage.qml:322
+#: src/TasksPage.qml:323
 msgid "Sorted by creation date"
 msgstr ""
 
-#: src/TasksPage.qml:332
+#: src/TasksPage.qml:333
 msgid "Reverse sort order"
 msgstr ""
 
-#: src/TasksPage.qml:342
+#: src/TasksPage.qml:343
 msgid "Remove sort order"
 msgstr ""
 
-#: src/TasksPage.qml:422
+#: src/TasksPage.qml:423
 msgid "No matching tasks"
 msgstr ""
 
-#: src/TasksPage.qml:423
+#: src/TasksPage.qml:424
 msgid "Focus on your day"
 msgstr ""
 
-#: src/TasksPage.qml:423
+#: src/TasksPage.qml:424
 msgid "No tasks"
 msgstr ""
 
-#: src/TasksPage.qml:425
+#: src/TasksPage.qml:426
 msgid "Try a different search term."
 msgstr ""
 
-#: src/TasksPage.qml:426
+#: src/TasksPage.qml:427
 msgid "Add tasks here, or press Ctrl+T on a task in any list."
 msgstr ""
 
-#: src/TasksPage.qml:427
+#: src/TasksPage.qml:428
 msgid "Type a task above and press Enter."
 msgstr ""
 
@@ -687,7 +718,7 @@ msgstr ""
 #: src/app.cpp:906 src/app.cpp:917 src/app.cpp:928 src/app.cpp:939
 #: src/app.cpp:950 src/app.cpp:972 src/app.cpp:983 src/app.cpp:995
 #: src/app.cpp:1021 src/app.cpp:1072 src/app.cpp:1107 src/app.cpp:1123
-#: src/app.cpp:1212 src/app.cpp:1299
+#: src/app.cpp:1213 src/app.cpp:1300
 #, kde-format
 msgid "Demo mode — change not applied"
 msgstr ""
@@ -718,219 +749,214 @@ msgstr[1] ""
 msgid "Refusing to open link with unsupported scheme: %1"
 msgstr ""
 
-#: src/app.cpp:1220
+#: src/app.cpp:1221
 #, kde-format
 msgid "Could not read \"%1\"."
 msgstr ""
 
-#: src/app.cpp:1226 src/graph/todoapi.cpp:663
+#: src/app.cpp:1227 src/graph/todoapi.cpp:663
 #, kde-format
 msgid "\"%1\" is larger than 25 MB, the Microsoft To Do limit."
 msgstr ""
 
-#: src/app.cpp:1233
+#: src/app.cpp:1234
 #, kde-format
 msgid "Uploading %1 file ..."
 msgid_plural "Uploading %1 files ..."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/app.cpp:1242 src/app.cpp:1276
+#: src/app.cpp:1243 src/app.cpp:1277
 #, kde-format
 msgid "Demo mode — files are not available"
 msgstr ""
 
-#: src/app.cpp:1245
+#: src/app.cpp:1246
 #, kde-format
 msgid "Downloading \"%1\" ..."
 msgstr ""
 
-#: src/app.cpp:1262 src/app.cpp:1287
+#: src/app.cpp:1263 src/app.cpp:1288
 #, kde-format
 msgid "Could not write \"%1\"."
 msgstr ""
 
-#: src/app.cpp:1290
+#: src/app.cpp:1291
 #, kde-format
 msgid "Saved \"%1\""
 msgstr ""
 
-#: src/app.cpp:1399
-#, kde-format
-msgid "Reminder"
-msgstr ""
-
-#: src/app.cpp:1421
+#: src/app.cpp:1422
 #, kde-format
 msgid "Tasks"
 msgstr ""
 
-#: src/app.cpp:1422 src/app.cpp:1536 src/app.cpp:1537
+#: src/app.cpp:1423 src/app.cpp:1537 src/app.cpp:1538
 #, kde-format
 msgid "Work"
 msgstr ""
 
-#: src/app.cpp:1423
+#: src/app.cpp:1424
 #, kde-format
 msgid "Home"
 msgstr ""
 
-#: src/app.cpp:1424
+#: src/app.cpp:1425
 #, kde-format
 msgid "Shopping"
 msgstr ""
 
-#: src/app.cpp:1425
+#: src/app.cpp:1426
 #, kde-format
 msgid "Learning"
 msgstr ""
 
-#: src/app.cpp:1466
+#: src/app.cpp:1467
 #, kde-format
 msgid "Pay electricity bill"
 msgstr ""
 
-#: src/app.cpp:1468
+#: src/app.cpp:1469
 #, kde-format
 msgid "Reply to Anna about the proposal"
 msgstr ""
 
-#: src/app.cpp:1470
+#: src/app.cpp:1471
 #, kde-format
 msgid "Buy groceries"
 msgstr ""
 
-#: src/app.cpp:1471
+#: src/app.cpp:1472
 #, kde-format
 msgid "milk, bread, coffee, oranges"
 msgstr ""
 
-#: src/app.cpp:1478
+#: src/app.cpp:1479
 #, kde-format
 msgid "Team standup"
 msgstr ""
 
-#: src/app.cpp:1480
+#: src/app.cpp:1481
 #, kde-format
 msgid "Pick up parcel from the post office"
 msgstr ""
 
-#: src/app.cpp:1482
+#: src/app.cpp:1483
 #, kde-format
 msgid "Submit travel expenses"
 msgstr ""
 
-#: src/app.cpp:1484
+#: src/app.cpp:1485
 #, kde-format
 msgid "Read 'The Pragmatic Programmer' ch.4"
 msgstr ""
 
-#: src/app.cpp:1485
+#: src/app.cpp:1486
 #, kde-format
 msgid "Focus on the chapter on orthogonality."
 msgstr ""
 
-#: src/app.cpp:1486
+#: src/app.cpp:1487
 #, kde-format
 msgid "Plan summer holiday"
 msgstr ""
 
-#: src/app.cpp:1494
+#: src/app.cpp:1495
 #, kde-format
 msgid "Learn Rust"
 msgstr ""
 
-#: src/app.cpp:1494
+#: src/app.cpp:1495
 #, kde-format
 msgid "Start with the official book."
 msgstr ""
 
-#: src/app.cpp:1496
+#: src/app.cpp:1497
 #, kde-format
 msgid "Refactor printer driver"
 msgstr ""
 
-#: src/app.cpp:1497
+#: src/app.cpp:1498
 #, kde-format
 msgid "Update CV"
 msgstr ""
 
-#: src/app.cpp:1498
+#: src/app.cpp:1499
 #, kde-format
 msgid "Renew library card"
 msgstr ""
 
-#: src/app.cpp:1503
+#: src/app.cpp:1504
 #, kde-format
 msgid "Quarterly report"
 msgstr ""
 
-#: src/app.cpp:1510
+#: src/app.cpp:1511
 #, kde-format
 msgid "Code review for Markus"
 msgstr ""
 
-#: src/app.cpp:1512
+#: src/app.cpp:1513
 #, kde-format
 msgid "1:1 with manager"
 msgstr ""
 
-#: src/app.cpp:1517
+#: src/app.cpp:1518
 #, kde-format
 msgid "Water the plants"
 msgstr ""
 
-#: src/app.cpp:1518
+#: src/app.cpp:1519
 #, kde-format
 msgid "Fix the bathroom faucet"
 msgstr ""
 
-#: src/app.cpp:1522
+#: src/app.cpp:1523
 #, kde-format
 msgid "New running shoes"
 msgstr ""
 
-#: src/app.cpp:1523
+#: src/app.cpp:1524
 #, kde-format
 msgid "Birthday present for Mum"
 msgstr ""
 
-#: src/app.cpp:1528
+#: src/app.cpp:1529
 #, kde-format
 msgid "Finish KDE Frameworks 6 tutorial"
 msgstr ""
 
-#: src/app.cpp:1530
+#: src/app.cpp:1531
 #, kde-format
 msgid "Watch Qt 6.6 release video"
 msgstr ""
 
-#: src/app.cpp:1535 src/app.cpp:1536
+#: src/app.cpp:1536 src/app.cpp:1537
 #, kde-format
 msgid "Finance"
 msgstr ""
 
-#: src/app.cpp:1538
+#: src/app.cpp:1539
 #, kde-format
 msgid "Family"
 msgstr ""
 
-#: src/app.cpp:1550
+#: src/app.cpp:1551
 #, kde-format
 msgid "Hotel receipt.pdf"
 msgstr ""
 
-#: src/app.cpp:1552
+#: src/app.cpp:1553
 #, kde-format
 msgid "Train ticket.png"
 msgstr ""
 
-#: src/app.cpp:1584
+#: src/app.cpp:1585
 #, kde-format
 msgid "Signed in, loading lists ..."
 msgstr ""
 
-#: src/app.cpp:1590
+#: src/app.cpp:1591
 #, kde-format
 msgid "Sign-in error: %1"
 msgstr ""
@@ -1018,11 +1044,6 @@ msgstr ""
 #: src/models/tasklistsmodel.cpp:72
 #, kde-format
 msgid "Planned"
-msgstr ""
-
-#: src/models/tasklistsmodel.cpp:73 src/models/tasksmodel.cpp:137
-#, kde-format
-msgid "Completed"
 msgstr ""
 
 #: src/models/tasksmodel.cpp:131

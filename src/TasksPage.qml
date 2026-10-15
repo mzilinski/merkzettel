@@ -294,6 +294,7 @@ Kirigami.ScrollablePage {
                     }
                 }
                 QQC2.Button {
+                    Accessible.name: i18n("Add task")
                     icon.name: "list-add"
                     enabled: addField.text.trim().length > 0
                     onClicked: addField.addCurrent()

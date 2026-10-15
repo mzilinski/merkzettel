@@ -111,6 +111,7 @@ Kirigami.OverlaySheet {
                     }
                 }
                 QQC2.Button {
+                    Accessible.name: QQC2.ToolTip.text
                     icon.name: "view-calendar"
                     QQC2.ToolTip.text: i18n("Pick date ...")
                     QQC2.ToolTip.visible: hovered
@@ -123,6 +124,7 @@ Kirigami.OverlaySheet {
                     }
                 }
                 QQC2.Button {
+                    Accessible.name: i18n("Remove due date")
                     icon.name: "edit-clear"
                     enabled: hasTask && task.dueDate && !isNaN(task.dueDate.getTime())
                     onClicked: if (hasTask) app.clearTaskDueDate(task.taskId)
@@ -163,6 +165,7 @@ Kirigami.OverlaySheet {
                     }
                 }
                 QQC2.Button {
+                    Accessible.name: QQC2.ToolTip.text
                     icon.name: "document-edit"
                     visible: hasTask && recurrenceCombo.info.preset === "custom"
                     QQC2.ToolTip.text: i18n("Edit repeat ...")
@@ -240,6 +243,7 @@ Kirigami.OverlaySheet {
                 Kirigami.FormData.label: i18n("Reminder:")
                 spacing: Kirigami.Units.smallSpacing
                 QQC2.Switch {
+                    Accessible.name: i18n("Reminder")
                     id: reminderSwitch
                     checked: hasTask && task.hasReminder
                     onToggled: {
@@ -266,6 +270,7 @@ Kirigami.OverlaySheet {
                                                   : Kirigami.Theme.disabledTextColor
                 }
                 QQC2.Button {
+                    Accessible.name: QQC2.ToolTip.text
                     icon.name: "view-calendar"
                     enabled: reminderSwitch.checked
                     QQC2.ToolTip.text: i18n("Change date ...")
@@ -279,6 +284,7 @@ Kirigami.OverlaySheet {
                     }
                 }
                 QQC2.Button {
+                    Accessible.name: QQC2.ToolTip.text
                     icon.name: "clock"
                     enabled: reminderSwitch.checked
                     QQC2.ToolTip.text: i18n("Change time ...")
@@ -311,6 +317,7 @@ Kirigami.OverlaySheet {
                     Layout.fillWidth: true
                     spacing: Kirigami.Units.smallSpacing
                     QQC2.CheckBox {
+                        Accessible.name: modelData.displayName
                         checked: modelData.isChecked
                         onToggled: if (hasTask) app.toggleChecklistItem(task.taskId, modelData.id)
                     }
@@ -328,6 +335,7 @@ Kirigami.OverlaySheet {
                         }
                     }
                     QQC2.ToolButton {
+                        Accessible.name: QQC2.ToolTip.text
                         icon.name: "edit-delete"
                         QQC2.ToolTip.text: i18n("Delete subtask")
                         QQC2.ToolTip.visible: hovered
@@ -355,6 +363,7 @@ Kirigami.OverlaySheet {
                     }
                 }
                 QQC2.Button {
+                    Accessible.name: i18n("Add subtask")
                     icon.name: "list-add"
                     enabled: newItemField.enabled && newItemField.text.trim().length > 0
                     onClicked: newItemField.addCurrent()
@@ -405,6 +414,7 @@ Kirigami.OverlaySheet {
                         property bool hovered: hoverArea.hovered
                     }
                     QQC2.ToolButton {
+                        Accessible.name: QQC2.ToolTip.text
                         icon.name: "edit-delete"
                         QQC2.ToolTip.text: i18n("Remove link")
                         QQC2.ToolTip.visible: hovered
@@ -436,6 +446,7 @@ Kirigami.OverlaySheet {
                     onAccepted: newLinkUrl.addCurrent()
                 }
                 QQC2.Button {
+                    Accessible.name: i18n("Add link")
                     icon.name: "list-add"
                     enabled: newLinkUrl.text.trim().length > 0
                     onClicked: newLinkUrl.addCurrent()
@@ -486,6 +497,7 @@ Kirigami.OverlaySheet {
                             font: Kirigami.Theme.smallFont
                         }
                         QQC2.ToolButton {
+                            Accessible.name: QQC2.ToolTip.text
                             icon.name: "document-open"
                             QQC2.ToolTip.text: i18n("Open")
                             QQC2.ToolTip.visible: hovered
@@ -493,6 +505,7 @@ Kirigami.OverlaySheet {
                             onClicked: app.openAttachment(task.taskId, modelData.id)
                         }
                         QQC2.ToolButton {
+                            Accessible.name: QQC2.ToolTip.text
                             icon.name: "document-save-as"
                             QQC2.ToolTip.text: i18n("Save as ...")
                             QQC2.ToolTip.visible: hovered
@@ -505,6 +518,7 @@ Kirigami.OverlaySheet {
                             }
                         }
                         QQC2.ToolButton {
+                            Accessible.name: QQC2.ToolTip.text
                             icon.name: "edit-delete"
                             QQC2.ToolTip.text: i18n("Delete file")
                             QQC2.ToolTip.visible: hovered
