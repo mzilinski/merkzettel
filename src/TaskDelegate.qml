@@ -11,8 +11,31 @@ QQC2.ItemDelegate {
     signal toggleStar()
     signal openDetails()
     signal pickDate()
+    // Multi-selection: Ctrl+click toggles, Shift+click extends.
+    signal toggleSelected()
+    signal extendSelection()
+    signal moveTo(string listId)
 
-    onClicked: openDetails()
+    // Set by the view; drives the highlight together with keyboard focus.
+    property bool selected: false
+
+    // Plain clicks open the details; modifier clicks only select. Separate
+    // handlers because ItemDelegate.clicked carries no modifier state.
+    TapHandler {
+        acceptedButtons: Qt.LeftButton
+        acceptedModifiers: Qt.NoModifier
+        onTapped: delegate.openDetails()
+    }
+    TapHandler {
+        acceptedButtons: Qt.LeftButton
+        acceptedModifiers: Qt.ControlModifier
+        onTapped: delegate.toggleSelected()
+    }
+    TapHandler {
+        acceptedButtons: Qt.LeftButton
+        acceptedModifiers: Qt.ShiftModifier
+        onTapped: delegate.extendSelection()
+    }
 
     contentItem: RowLayout {
         spacing: Kirigami.Units.largeSpacing
@@ -189,6 +212,11 @@ QQC2.ItemDelegate {
             icon.name: "edit-clear"
             enabled: model.dueLabel.length > 0
             onTriggered: app.clearTaskDueDate(model.taskId)
+        }
+        QQC2.MenuSeparator {}
+        MoveToListMenu {
+            excludedListId: model.listId
+            onListChosen: listId => delegate.moveTo(listId)
         }
         QQC2.MenuSeparator {}
         QQC2.MenuItem {

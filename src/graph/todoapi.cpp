@@ -7,6 +7,7 @@
 #include <QUrlQuery>
 #include <QTimeZone>
 #include <QDate>
+#include <KLocalizedString>
 #include <functional>
 #include <memory>
 
@@ -388,6 +389,99 @@ void TodoApi::fetchChecklistItems(const QString &listId, const QString &taskId)
             items.append(parseChecklistItem(v.toObject()));
         }
         Q_EMIT checklistItemsReceived(listId, taskId, items);
+    });
+}
+
+void TodoApi::moveTask(const QString &srcListId, const QString &taskId,
+                       const QString &dstListId)
+{
+    QUrlQuery q;
+    q.addQueryItem(QStringLiteral("$expand"), QStringLiteral("checklistItems,linkedResources"));
+    const QString srcPath = QStringLiteral("/me/todo/lists/%1/tasks/%2").arg(srcListId, taskId);
+    m_graph->get(srcPath, q, [this, srcListId, taskId, dstListId, srcPath](const QJsonValue &v,
+                                                                          const QString &err) {
+        if (!err.isEmpty()) { Q_EMIT taskMoveFailed(srcListId, taskId, err); return; }
+        const QJsonObject src = v.toObject();
+        if (src.value(QStringLiteral("hasAttachments")).toBool()) {
+            Q_EMIT taskMoveFailed(srcListId, taskId,
+                                  i18n("Tasks with file attachments can't be moved yet."));
+            return;
+        }
+
+        // Whitelist of writable fields; everything else (ids, timestamps,
+        // etags, hasAttachments) is server-owned. completedDateTime is left to
+        // the server, which stamps it from status=completed.
+        static const QStringList kCopied = {
+            QStringLiteral("title"), QStringLiteral("body"), QStringLiteral("importance"),
+            QStringLiteral("status"), QStringLiteral("dueDateTime"),
+            QStringLiteral("startDateTime"),
+            QStringLiteral("reminderDateTime"), QStringLiteral("isReminderOn"),
+            QStringLiteral("recurrence"), QStringLiteral("categories"),
+        };
+        QJsonObject body;
+        for (const QString &key : kCopied) {
+            const QJsonValue val = src.value(key);
+            if (!val.isUndefined() && !val.isNull()) body.insert(key, val);
+        }
+
+        // Sub-requests run one after another so steps keep their order.
+        auto pending = std::make_shared<QList<QPair<QString, QJsonObject>>>();
+        for (const auto &c : src.value(QStringLiteral("checklistItems")).toArray()) {
+            const auto o = c.toObject();
+            pending->append({QStringLiteral("checklistItems"), QJsonObject{
+                {QStringLiteral("displayName"), o.value(QStringLiteral("displayName"))},
+                {QStringLiteral("isChecked"), o.value(QStringLiteral("isChecked"))},
+            }});
+        }
+        for (const auto &r : src.value(QStringLiteral("linkedResources")).toArray()) {
+            QJsonObject o = r.toObject();
+            QJsonObject copy;
+            for (const char *key : {"webUrl", "applicationName", "displayName", "externalId"}) {
+                const QJsonValue val = o.value(QLatin1String(key));
+                if (val.isString() && !val.toString().isEmpty()) copy.insert(QLatin1String(key), val);
+            }
+            pending->append({QStringLiteral("linkedResources"), copy});
+        }
+
+        m_graph->post(QStringLiteral("/me/todo/lists/%1/tasks").arg(dstListId), body,
+                      [this, srcListId, taskId, dstListId, srcPath, pending](const QJsonValue &created,
+                                                                           const QString &err) {
+            if (!err.isEmpty()) { Q_EMIT taskMoveFailed(srcListId, taskId, err); return; }
+            const QString newId = created.toObject().value(QStringLiteral("id")).toString();
+            const QString dstPath = QStringLiteral("/me/todo/lists/%1/tasks/%2").arg(dstListId, newId);
+
+            auto step = std::make_shared<std::function<void()>>();
+            *step = [this, srcListId, taskId, dstListId, srcPath, dstPath, newId, pending, step] {
+                if (pending->isEmpty()) {
+                    m_graph->del(srcPath, [this, srcListId, taskId, dstListId, newId, step](
+                                              const QJsonValue &, const QString &err) {
+                        *step = nullptr;  // break the self-reference
+                        if (!err.isEmpty()) {
+                            // Copy exists, original still there: surface it as a
+                            // failure so the caller refreshes both lists.
+                            Q_EMIT taskMoveFailed(srcListId, taskId, err);
+                            Q_EMIT taskMutated(dstListId);
+                            return;
+                        }
+                        Q_EMIT taskMoved(srcListId, taskId, dstListId, newId);
+                    });
+                    return;
+                }
+                const auto next = pending->takeFirst();
+                m_graph->post(dstPath + QLatin1Char('/') + next.first, next.second,
+                              [this, srcListId, taskId, dstListId, step](const QJsonValue &,
+                                                                         const QString &err) {
+                    if (!err.isEmpty()) {
+                        *step = nullptr;
+                        Q_EMIT taskMoveFailed(srcListId, taskId, err);
+                        Q_EMIT taskMutated(dstListId);
+                        return;
+                    }
+                    (*step)();
+                });
+            };
+            (*step)();
+        });
     });
 }
 

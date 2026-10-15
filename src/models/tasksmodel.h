@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QAbstractListModel>
+#include <QSet>
 #include "graph/todoapi.h"
 
 namespace Merkzettel {
@@ -66,6 +67,12 @@ public:
 
     void setSmartFilter(SmartFilter filter);
 
+    // Tasks with a pending (undoable) delete/move are hidden locally until
+    // the operation is committed. Ids that no longer appear in a later
+    // setTasks() are dropped from the hidden set automatically.
+    void hideTasks(const QStringList &taskIds);
+    void unhideTasks(const QStringList &taskIds);
+
     // Map listId -> displayName, used to resolve ListNameRole. App refreshes
     // this whenever listsReceived fires.
     void setListNames(const QHash<QString, QString> &names);
@@ -99,6 +106,7 @@ private:
     bool m_sortDescending = false;
     QString m_sortScope;
     QHash<QString, QString> m_listNames;
+    QSet<QString> m_hiddenIds;
 };
 
 } // namespace Merkzettel

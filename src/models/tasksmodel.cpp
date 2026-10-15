@@ -235,6 +235,23 @@ bool TasksModel::lessThan(const Task &a, const Task &b) const
 void TasksModel::setTasks(const QList<Task> &tasks)
 {
     m_allTasks = tasks;
+    if (!m_hiddenIds.isEmpty()) {
+        QSet<QString> present;
+        for (const auto &t : tasks) present.insert(t.id);
+        m_hiddenIds.intersect(present);
+    }
+    applyFilter();
+}
+
+void TasksModel::hideTasks(const QStringList &taskIds)
+{
+    for (const auto &id : taskIds) m_hiddenIds.insert(id);
+    applyFilter();
+}
+
+void TasksModel::unhideTasks(const QStringList &taskIds)
+{
+    for (const auto &id : taskIds) m_hiddenIds.remove(id);
     applyFilter();
 }
 
@@ -304,6 +321,7 @@ void TasksModel::setFilterText(const QString &text)
 
 bool TasksModel::matchesFilter(const Task &t) const
 {
+    if (m_hiddenIds.contains(t.id)) return false;
     switch (m_smartFilter) {
     case SmartFilter::None:
         break;

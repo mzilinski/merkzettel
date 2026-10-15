@@ -17,6 +17,9 @@ Native KDE/Kirigami client for **Microsoft To Do**. Written in C++/Qt6, talks Mi
 - Refresh token stored in **KWallet** (via QtKeychain)
 - Lists and tasks fetched from Microsoft Graph
 - Create, complete, delete tasks; importance (star), due date, reminder, notes
+- **Move tasks between lists** (context menu or selection bar; Graph has no move, so tasks are copied with steps and links, then the original is deleted)
+- **Multi-selection** (Ctrl/Shift+click, Space, Ctrl+A) with bulk complete / star / move / delete
+- **Undo** (Ctrl+Z or the notification button) for delete, move and bulk complete
 - Date+time picker via [kirigami-addons](https://invent.kde.org/libraries/kirigami-addons) `DatePopup`/`TimePopup`
 - **Sectioned task view**: Overdue / Today / Tomorrow / This week / Later / No date / Completed
 - **Smart lists** across all lists: All / Important / Planned / Completed

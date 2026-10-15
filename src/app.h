@@ -64,6 +64,14 @@ public Q_SLOTS:
     void completeTask(const QString &taskId);
     void uncompleteTask(const QString &taskId);
     void deleteTask(const QString &taskId);
+    // Bulk operations for the multi-selection (also used for single tasks).
+    // Delete and move are delayed by kUndoWindowMs and can be undone until
+    // then; completion is applied immediately and undone by reopening.
+    void deleteTasks(const QStringList &taskIds);
+    void moveTasks(const QStringList &taskIds, const QString &targetListId);
+    void completeTasks(const QStringList &taskIds);
+    void setTasksImportant(const QStringList &taskIds, bool important);
+    void undo();
     void createList(const QString &displayName);
     void deleteList(const QString &listId);
     void renameList(const QString &listId, const QString &newName);
@@ -112,12 +120,18 @@ Q_SIGNALS:
     void colorSchemeChanged();
     // Global "Quick add" shortcut fired: show the window, focus the add field.
     void quickAddRequested();
+    // An undoable operation happened; QML shows message with an Undo action.
+    void undoOffered(const QString &message, int timeoutMs);
 
 private:
     void onAuthenticated();
     void onAuthError(const QString &message);
     void setStatus(const QString &status);
     void registerGlobalShortcuts();
+    // Execute a delayed delete/move now (timer expiry, list switch, or a
+    // new undoable operation replacing it).
+    void commitPending();
+    QString listDisplayName(const QString &listId) const;
     QPair<QString, QDateTime> parseAddInput(const QString &raw) const;
     void loadDemoData();
     void switchDemoList(const QString &id);
@@ -158,6 +172,17 @@ private:
 
     QString m_status;
     QString m_currentListId;
+
+    struct UndoState {
+        enum Kind { None, Delete, Move, Complete } kind = None;
+        QList<QPair<QString, QString>> tasks;  // (listId, taskId)
+        QString targetListId;                  // Move only
+        bool pending = false;                  // Delete/Move not yet sent
+    };
+    UndoState m_undo;
+    QTimer *m_commitTimer = nullptr;
+    int m_movesInFlight = 0;
+    QSet<QString> m_moveTouchedLists;
     QVariantMap m_detailTask;
     bool m_startMinimized = false;
     bool m_demoMode = false;

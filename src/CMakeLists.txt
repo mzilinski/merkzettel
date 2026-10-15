@@ -51,6 +51,7 @@ ecm_add_qml_module(merkzettel
         TasksPage.qml
         TaskDelegate.qml
         TaskDetailSheet.qml
+        MoveToListMenu.qml
 )
 
 install(TARGETS merkzettel ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})

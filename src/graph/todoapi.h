@@ -81,6 +81,12 @@ public:
                            const QJsonObject &recurrence);  // empty = clear
     void updateTask(const QString &listId, const QString &taskId, const QJsonObject &patch);
     void deleteTask(const QString &listId, const QString &taskId);
+    // Graph has no move endpoint: copy the task (fields, steps, linked
+    // resources) into dstListId, then delete the original. The original is
+    // only deleted once every copy step succeeded, so a failure can leave a
+    // duplicate but never loses data. Tasks with file attachments are
+    // refused (attachments aren't copied yet).
+    void moveTask(const QString &srcListId, const QString &taskId, const QString &dstListId);
 
     // Delta sync. If deltaLink is empty: starts a full delta walk against
     // /me/todo/lists/{lid}/tasks/delta. Otherwise: resumes from deltaLink and
@@ -116,6 +122,9 @@ Q_SIGNALS:
     void listsReceived(const QList<Merkzettel::TaskList> &lists);
     void tasksReceived(const QString &listId, const QList<Merkzettel::Task> &tasks);
     void taskMutated(const QString &listId);
+    void taskMoved(const QString &srcListId, const QString &oldTaskId,
+                   const QString &dstListId, const QString &newTaskId);
+    void taskMoveFailed(const QString &srcListId, const QString &taskId, const QString &message);
     void listMutated();
     void listCreated(const QString &listId);  // newly-created id, for select-after-create
     void checklistItemsReceived(const QString &listId, const QString &taskId,

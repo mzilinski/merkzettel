@@ -200,6 +200,28 @@ App::App(QObject *parent)
     connect(m_tray.get(), &TrayIcon::quitRequested, this, [] { qApp->quit(); });
     connect(m_tray.get(), &TrayIcon::syncRequested, this, &App::refresh);
 
+    m_commitTimer = new QTimer(this);
+    m_commitTimer->setSingleShot(true);
+    m_commitTimer->setInterval(6000);
+    connect(m_commitTimer, &QTimer::timeout, this, &App::commitPending);
+
+    // Refetch every list a batch of moves touched once the last one is done,
+    // instead of two full fetches per moved task.
+    const auto moveFinished = [this] {
+        if (--m_movesInFlight > 0) return;
+        m_movesInFlight = 0;
+        for (const auto &lid : std::as_const(m_moveTouchedLists)) m_todo->fetchTasks(lid);
+        m_moveTouchedLists.clear();
+    };
+    connect(m_todo.get(), &TodoApi::taskMoved, this, moveFinished);
+    connect(m_todo.get(), &TodoApi::taskMoveFailed, this,
+            [this, moveFinished](const QString &, const QString &taskId, const QString &msg) {
+        m_tasksModel->unhideTasks({taskId});
+        setStatus(i18n("Error: %1", msg));
+        Q_EMIT errorOccurred(msg);
+        moveFinished();
+    });
+
     m_reminderTimer = new QTimer(this);
     m_reminderTimer->setInterval(60 * 1000);  // 1 minute
     connect(m_reminderTimer, &QTimer::timeout, this, &App::checkReminders);
@@ -270,6 +292,8 @@ TaskListsModel *App::listsModel() const { return m_listsModel; }
 void App::setCurrentListId(const QString &id)
 {
     if (m_currentListId == id) return;
+    // Hidden pending tasks only make sense in the view they were hidden in.
+    commitPending();
     m_currentListId = id;
     Q_EMIT currentListIdChanged();
     applyListViewSettings();
@@ -504,10 +528,141 @@ void App::uncompleteTask(const QString &taskId)
 
 void App::deleteTask(const QString &taskId)
 {
-    const QString lid = listIdForTask(taskId);
-    if (lid.isEmpty()) return;
+    deleteTasks({taskId});
+}
+
+QString App::listDisplayName(const QString &listId) const
+{
+    const int n = m_listsModel->rowCount();
+    for (int i = 0; i < n; ++i) {
+        const auto idx = m_listsModel->index(i, 0);
+        if (m_listsModel->data(idx, TaskListsModel::IdRole).toString() == listId)
+            return m_listsModel->data(idx, TaskListsModel::DisplayNameRole).toString();
+    }
+    return {};
+}
+
+void App::deleteTasks(const QStringList &taskIds)
+{
+    commitPending();
+    UndoState op;
+    op.kind = UndoState::Delete;
+    op.pending = true;
+    for (const auto &id : taskIds) {
+        const QString lid = listIdForTask(id);
+        if (!lid.isEmpty()) op.tasks.append({lid, id});
+    }
+    if (op.tasks.isEmpty()) return;
+    m_undo = op;
+    m_tasksModel->hideTasks(taskIds);
+    m_commitTimer->start();
+    Q_EMIT undoOffered(i18np("Task deleted", "%1 tasks deleted", op.tasks.size()),
+                       m_commitTimer->interval());
+}
+
+void App::moveTasks(const QStringList &taskIds, const QString &targetListId)
+{
+    if (targetListId.isEmpty() || TaskListsModel::isVirtualId(targetListId)) return;
+    commitPending();
+    UndoState op;
+    op.kind = UndoState::Move;
+    op.pending = true;
+    op.targetListId = targetListId;
+    QStringList moving;
+    for (const auto &id : taskIds) {
+        const QString lid = listIdForTask(id);
+        if (lid.isEmpty() || lid == targetListId) continue;
+        op.tasks.append({lid, id});
+        moving.append(id);
+    }
+    if (op.tasks.isEmpty()) return;
+    m_undo = op;
+    m_tasksModel->hideTasks(moving);
+    m_commitTimer->start();
+    Q_EMIT undoOffered(i18np("Task moved to \"%2\"", "%1 tasks moved to \"%2\"",
+                             op.tasks.size(), listDisplayName(targetListId)),
+                       m_commitTimer->interval());
+}
+
+void App::completeTasks(const QStringList &taskIds)
+{
     if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
-    m_todo->deleteTask(lid, taskId);
+    commitPending();
+    UndoState op;
+    op.kind = UndoState::Complete;
+    for (const auto &id : taskIds) {
+        const QString lid = listIdForTask(id);
+        if (lid.isEmpty()) continue;
+        op.tasks.append({lid, id});
+        m_todo->setTaskStatus(lid, id, QStringLiteral("completed"));
+    }
+    if (op.tasks.isEmpty()) return;
+    m_undo = op;
+    Q_EMIT undoOffered(i18np("Task completed", "%1 tasks completed", op.tasks.size()),
+                       m_commitTimer->interval());
+}
+
+void App::setTasksImportant(const QStringList &taskIds, bool important)
+{
+    if (m_demoMode) { setStatus(i18n("Demo mode — change not applied")); return; }
+    for (const auto &id : taskIds) {
+        const QString lid = listIdForTask(id);
+        if (lid.isEmpty()) continue;
+        m_todo->setTaskImportance(lid, id, important ? QStringLiteral("high")
+                                                     : QStringLiteral("normal"));
+    }
+}
+
+void App::undo()
+{
+    if (m_undo.kind == UndoState::None) return;
+    QStringList ids;
+    for (const auto &t : std::as_const(m_undo.tasks)) ids.append(t.second);
+    if (m_undo.pending) {
+        // Never sent to Graph: just show the tasks again.
+        m_commitTimer->stop();
+        m_tasksModel->unhideTasks(ids);
+    } else if (m_undo.kind == UndoState::Complete) {
+        // Note: completing a recurring task makes Graph spawn the next
+        // occurrence; reopening the original doesn't remove that one.
+        for (const auto &t : std::as_const(m_undo.tasks))
+            m_todo->setTaskStatus(t.first, t.second, QStringLiteral("notStarted"));
+    }
+    m_undo = {};
+}
+
+void App::commitPending()
+{
+    if (!m_undo.pending) return;
+    m_commitTimer->stop();
+    const UndoState op = m_undo;
+    m_undo = {};  // committed operations can't be undone anymore
+
+    if (m_demoMode) {
+        // Apply locally so the demo behaves like the real thing.
+        for (const auto &t : op.tasks) {
+            auto &src = m_demoTasks[t.first];
+            for (int i = 0; i < src.size(); ++i) {
+                if (src.at(i).id != t.second) continue;
+                const Task task = src.takeAt(i);
+                if (op.kind == UndoState::Move) m_demoTasks[op.targetListId].append(task);
+                break;
+            }
+        }
+        switchDemoList(m_currentListId);
+        return;
+    }
+
+    for (const auto &t : op.tasks) {
+        if (op.kind == UndoState::Delete) {
+            m_todo->deleteTask(t.first, t.second);
+        } else {
+            ++m_movesInFlight;
+            m_moveTouchedLists.insert(t.first);
+            m_moveTouchedLists.insert(op.targetListId);
+            m_todo->moveTask(t.first, t.second, op.targetListId);
+        }
+    }
 }
 
 void App::createList(const QString &displayName)

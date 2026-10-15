@@ -63,6 +63,9 @@ Kirigami.ApplicationWindow {
             errorBanner.text = message;
             errorBanner.visible = true;
         }
+        function onUndoOffered(message, timeoutMs) {
+            showPassiveNotification(message, timeoutMs, i18n("Undo"), () => app.undo());
+        }
         function onQuickAddRequested() {
             while (root.pageStack.layers.depth > 1) root.pageStack.layers.pop();
             app.closeTaskDetails();
@@ -88,6 +91,16 @@ Kirigami.ApplicationWindow {
         sequences: ["Ctrl+R", StandardKey.Refresh]
         enabled: app.loggedIn
         onActivated: app.refresh()
+    }
+    Shortcut {
+        sequences: [StandardKey.Undo]
+        enabled: app.loggedIn
+        // Leave Ctrl+Z to text fields for their own undo.
+        onActivated: {
+            if (root.activeFocusItem instanceof TextInput) return;
+            app.undo();
+            root.hidePassiveNotification();
+        }
     }
     Shortcut {
         sequence: "Alt+Up"

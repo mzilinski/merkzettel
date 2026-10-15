@@ -32,6 +32,64 @@ Kirigami.ScrollablePage {
         return null;
     }
 
+    // Multi-selection, keyed by task id so it survives model resets.
+    // Reassigned (not mutated) on change so bindings re-evaluate.
+    property var selectedIds: []
+    property int selectionAnchor: -1
+
+    function isSelected(taskId) {
+        return selectedIds.indexOf(taskId) >= 0;
+    }
+
+    function toggleSelected(row) {
+        const id = app.tasksModel.taskAt(row).taskId;
+        selectedIds = isSelected(id) ? selectedIds.filter(x => x !== id)
+                                     : selectedIds.concat([id]);
+        selectionAnchor = row;
+        tasksView.currentIndex = row;
+    }
+
+    function extendSelection(row) {
+        const from = selectionAnchor >= 0 ? selectionAnchor : row;
+        const ids = selectedIds.slice();
+        for (let i = Math.min(from, row); i <= Math.max(from, row); ++i) {
+            const id = app.tasksModel.taskAt(i).taskId;
+            if (ids.indexOf(id) < 0) ids.push(id);
+        }
+        selectedIds = ids;
+        tasksView.currentIndex = row;
+    }
+
+    function selectAll() {
+        const ids = [];
+        for (let i = 0; i < tasksView.count; ++i) ids.push(app.tasksModel.taskAt(i).taskId);
+        selectedIds = ids;
+    }
+
+    function clearSelection() {
+        selectedIds = [];
+        selectionAnchor = -1;
+    }
+
+    // Tasks an action on taskId applies to: the whole selection when taskId
+    // is part of it, otherwise just that task.
+    function targetsFor(taskId) {
+        return isSelected(taskId) ? selectedIds.slice() : [taskId];
+    }
+
+    // Ids of the keyboard target(s): selection, else the current row.
+    function keyboardTargets() {
+        if (selectedIds.length > 0) return selectedIds.slice();
+        if (tasksView.currentIndex >= 0) return [app.tasksModel.taskAt(tasksView.currentIndex).taskId];
+        return [];
+    }
+
+    Connections {
+        target: app
+        // Selections don't carry across lists.
+        function onCurrentListIdChanged() { page.clearSelection(); }
+    }
+
     function focusTaskList() {
         if (tasksView.count === 0) return;
         if (tasksView.currentIndex < 0) tasksView.currentIndex = 0;
@@ -45,6 +103,11 @@ Kirigami.ScrollablePage {
     Shortcut {
         sequence: "Ctrl+D"
         onActivated: {
+            if (page.selectedIds.length > 0) {
+                app.completeTasks(page.selectedIds);
+                page.clearSelection();
+                return;
+            }
             const t = page.shortcutTask();
             if (!t) return;
             if (t.completed) app.uncompleteTask(t.taskId);
@@ -82,8 +145,74 @@ Kirigami.ScrollablePage {
     header: QQC2.ToolBar {
         contentItem: ColumnLayout {
             spacing: Kirigami.Units.smallSpacing
+            // Replaces the add row while tasks are selected; same height so
+            // the list below doesn't jump between Ctrl+clicks.
             RowLayout {
                 Layout.fillWidth: true
+                Layout.preferredHeight: addRow.implicitHeight
+                visible: page.selectedIds.length > 0
+                spacing: 0
+                QQC2.Label {
+                    Layout.leftMargin: Kirigami.Units.smallSpacing
+                    text: i18np("%1 selected", "%1 selected", page.selectedIds.length)
+                    font.bold: true
+                }
+                Item { Layout.fillWidth: true }
+                QQC2.ToolButton {
+                    icon.name: "checkmark"
+                    text: i18n("Complete")
+                    onClicked: { app.completeTasks(page.selectedIds); page.clearSelection(); }
+                }
+                QQC2.ToolButton {
+                    icon.name: "starred-symbolic"
+                    text: i18n("Important")
+                    display: QQC2.AbstractButton.IconOnly
+                    QQC2.ToolTip.text: i18n("Mark as important")
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: app.setTasksImportant(page.selectedIds, true)
+                }
+                QQC2.ToolButton {
+                    id: moveButton
+                    icon.name: "go-jump"
+                    text: i18n("Move to")
+                    display: QQC2.AbstractButton.IconOnly
+                    QQC2.ToolTip.text: text
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: selectionMoveMenu.popup(moveButton, 0, moveButton.height)
+                    MoveToListMenu {
+                        id: selectionMoveMenu
+                        excludedListId: app.currentListVirtual ? "" : app.currentListId
+                        onListChosen: listId => {
+                            app.moveTasks(page.selectedIds, listId);
+                            page.clearSelection();
+                        }
+                    }
+                }
+                QQC2.ToolButton {
+                    icon.name: "edit-delete"
+                    text: i18n("Delete")
+                    display: QQC2.AbstractButton.IconOnly
+                    QQC2.ToolTip.text: text
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: { app.deleteTasks(page.selectedIds); page.clearSelection(); }
+                }
+                QQC2.ToolButton {
+                    icon.name: "dialog-close"
+                    text: i18n("Clear selection")
+                    display: QQC2.AbstractButton.IconOnly
+                    QQC2.ToolTip.text: text
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: page.clearSelection()
+                }
+            }
+            RowLayout {
+                id: addRow
+                Layout.fillWidth: true
+                visible: page.selectedIds.length === 0
                 spacing: Kirigami.Units.smallSpacing
                 QQC2.TextField {
                     id: addField
@@ -158,18 +287,32 @@ Kirigami.ScrollablePage {
         id: tasksView
         model: app.tasksModel
         spacing: 0
-        // Arrow keys move the selection once the list has focus (Down from
-        // the add/search field), Return opens it, Delete asks to delete it.
+        // Arrow keys move the current row once the list has focus (Down from
+        // the add/search field), Return opens it, Space toggles it in the
+        // multi-selection, Ctrl+A selects all, Delete deletes.
         keyNavigationEnabled: true
         currentIndex: -1
         Keys.onReturnPressed: if (currentIndex >= 0) app.openTaskDetails(currentIndex)
         Keys.onEnterPressed: if (currentIndex >= 0) app.openTaskDetails(currentIndex)
+        // No confirmation needed: deletes can be undone for a few seconds.
         Keys.onDeletePressed: {
-            if (currentIndex < 0) return;
-            const t = app.tasksModel.taskAt(currentIndex);
-            deleteTaskDialog.taskId = t.taskId;
-            deleteTaskDialog.taskTitle = t.title;
-            deleteTaskDialog.open();
+            const ids = page.keyboardTargets();
+            if (ids.length === 0) return;
+            app.deleteTasks(ids);
+            page.clearSelection();
+        }
+        Keys.onEscapePressed: event => {
+            if (page.selectedIds.length > 0) page.clearSelection();
+            else event.accepted = false;
+        }
+        Keys.onPressed: event => {
+            if (event.matches(StandardKey.SelectAll)) {
+                page.selectAll();
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Space && currentIndex >= 0) {
+                page.toggleSelected(currentIndex);
+                event.accepted = true;
+            }
         }
 
         section.property: "sectionLabel"
@@ -192,10 +335,14 @@ Kirigami.ScrollablePage {
 
         delegate: TaskDelegate {
             width: ListView.view.width
-            highlighted: ListView.isCurrentItem && tasksView.activeFocus
+            selected: page.isSelected(taskId)
+            highlighted: selected || (ListView.isCurrentItem && tasksView.activeFocus)
             onCheck: completed ? app.uncompleteTask(taskId) : app.completeTask(taskId)
-            onRemove: app.deleteTask(taskId)
+            onRemove: { app.deleteTasks(page.targetsFor(taskId)); page.clearSelection(); }
             onToggleStar: app.toggleImportance(taskId)
+            onToggleSelected: page.toggleSelected(index)
+            onExtendSelection: page.extendSelection(index)
+            onMoveTo: listId => { app.moveTasks(page.targetsFor(taskId), listId); page.clearSelection(); }
             onOpenDetails: {
                 tasksView.currentIndex = index;
                 app.openTaskDetails(index);
@@ -213,31 +360,5 @@ Kirigami.ScrollablePage {
                 : i18n("Type a task above and press Enter.")
             icon.name: searchField.text.length > 0 ? "system-search" : "checkmark"
         }
-    }
-
-    Kirigami.PromptDialog {
-        id: deleteTaskDialog
-        parent: QQC2.Overlay.overlay
-        property string taskId: ""
-        property string taskTitle: ""
-        title: i18n("Delete task?")
-        subtitle: i18n("\"%1\" will be permanently deleted.", taskTitle)
-        standardButtons: Kirigami.PromptDialog.NoButton
-        customFooterActions: [
-            Kirigami.Action {
-                text: i18n("Cancel")
-                icon.name: "dialog-cancel"
-                onTriggered: deleteTaskDialog.close()
-            },
-            Kirigami.Action {
-                text: i18n("Delete")
-                icon.name: "edit-delete"
-                onTriggered: {
-                    app.deleteTask(deleteTaskDialog.taskId);
-                    deleteTaskDialog.close();
-                }
-            }
-        ]
-        onClosed: tasksView.forceActiveFocus()
     }
 }

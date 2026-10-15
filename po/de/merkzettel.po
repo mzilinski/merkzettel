@@ -510,8 +510,39 @@ msgstr "Sortierung entfernen"
 msgid "Quick add task"
 msgstr "Aufgabe schnell hinzufügen"
 
-msgid "Delete task?"
-msgstr "Aufgabe löschen?"
 
-msgid "\"%1\" will be permanently deleted."
-msgstr "„%1“ wird endgültig gelöscht."
+# --- multi-selection, move, undo ---
+msgid "%1 selected"
+msgid_plural "%1 selected"
+msgstr[0] "%1 ausgewählt"
+msgstr[1] "%1 ausgewählt"
+
+msgid "Complete"
+msgstr "Erledigen"
+
+msgid "Move to"
+msgstr "Verschieben nach"
+
+msgid "Clear selection"
+msgstr "Auswahl aufheben"
+
+msgid "Undo"
+msgstr "Rückgängig"
+
+msgid "Task deleted"
+msgid_plural "%1 tasks deleted"
+msgstr[0] "Aufgabe gelöscht"
+msgstr[1] "%1 Aufgaben gelöscht"
+
+msgid "Task moved to \"%2\""
+msgid_plural "%1 tasks moved to \"%2\""
+msgstr[0] "Aufgabe nach „%2“ verschoben"
+msgstr[1] "%1 Aufgaben nach „%2“ verschoben"
+
+msgid "Task completed"
+msgid_plural "%1 tasks completed"
+msgstr[0] "Aufgabe erledigt"
+msgstr[1] "%1 Aufgaben erledigt"
+
+msgid "Tasks with file attachments can't be moved yet."
+msgstr "Aufgaben mit Dateianhängen können noch nicht verschoben werden."
