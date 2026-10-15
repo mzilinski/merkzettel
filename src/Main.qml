@@ -310,14 +310,19 @@ Kirigami.ApplicationWindow {
         }
     }
 
-    Component {
-        id: loginPage
-        LoginPage {}
-    }
-
-    Component {
-        id: tasksPage
-        TasksPage {}
+    // Both pages exist once and are moved onto the page stack as needed.
+    // Pushing instances (instead of Components) avoids Kirigami creating them
+    // without a visual parent, and keeps their state across sign-in changes.
+    Item {
+        visible: false
+        LoginPage {
+            id: loginPage
+            objectName: "loginPage"
+        }
+        TasksPage {
+            id: tasksPage
+            objectName: "tasksPage"
+        }
     }
 
     Component {
@@ -351,13 +356,22 @@ Kirigami.ApplicationWindow {
         }
     }
 
-    Component.onCompleted: {
-        pageStack.push(app.loggedIn ? tasksPage : loginPage);
-    }
+    // Push the first page once the window has finished initialising; pushing
+    // from onCompleted creates the page before Kirigami's column view can
+    // parent it ("not placed in the graphics scene").
+    Component.onCompleted: Qt.callLater(() => {
+        if (root.pageStack.depth === 0) root.pageStack.push(app.loggedIn ? tasksPage : loginPage);
+    })
 
     Connections {
         target: app
         function onLoggedInChanged() {
+            // Only swap when the wanted page isn't already shown; replacing a
+            // page with a fresh copy of itself orphans the old item.
+            const wanted = app.loggedIn ? "tasksPage" : "loginPage";
+            const current = root.pageStack.items.length > 0 ? root.pageStack.items[0] : null;
+            if (!current) return;  // first page not pushed yet, onCompleted handles it
+            if (current.objectName === wanted) return;
             root.pageStack.replace(app.loggedIn ? tasksPage : loginPage);
         }
     }

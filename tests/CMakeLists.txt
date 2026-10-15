@@ -8,3 +8,11 @@ ecm_add_tests(
     tst_tasksmodel.cpp
     LINK_LIBRARIES merkzettel_core Qt6::Test
 )
+
+# QML smoke test: loads the QML from the source tree with the real App.
+ecm_add_test(tst_appdemo.cpp
+    TEST_NAME tst_appdemo
+    LINK_LIBRARIES merkzettel_app Qt6::Test Qt6::Quick Qt6::QuickControls2 KF6::I18nQml
+)
+target_compile_definitions(tst_appdemo PRIVATE MERKZETTEL_QML_DIR="${CMAKE_SOURCE_DIR}/src")
+set_tests_properties(tst_appdemo PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

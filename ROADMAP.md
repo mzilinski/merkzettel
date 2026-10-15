@@ -58,7 +58,7 @@ progress summaries in [REPORT.md](REPORT.md).
 
 - [x] P0 [AUTO] QtTest suite: Graph client (mocked HTTP), add-bar date
   parser, database cache, models, recurrence decoding
-- [ ] P1 [AUTO] QML smoke tests of the core flows in `--demo`, headless
+- [x] P1 [AUTO] QML smoke tests of the core flows in `--demo`, headless
 - [x] P1 [AUTO] Static analysis: clang-tidy, clazy, cppcheck in CI
   (warnings as errors)
 - [x] P1 [AUTO] ASan/UBSan test run in CI

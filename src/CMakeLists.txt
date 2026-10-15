@@ -30,10 +30,27 @@ target_link_libraries(merkzettel_core PUBLIC
     qt6keychain
 )
 
-add_executable(merkzettel
-    main.cpp
+# Controller and tray: everything the QML front end talks to. Separate from
+# main.cpp so the QML smoke test can instantiate it.
+add_library(merkzettel_app STATIC
     app.cpp
     tray/trayicon.cpp
+)
+
+target_link_libraries(merkzettel_app PUBLIC
+    merkzettel_core
+    Qt6::Qml
+    Qt6::Widgets
+    KF6::CoreAddons
+    KF6::GlobalAccel
+    KF6::Notifications
+    KF6::StatusNotifierItem
+    KF6::ConfigGui
+    KF6::ColorScheme
+)
+
+add_executable(merkzettel
+    main.cpp
 )
 
 target_compile_definitions(merkzettel PRIVATE
@@ -41,7 +58,7 @@ target_compile_definitions(merkzettel PRIVATE
 )
 
 target_link_libraries(merkzettel PRIVATE
-    merkzettel_core
+    merkzettel_app
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
