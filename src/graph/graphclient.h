@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QUrlQuery>
 #include <functional>
+#include <QList>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -34,23 +35,44 @@ public:
     void getAbsolute(const QString &absoluteUrl, GraphCallback cb);
 
     // Authenticated GET returning the raw body (e.g. attachments/{id}/$value).
-    void getBytes(const QString &path, GraphBytesCallback cb, int retries = 1);
+    void getBytes(const QString &path, GraphBytesCallback cb, int retries = 1,
+                  int throttleAttempt = 0);
 
     // One chunk of a Graph upload session. uploadUrl is pre-authenticated,
     // so no Authorization header is sent. The callback gets the JSON reply
     // (nextExpectedRanges while incomplete, empty/attachment when done).
     void putUploadChunk(const QUrl &uploadUrl, const QByteArray &chunk,
-                        qint64 offset, qint64 totalSize, GraphCallback cb);
+                        qint64 offset, qint64 totalSize, GraphCallback cb,
+                        int throttleAttempt = 0);
 
 private:
     enum class Method { Get, Post, Patch, Delete };
     void send(Method method, const QString &path, const QUrlQuery &query,
               const QJsonObject &body, GraphCallback cb, int retries = 1);
     void sendUrl(Method method, const QUrl &url, const QJsonObject &body,
-                 GraphCallback cb, int retries = 1);
+                 GraphCallback cb, int retries = 1, int throttleAttempt = 0);
     void handleReply(QNetworkReply *reply, GraphCallback cb,
                      Method method, const QUrl &url,
-                     const QJsonObject &body, int retries);
+                     const QJsonObject &body, int retries, int throttleAttempt);
+
+    // Request scheduling. Microsoft throttles To Do per mailbox (a handful
+    // of concurrent requests per app), so at most kMaxConcurrent requests
+    // run at once and the rest wait in a FIFO. A 429/503 pauses the whole
+    // queue for Retry-After and re-queues the request.
+    struct Job {
+        std::function<QNetworkReply *()> start;
+        std::function<void(QNetworkReply *)> finished;
+    };
+    void dispatch(std::function<QNetworkReply *()> start,
+                  std::function<void(QNetworkReply *)> finished);
+    void pump();
+    // True if the reply was throttled and a retry has been scheduled via
+    // `again`; false if the caller should handle the reply itself.
+    bool retryIfThrottled(QNetworkReply *reply, int throttleAttempt, std::function<void()> again);
+
+    QList<Job> m_queue;
+    int m_inFlight = 0;
+    bool m_paused = false;
 
     AuthManager *m_auth;
     QNetworkAccessManager *m_nam;
