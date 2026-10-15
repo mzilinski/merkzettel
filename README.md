@@ -10,7 +10,7 @@ Native KDE/Kirigami client for **Microsoft To Do**. Written in C++/Qt6, talks Mi
 | ![Task list, light](screenshots/en/tasks-light.png) | ![Task list, dark](screenshots/en/tasks-dark.png) |
 | ![My Day](screenshots/en/myday-light.png) | ![Task details](screenshots/en/details-dark.png) |
 
-> Try it without an Azure account: `merkzettel --demo` runs the UI with built-in demo lists and tasks (no sign-in, no network, all mutations are no-ops). All screenshots are generated from the demo mode with `make screenshots`.
+> Try it without an Azure account: `merkzettel --demo` runs the UI with built-in demo lists and tasks (no sign-in, no network; changes stay local and are discarded on exit). All screenshots are generated from the demo mode with `make screenshots`.
 
 ## Features
 
@@ -84,7 +84,7 @@ cmake --install build --prefix ~/.local
 | Flag | Effect |
 |---|---|
 | `--tray`, `-t` | Start hidden in the system tray (clicking the tray icon shows the window) |
-| `--demo` | Run with built-in demo data — no sign-in, no network, no persistence. Useful for screenshots or to evaluate the UI without setting up Azure |
+| `--demo` | Run with built-in demo data — no sign-in, no network, changes are not stored. Useful to try Merkzettel without an account |
 | `--help` | Show all KAboutData options |
 
 ## Architecture

@@ -6,6 +6,7 @@
 #include <QVariantMap>
 #include <QSet>
 #include <QUrl>
+#include <functional>
 #include <memory>
 
 #include "models/tasksmodel.h"
@@ -199,6 +200,10 @@ private:
     void commitPending();
     QString listDisplayName(const QString &listId) const;
     void loadDemoData();
+    // Demo mode: apply a change to the sample task locally (nothing is sent
+    // to Microsoft or stored), then refresh the views.
+    void applyDemo(const QString &taskId, const std::function<void(Task &)> &change);
+    void demoChanged();
     void switchDemoList(const QString &id);
 
     // True iff one of the synthetic smart-lists is selected.
@@ -261,6 +266,7 @@ private:
     bool m_startMinimized = false;
     bool m_demoMode = false;
     bool m_demoFromCommandLine = false;
+    int m_demoCounter = 0;
     QHash<QString, QList<Task>> m_demoTasks;
     KColorSchemeManager *m_colorSchemeManager = nullptr;
     QString m_colorScheme = QStringLiteral("auto");

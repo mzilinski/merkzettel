@@ -24,8 +24,9 @@ Kopie deiner Listen, damit er sofort startet und auch offline nutzbar bleibt.
 ## Ausprobieren ohne Konto
 
 Jeder Build enthält einen Demo-Modus mit Beispiellisten und -aufgaben. Wähle
-auf der Anmeldeseite **Demo ausprobieren** oder starte `merkzettel --demo`. Es
-wird nichts an Microsoft gesendet und keine Änderung gespeichert.
+auf der Anmeldeseite **Demo ausprobieren** oder starte `merkzettel --demo`. Du
+kannst Aufgaben anlegen, erledigen und bearbeiten; es wird nichts an Microsoft
+gesendet und nichts gespeichert.
 
 ## Auf einen Blick
 

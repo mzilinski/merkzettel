@@ -24,8 +24,8 @@ so it starts instantly and stays usable offline.
 ## Try it without an account
 
 Every build contains a demo mode with sample lists and tasks. Choose
-**Try the demo** on the sign-in page or start `merkzettel --demo`. Nothing is
-sent to Microsoft and no changes are stored.
+**Try the demo** on the sign-in page or start `merkzettel --demo`. You can add, complete
+and edit tasks; nothing is sent to Microsoft and nothing is stored.
 
 ## At a glance
 

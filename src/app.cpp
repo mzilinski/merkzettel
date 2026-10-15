@@ -574,10 +574,6 @@ void App::refresh()
 void App::addTask(const QString &input)
 {
     if (input.trimmed().isEmpty()) return;
-    if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
-        return;
-    }
 
     QString targetList = m_currentListId;
     if (isVirtualList() || targetList.isEmpty()) {
@@ -611,6 +607,21 @@ void App::addTask(const QString &input)
     if (m_currentListId == QLatin1String(TaskListsModel::kVirtualMyDayId)) {
         onCreated = [this](const QString &id) { setInMyDay({id}, true); };
     }
+    if (m_demoMode) {
+        Task t;
+        t.id = QStringLiteral("demo-new-%1").arg(++m_demoCounter);
+        t.listId = targetList;
+        t.title = parsed.first;
+        t.status = QStringLiteral("notStarted");
+        t.importance = important ? QStringLiteral("high") : QStringLiteral("normal");
+        t.dueDate = parsed.second.toUTC();
+        t.createdDate = QDateTime::currentDateTimeUtc();
+        t.lastModified = t.createdDate;
+        m_demoTasks[targetList].append(t);
+        if (onCreated) onCreated(t.id);
+        demoChanged();
+        return;
+    }
     m_todo->addTask(targetList, parsed.first, parsed.second, important, onCreated);
 }
 
@@ -619,7 +630,7 @@ void App::completeTask(const QString &taskId)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [](Task &t) { t.status = QStringLiteral("completed"); });
         return;
     }
     m_todo->setTaskStatus(lid, taskId, QStringLiteral("completed"));
@@ -630,7 +641,7 @@ void App::uncompleteTask(const QString &taskId)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [](Task &t) { t.status = QStringLiteral("notStarted"); });
         return;
     }
     m_todo->setTaskStatus(lid, taskId, QStringLiteral("notStarted"));
@@ -697,7 +708,15 @@ void App::moveTasks(const QStringList &taskIds, const QString &targetListId)
 void App::completeTasks(const QStringList &taskIds)
 {
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        UndoState op;
+        op.kind = UndoState::Complete;
+        for (const auto &id : taskIds) {
+            applyDemo(id, [](Task &t) { t.status = QStringLiteral("completed"); });
+            op.tasks.append({listIdForTask(id), id});
+        }
+        m_undo = op;
+        Q_EMIT undoOffered(i18np("Task completed", "%1 tasks completed", op.tasks.size()),
+                           m_commitTimer->interval());
         return;
     }
     commitPending();
@@ -718,7 +737,10 @@ void App::completeTasks(const QStringList &taskIds)
 void App::setTasksImportant(const QStringList &taskIds, bool important)
 {
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        for (const auto &id : taskIds)
+            applyDemo(id, [important](Task &t) {
+                t.importance = important ? QStringLiteral("high") : QStringLiteral("normal");
+            });
         return;
     }
     for (const auto &id : taskIds) {
@@ -773,8 +795,12 @@ void App::undo()
     } else if (m_undo.kind == UndoState::Complete) {
         // Note: completing a recurring task makes Graph spawn the next
         // occurrence; reopening the original doesn't remove that one.
-        for (const auto &t : std::as_const(m_undo.tasks))
-            m_todo->setTaskStatus(t.first, t.second, QStringLiteral("notStarted"));
+        for (const auto &t : std::as_const(m_undo.tasks)) {
+            if (m_demoMode)
+                applyDemo(t.second, [](Task &task) { task.status = QStringLiteral("notStarted"); });
+            else
+                m_todo->setTaskStatus(t.first, t.second, QStringLiteral("notStarted"));
+        }
     }
     m_undo = {};
 }
@@ -848,7 +874,9 @@ void App::toggleImportance(const QString &taskId)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [](Task &t) {
+            t.importance = t.isImportant() ? QStringLiteral("normal") : QStringLiteral("high");
+        });
         return;
     }
     const int n = m_tasksModel->rowCount();
@@ -870,7 +898,7 @@ void App::setTaskDueDate(const QString &taskId, const QDateTime &due)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [due](Task &t) { t.dueDate = due.toUTC(); });
         return;
     }
     m_todo->setTaskDueDate(lid, taskId, due);
@@ -881,7 +909,7 @@ void App::clearTaskDueDate(const QString &taskId)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [](Task &t) { t.dueDate = QDateTime(); });
         return;
     }
     m_todo->setTaskDueDate(lid, taskId, {});
@@ -892,7 +920,10 @@ void App::setTaskReminder(const QString &taskId, const QDateTime &when)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty() || !when.isValid()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [when](Task &t) {
+            t.reminderDate = when.toUTC();
+            t.hasReminder = true;
+        });
         return;
     }
     m_todo->setTaskReminder(lid, taskId, when);
@@ -903,7 +934,10 @@ void App::clearTaskReminder(const QString &taskId)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [](Task &t) {
+            t.reminderDate = QDateTime();
+            t.hasReminder = false;
+        });
         return;
     }
     m_todo->clearTaskReminder(lid, taskId);
@@ -914,7 +948,7 @@ void App::setTaskTitle(const QString &taskId, const QString &title)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty() || title.trimmed().isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [title](Task &t) { t.title = title; });
         return;
     }
     m_todo->setTaskTitle(lid, taskId, title.trimmed());
@@ -925,7 +959,7 @@ void App::setTaskBody(const QString &taskId, const QString &body)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [body](Task &t) { t.body = body; });
         return;
     }
     m_todo->setTaskBody(lid, taskId, body);
@@ -936,7 +970,11 @@ void App::addChecklistItem(const QString &taskId, const QString &displayName)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty() || displayName.trimmed().isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [displayName](Task &t) {
+            t.checklistItems.append(
+                {QStringLiteral("demo-step-%1").arg(t.checklistItems.size() + 1), displayName,
+                 QDateTime::currentDateTimeUtc(), false});
+        });
         return;
     }
     m_todo->addChecklistItem(lid, taskId, displayName.trimmed());
@@ -947,7 +985,10 @@ void App::toggleChecklistItem(const QString &taskId, const QString &itemId)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [itemId](Task &t) {
+            for (auto &c : t.checklistItems)
+                if (c.id == itemId) c.isChecked = !c.isChecked;
+        });
         return;
     }
     // Look up current state from the open detail task to avoid an extra GET.
@@ -969,7 +1010,10 @@ void App::renameChecklistItem(const QString &taskId, const QString &itemId,
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty() || displayName.trimmed().isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [itemId, displayName](Task &t) {
+            for (auto &c : t.checklistItems)
+                if (c.id == itemId) c.displayName = displayName;
+        });
         return;
     }
     m_todo->renameChecklistItem(lid, taskId, itemId, displayName.trimmed());
@@ -980,7 +1024,9 @@ void App::deleteChecklistItem(const QString &taskId, const QString &itemId)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [itemId](Task &t) {
+            t.checklistItems.removeIf([&itemId](const ChecklistItem &c) { return c.id == itemId; });
+        });
         return;
     }
     m_todo->deleteChecklistItem(lid, taskId, itemId);
@@ -992,7 +1038,7 @@ void App::setTaskRecurrencePattern(const QString &taskId, const QString &pattern
         const QString lid = listIdForTask(taskId);
         if (lid.isEmpty()) return;
         if (m_demoMode) {
-            setStatus(i18n("Demo mode — change not applied"));
+            applyDemo(taskId, [](Task &t) { t.recurrenceJson.clear(); });
             return;
         }
         m_todo->setTaskRecurrence(lid, taskId, {});
@@ -1017,10 +1063,6 @@ void App::setTaskRecurrence(const QString &taskId, const QString &unit, int inte
 {
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty() || interval < 1) return;
-    if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
-        return;
-    }
 
     static const QStringList kWeekdays = {
         QStringLiteral("monday"),   QStringLiteral("tuesday"), QStringLiteral("wednesday"),
@@ -1061,6 +1103,11 @@ void App::setTaskRecurrence(const QString &taskId, const QString &unit, int inte
              {QStringLiteral("startDate"), anchor.toString(Qt::ISODate)},
          }},
     };
+    if (m_demoMode) {
+        const QString json = QString::fromUtf8(QJsonDocument(rec).toJson(QJsonDocument::Compact));
+        applyDemo(taskId, [json](Task &t) { t.recurrenceJson = json; });
+        return;
+    }
     m_todo->setTaskRecurrence(lid, taskId, rec);
 }
 
@@ -1068,14 +1115,14 @@ void App::setTaskCategories(const QString &taskId, const QStringList &categories
 {
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
-    if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
-        return;
-    }
     QStringList cleaned;
     for (const auto &c : categories) {
         const QString name = c.trimmed();
         if (!name.isEmpty() && !cleaned.contains(name, Qt::CaseInsensitive)) cleaned.append(name);
+    }
+    if (m_demoMode) {
+        applyDemo(taskId, [cleaned](Task &t) { t.categories = cleaned; });
+        return;
     }
     m_todo->setTaskCategories(lid, taskId, cleaned);
 }
@@ -1103,15 +1150,19 @@ void App::addLinkedResource(const QString &taskId, const QString &webUrl,
 {
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty() || webUrl.trimmed().isEmpty()) return;
-    if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
-        return;
-    }
     // applicationName defaults to the URL host (more useful than a fixed
     // "Merkzettel" label when listing alongside Outlook-created links).
     const QUrl url(webUrl.trimmed());
     const QString appName = url.host().isEmpty() ? QStringLiteral("Merkzettel") : url.host();
     const QString name = displayName.trimmed().isEmpty() ? webUrl.trimmed() : displayName.trimmed();
+    if (m_demoMode) {
+        applyDemo(taskId, [appName, url = webUrl.trimmed(), name](Task &t) {
+            t.linkedResources.append(
+                {QStringLiteral("demo-link-%1").arg(t.linkedResources.size() + 1), appName, url,
+                 name, QString()});
+        });
+        return;
+    }
     m_todo->addLinkedResource(lid, taskId, appName, webUrl.trimmed(), name);
 }
 
@@ -1120,7 +1171,10 @@ void App::removeLinkedResource(const QString &taskId, const QString &resourceId)
     const QString lid = listIdForTask(taskId);
     if (lid.isEmpty()) return;
     if (m_demoMode) {
-        setStatus(i18n("Demo mode — change not applied"));
+        applyDemo(taskId, [resourceId](Task &t) {
+            t.linkedResources.removeIf(
+                [&resourceId](const LinkedResource &r) { return r.id == resourceId; });
+        });
         return;
     }
     m_todo->removeLinkedResource(lid, taskId, resourceId);
@@ -1568,6 +1622,29 @@ void App::loadDemoData()
         if (t.id == QLatin1String("d6")) t.hasAttachments = true;
 
     setCurrentListId(QStringLiteral("demo-tasks"));
+}
+
+void App::applyDemo(const QString &taskId, const std::function<void(Task &)> &change)
+{
+    for (auto &tasks : m_demoTasks) {
+        for (auto &t : tasks) {
+            if (t.id != taskId) continue;
+            change(t);
+            t.totalChecklistCount = int(t.checklistItems.size());
+            t.openChecklistCount
+                = int(std::count_if(t.checklistItems.cbegin(), t.checklistItems.cend(),
+                                    [](const ChecklistItem &c) { return !c.isChecked; }));
+            t.lastModified = QDateTime::currentDateTimeUtc();
+            demoChanged();
+            return;
+        }
+    }
+}
+
+void App::demoChanged()
+{
+    switchDemoList(m_currentListId);
+    refreshDetailTaskFromModel();
 }
 
 void App::switchDemoList(const QString &id)

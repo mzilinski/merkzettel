@@ -144,6 +144,34 @@ private Q_SLOTS:
         QCOMPARE(m_app->tasksModel()->isInMyDay(task), before);
     }
 
+    void demoChangesApplyLocally()
+    {
+        m_app->setCurrentListId(QStringLiteral("demo-tasks"));
+        const int before = m_app->tasksModel()->rowCount();
+        m_app->addTask(QStringLiteral("Smoke test task tomorrow"));
+        QCOMPARE(m_app->tasksModel()->rowCount(), before + 1);
+        QString id;
+        for (int i = 0; i < m_app->tasksModel()->rowCount(); ++i) {
+            const auto idx = m_app->tasksModel()->index(i, 0);
+            if (m_app->tasksModel()->data(idx, TasksModel::TitleRole).toString()
+                == QLatin1String("Smoke test task")) {
+                id = m_app->tasksModel()->data(idx, TasksModel::IdRole).toString();
+                QCOMPARE(m_app->tasksModel()
+                             ->data(idx, TasksModel::DueDateRole)
+                             .toDateTime()
+                             .toLocalTime()
+                             .date(),
+                         QDate::currentDate().addDays(1));
+            }
+        }
+        QVERIFY(!id.isEmpty());
+        m_app->toggleImportance(id);
+        m_app->completeTask(id);
+        const auto task = m_app->tasksModel()->taskById(id);
+        QVERIFY(task.isImportant());
+        QVERIFY(task.completed());
+    }
+
     void plainNeutralisesMarkup()
     {
         const QString s = App::plain(QStringLiteral("<b>x</b>"));
