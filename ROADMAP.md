@@ -49,7 +49,7 @@ progress summaries in [REPORT.md](REPORT.md).
   permissions, verified with `flatpak-builder`
 - [ ] P0 [AUTO] AUR `PKGBUILD` for `merkzettel` and `merkzettel-git`, `namcap`
   clean
-- [ ] P0 [AUTO] Version in one place (CMake), `CHANGELOG.md` (Keep a
+- [x] P0 [AUTO] Version in one place (CMake), `CHANGELOG.md` (Keep a
   Changelog)
 - [ ] P1 [AUTO] Login page explains permissions and offers the demo mode;
   builds without a client ID explain why sign-in is unavailable
