@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: CC0-1.0
+#
+# Formatting-only commits; use with: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Apply clang-format to all C++ sources
+99b88d5f51a5f5477e7dc185c7084f567add4d40

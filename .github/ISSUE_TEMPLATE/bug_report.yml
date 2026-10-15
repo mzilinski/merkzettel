@@ -1,0 +1,56 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check the [FAQ](https://mzilinski.github.io/merkzettel/docs/en/faq/) and [troubleshooting guide](https://mzilinski.github.io/merkzettel/docs/en/troubleshooting/) first.
+        **Never paste tokens, e-mail addresses or task contents you do not want to make public.**
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. See error ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Merkzettel version
+      description: Shown under "About Merkzettel".
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installed from
+      options: [Flathub, AUR, Built from source, Other]
+    validations:
+      required: true
+  - type: input
+    id: distro
+    attributes:
+      label: Distribution, Plasma version, Wayland or X11
+      placeholder: e.g. Arch Linux, Plasma 6.5, Wayland
+  - type: dropdown
+    id: account
+    attributes:
+      label: Account type
+      options: [Personal Microsoft account, Work or school (Microsoft 365), Not relevant]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Terminal output
+      description: Start `merkzettel` from a terminal and paste relevant lines (remove anything private).
+      render: text

@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Which problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed solution
+      description: How should it work? How does Microsoft To Do do it, if at all?
+  - type: markdown
+    attributes:
+      value: |
+        Note: Merkzettel can only offer what Microsoft Graph exposes. Some To Do features (sharing lists, assigning tasks, My Day sync, list groups) are not available to third-party apps.

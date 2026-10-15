@@ -90,3 +90,14 @@ release. Newest last. Each entry: context, decision, consequences.
 - **Single settings writer:** QML `Settings` (QSettings) is no longer used;
   all persistent UI state goes through KConfig (`merkzettelrc`) so two
   writers cannot clobber each other.
+
+## D10 — Licensing of non-code files and code style
+
+- **Decision:** `REUSE.toml` licenses code, QML, icons and screenshots as
+  GPL-3.0-or-later, metadata/config as CC0-1.0 (required for AppStream) and
+  documentation/website content as CC-BY-SA-4.0.
+- **Code style:** `.clang-format` (WebKit-based, 100 columns) was chosen for
+  the least churn against the existing hand-formatted code and applied once
+  in a formatting-only commit listed in `.git-blame-ignore-revs`.
+- **Code of conduct:** written in the project's own words (not a verbatim
+  third-party text) so no further license file is needed.

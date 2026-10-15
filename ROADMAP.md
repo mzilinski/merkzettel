@@ -68,10 +68,10 @@ progress summaries in [REPORT.md](REPORT.md).
 - [ ] P0 [AUTO] Release workflow: tag → build → Flatpak bundle + source
   tarball (+ checksum, signature-ready) → GitHub release with CHANGELOG
   excerpt
-- [ ] P1 [AUTO] Pre-commit hooks (clang-format, reuse), `.clang-format`
-- [ ] P1 [AUTO] `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`,
+- [x] P1 [AUTO] Pre-commit hooks (clang-format, reuse), `.clang-format`
+- [x] P1 [AUTO] `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`,
   issue/PR templates
-- [ ] P1 [AUTO] REUSE compliance for every file
+- [x] P1 [AUTO] REUSE compliance for every file
 
 ### Translation and accessibility
 

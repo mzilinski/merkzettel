@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: CC0-1.0
+#
+# Install once with:  pre-commit install
+# Run on everything:  pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(LICENSES/|LICENSE$)
+      - id: end-of-file-fixer
+        exclude: ^(LICENSES/|LICENSE$|screenshots/)
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1500]
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: v5.0.2
+    hooks:
+      - id: reuse-lint-file
+  - repo: local
+    hooks:
+      # Uses the clang-format from the system so the style matches the CI.
+      - id: clang-format
+        name: clang-format
+        entry: clang-format -i --style=file
+        language: system
+        types_or: [c++, c]
+      - id: version-consistency
+        name: version consistency (CMake / metainfo / CHANGELOG)
+        entry: python3 scripts/check-version.py
+        language: system
+        pass_filenames: false
+        files: ^(CMakeLists\.txt|CHANGELOG\.md|.*\.metainfo\.xml)$

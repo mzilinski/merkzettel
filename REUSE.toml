@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: CC0-1.0
+#
+# Bulk licensing (REUSE 3.3). Files with their own SPDX header keep it.
+version = 1
+
+[[annotations]]
+path = [
+    "src/**",
+    "tests/**",
+    "scripts/**",
+    "CMakeLists.txt",
+    "po/**",
+    "icons/**",
+    "screenshots/**",
+    "Makefile",
+    "tools/**",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Malte Zilinski <malte@zilinski.eu>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = [
+    "*.desktop",
+    "*.metainfo.xml",
+    "flatpak/**",
+    "flathub/**",
+    "packaging/**",
+    ".github/**",
+    ".gitignore",
+    ".clang-format",
+    ".clang-tidy",
+    ".pre-commit-config.yaml",
+    ".git-blame-ignore-revs",
+    "AUTHORS",
+    "*.md",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Malte Zilinski <malte@zilinski.eu>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["docs/**", "website/**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Malte Zilinski <malte@zilinski.eu>"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
