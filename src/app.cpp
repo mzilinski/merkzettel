@@ -1188,7 +1188,8 @@ namespace {
 QString safeFileName(const QString &name)
 {
     QString base = QFileInfo(name).fileName();
-    base.remove(QRegularExpression(QStringLiteral("[\\x00-\\x1f/\\\\]")));
+    static const QRegularExpression unsafe(QStringLiteral("[\\x00-\\x1f/\\\\]"));
+    base.remove(unsafe);
     if (base.isEmpty() || base == QLatin1String(".") || base == QLatin1String(".."))
         return QStringLiteral("attachment");
     return base;
