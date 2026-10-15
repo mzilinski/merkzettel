@@ -28,7 +28,7 @@ jobs:
       - name: Install tools
         run: |
           pacman -Syu --noconfirm --needed git python reuse appstream desktop-file-utils \
-            gettext clang
+            gettext clang diffutils
       - uses: actions/checkout@v6
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: REUSE
@@ -82,7 +82,7 @@ jobs:
             install: |
               zypper -n install -y \
                 gcc-c++ cmake ninja git make \
-                qt6-base-devel qt6-declarative-devel qt6-networkauth-devel qt6-test-devel \
+                qt6-base-devel qt6-declarative-devel qt6-networkauth-devel qt6-test-devel qt6-sql-sqlite \
                 kf6-kirigami-devel kirigami-addons6-devel \
                 kf6-kcoreaddons-devel kf6-kdbusaddons-devel kf6-kglobalaccel-devel kf6-ki18n-devel \
                 kf6-knotifications-devel kf6-kstatusnotifieritem-devel \
@@ -97,8 +97,8 @@ jobs:
               apt-get update
               apt-get install -y --no-install-recommends build-essential cmake ninja-build git \
                 ca-certificates gettext extra-cmake-modules appstream \
-                qt6-base-dev qt6-declarative-dev qt6-networkauth-dev \
-                libkirigami-dev libkf6kirigamiaddons-dev \
+                qt6-base-dev qt6-declarative-dev qt6-networkauth-dev libqt6sql6-sqlite \
+                libkirigami-dev kirigami-addons-dev \
                 libkf6coreaddons-dev libkf6dbusaddons-dev libkf6globalaccel-dev libkf6i18n-dev \
                 libkf6notifications-dev libkf6statusnotifieritem-dev \
                 libkf6config-dev libkf6configwidgets-dev libkf6colorscheme-dev \

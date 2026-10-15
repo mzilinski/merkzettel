@@ -509,7 +509,7 @@ void App::login()
 
 bool App::signInAvailable() const
 {
-    return !QStringLiteral(MERKZETTEL_CLIENT_ID).isEmpty();
+    return sizeof(MERKZETTEL_CLIENT_ID) > 1; // string literal: "" has size 1
 }
 
 void App::enterDemoMode()
