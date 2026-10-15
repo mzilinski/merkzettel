@@ -115,7 +115,7 @@ private Q_SLOTS:
     void deleteCanBeUndone()
     {
         const QStringList before = ids(m_app->tasksModel());
-        const QString victim = before.first();
+        const QString &victim = before.constFirst();
         m_app->deleteTasks({victim});
         QVERIFY(!ids(m_app->tasksModel()).contains(victim));
         m_app->undo();
@@ -124,7 +124,7 @@ private Q_SLOTS:
 
     void moveIsCommittedAfterTheUndoWindow()
     {
-        const QString task = ids(m_app->tasksModel()).first();
+        const QString task = ids(m_app->tasksModel()).constFirst();
         m_app->moveTasks({task}, QStringLiteral("demo-work"));
         QVERIFY(!ids(m_app->tasksModel()).contains(task));
         QTest::qWait(6500); // undo window
@@ -135,7 +135,7 @@ private Q_SLOTS:
 
     void myDayToggle()
     {
-        const QString task = ids(m_app->tasksModel()).last();
+        const QString task = ids(m_app->tasksModel()).constLast();
         const bool before = m_app->tasksModel()->isInMyDay(task);
         m_app->toggleMyDay({task});
         QCOMPARE(m_app->tasksModel()->isInMyDay(task), !before);

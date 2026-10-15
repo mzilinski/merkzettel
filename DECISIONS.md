@@ -114,3 +114,12 @@ release. Newest last. Each entry: context, decision, consequences.
   changes are not queued; they fail with "No connection to Microsoft" and
   the cached data stays read-only in practice. A persistent offline queue
   is a candidate for v0.4.
+
+## D12 — Multiple accounts deferred to v0.4
+
+- **Context:** The v0.3 roadmap listed multiple accounts. Graph supports it
+  with the existing scopes, but the token store, cache schema (per-account
+  database), list sidebar, tray badge, reminders and every Graph call would
+  need an account dimension.
+- **Decision:** Not part of 0.4.0. It is the first item proposed for v0.4
+  (REPORT.md) so the release can ship with the reviewed single-account code.
