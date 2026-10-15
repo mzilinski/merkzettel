@@ -50,8 +50,11 @@ jobs:
         with:
           path: website/dist
 
+  # Runs once Pages is enabled and the repository variable DEPLOY_PAGES is
+  # "true" (HUMAN_TODO.md, step 2); until then only the build is checked.
   deploy:
     needs: build
+    if: vars.DEPLOY_PAGES == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

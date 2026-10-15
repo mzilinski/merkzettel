@@ -43,14 +43,18 @@ are marked on the page as *"Entwurf – rechtliche Prüfung ausstehend"*.
 
 1. GitHub → *mzilinski/merkzettel* → **Settings → Pages**.
 2. **Source: GitHub Actions**.
-3. **Actions → Website → Run workflow** (or push any change below
+3. **Settings → Secrets and variables → Actions → Variables → New repository
+   variable**: name `DEPLOY_PAGES`, value `true`. Until then the workflow only
+   builds the site and skips the deployment.
+4. **Actions → Website → Run workflow** (or push any change below
    `website/` or `docs/`).
-4. Open <https://mzilinski.github.io/merkzettel/> and
+5. Open <https://mzilinski.github.io/merkzettel/> and
    <https://mzilinski.github.io/merkzettel/docs/>.
-5. Videos are stored with Git LFS. GitHub's free LFS quota is enough for them;
+6. Videos are stored with Git LFS. GitHub's free LFS quota is enough for them;
    if a deploy shows broken videos, check **Settings → Billing → Git LFS**.
 
-Do this before step 8: the AppStream metainfo links to the website, and
+Do this after step 1 (the imprint must be complete when the site goes
+online) and before step 8: the AppStream metainfo links to the website, and
 Flathub's linter checks the links.
 
 ## 3. Azure app registration for public releases

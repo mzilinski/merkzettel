@@ -93,7 +93,7 @@ progress summaries in [REPORT.md](REPORT.md).
 - [x] Subtasks (`checklistItems`)
 - [x] Global quick-add shortcut (KGlobalAccel)
 - [ ] P2 [AUTO] Multiple accounts — possible with the existing scopes, but
-  touches every layer (token store, cache, UI); planned for v0.4 (see
+  touches every layer (token store, cache, UI); planned for v0.5 (see
   REPORT.md)
 
 ## Phase 2 — Documentation
@@ -121,9 +121,9 @@ progress summaries in [REPORT.md](REPORT.md).
 
 ## Phase 4 — Release preparation
 
-- [ ] P0 [AUTO] Clean-room test from a fresh clone following the docs
+- [x] P0 [AUTO] Clean-room test from a fresh clone following the docs
 - [x] P0 [AUTO] `flathub/` submission directory and checklist
-- [ ] P0 [AUTO] `HUMAN_TODO.md`, final `REPORT.md`
+- [x] P0 [AUTO] `HUMAN_TODO.md`, final `REPORT.md`
 
 ## [HUMAN] checklist
 

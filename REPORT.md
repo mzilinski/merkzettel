@@ -129,7 +129,7 @@ Done (see ROADMAP.md for the full list):
 - **Security:** markup/tracking-pixel injection through task data fixed,
   link scheme allow-list, safe attachment file names, private cache files.
 
-Open from Phase 1: multiple accounts (deferred to v0.4, D12); an offline
+Open from Phase 1: multiple accounts (deferred to v0.5, D12); an offline
 change queue (D11); the Kirigami OverlaySheet binding-loop warning (upstream,
 detail view could move to `Kirigami.Dialog`).
 
@@ -168,3 +168,93 @@ detail view could move to `Kirigami.Dialog`).
   `prefers-color-scheme` sources; OpenGraph image, sitemap, `robots.txt`;
   `make site`; `.github/workflows/pages.yml` deploys docs + site with videos
   from Git LFS.
+- Lighthouse (local preview, Chromium 1248): home, use cases, features and
+  privacy pages 96–100 in performance, accessibility, best practices and SEO
+  on mobile and desktop; the MkDocs start page 92–97. No broken internal
+  links in `website/dist`.
+
+## Phase 4 — Release preparation and final report
+
+### Clean-room test
+
+A fresh `git clone` from GitHub (with Git LFS) was built and checked as the
+docs describe:
+
+- `cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build`
+  without a client ID: builds, 6/6 test suites pass; the sign-in page
+  explains the missing app registration and offers the demo, as the
+  installation guide says.
+- `make site` with the pinned tools from `docs/requirements.txt` and
+  `npm ci`: docs (strict) and all 16 website pages build.
+- `make_videos.py --check` passes for all ten videos (narration fits every
+  slot); the full `make videos` ran locally (10 videos, ~25 min).
+- CI on GitHub: the website workflow builds docs and site including the LFS
+  videos; the deployment waits for Pages to be enabled (`DEPLOY_PAGES`).
+- The Flatpak without `--own-name` was built and installed; inside the
+  sandbox the tray icon registers with a StatusNotifierWatcher under its
+  unique bus name.
+
+Deviations found and fixed during Phase 4: Alt+F4 did nothing in the video
+sessions (KWin registers it through kglobalacceld, which has to start first);
+the translation template was out of date after the demo changes (CI lint
+failed once); the Flathub linter rejects `--own-name` for the tray, which
+turned out to be unnecessary.
+
+### Done
+
+All `[AUTO]` items of ROADMAP.md: the product hardening of Phase 1, MkDocs
+documentation with how-tos, screenshots and narrated videos (Phase 2), the
+Astro website with use cases, legal drafts and Pages workflow (Phase 3), the
+`flathub/` submission directory with checklist and `prepare.py`, and
+`HUMAN_TODO.md`.
+
+### Open (needs the maintainer, see HUMAN_TODO.md)
+
+1. Postal address in the imprint and legal review of imprint and privacy
+   policy.
+2. Enable GitHub Pages and set `DEPLOY_PAGES=true`.
+3. Azure app registration for public releases; client ID as CI secret and in
+   the PKGBUILDs.
+4. Optional GPG key; tag and push `v0.4.0` (release workflow publishes the
+   tarball and Flatpak bundle).
+5. AUR account and upload of `merkzettel` / `merkzettel-git`.
+6. Flathub pull request (`flathub/prepare.py`), review, then maintenance.
+7. Confirm the PayPal donation link.
+
+### Risks
+
+- **Microsoft app registration:** without publisher verification, Microsoft
+  shows the app as "unverified"; some organisations block such apps, and
+  users then need admin approval (documented in the work-account how-to).
+  Microsoft could also change consent policies for multi-tenant apps.
+- **My Day** is stored locally because the official Graph API does not expose
+  it; users switching between phone and desktop will notice. The private
+  Substrate API that To Do uses is deliberately not used (stability, terms).
+- **Flathub review** may question `org.kde.kglobalaccel` and KWallet access;
+  the reasons are in the manifest comments and HUMAN_TODO.md.
+- **Legal pages** are drafts; publishing the site before step 1 would put an
+  incomplete imprint online (the deploy gate prevents this by default).
+- **Git LFS quota:** re-rendering the videos often adds ~24 MB per run to LFS
+  storage; the free quota covers many runs, but old objects are not pruned.
+- **Kirigami OverlaySheet** emits a binding-loop warning (upstream); harmless,
+  but noisy in logs.
+- **Single maintainer:** bus factor of one for releases, Flathub and AUR.
+
+### Proposal for v0.5
+
+The brief calls the next version "v0.4"; since this release is 0.4.0, the
+next feature release is 0.5.
+
+1. **Multiple accounts** (D12): account dimension in token store, cache and
+   sidebar; switch without signing out.
+2. **Offline change queue** (D11): record edits made offline and replay them
+   with conflict detection on reconnect.
+3. **Task details as `Kirigami.Dialog`** instead of `OverlaySheet`: fixes the
+   binding-loop warning and improves keyboard focus handling.
+4. **Outlook category colours** via `/me/outlook/masterCategories` (needs the
+   additional `MailboxSettings.Read` scope — to be weighed against the
+   minimal-permission promise).
+5. **Translations:** invite translators (French, Spanish, Dutch) through KDE
+   or Weblate; the gettext setup is ready.
+6. **Publisher verification** of the Azure app to remove the "unverified"
+   label.

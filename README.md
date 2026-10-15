@@ -109,15 +109,10 @@ cmake --install build --prefix ~/.local
 
 ## Roadmap
 
-**v0.3 — planned**
-- Delta sync (`@odata.deltaLink`) instead of full refresh
-- KNotifications for reminders (popup notifications)
-- Subtasks (`checklistItems`)
-- Multiple accounts
-
-**v0.4 — ideas**
-- Drag & drop between lists
-- Plasmoid variant for direct panel access
+0.4.0 is the first public release. Planned for 0.5: multiple accounts, an
+offline change queue, task details as a Kirigami dialog and Outlook category
+colours; ideas beyond that include drag & drop between lists and a plasmoid.
+Details: [ROADMAP.md](ROADMAP.md) and [REPORT.md](REPORT.md).
 
 ## Contributing
 
