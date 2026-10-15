@@ -9,6 +9,8 @@
 #include "models/tasklistsmodel.h"
 #include "util/dateparser.h"
 
+#include <KConfigGroup>
+#include <KSharedConfig>
 #include <KColorSchemeManager>
 #include <KColorSchemeModel>
 #include <KGlobalAccel>
@@ -1136,6 +1138,20 @@ void App::requestPickDateForDue(const QString &taskId)
 void App::toggleWindow() { Q_EMIT windowToggleRequested(); }
 
 void App::activateWindow() { Q_EMIT windowActivateRequested(); }
+
+bool App::shareExplainerSeen() const
+{
+    return KSharedConfig::openConfig()->group(QStringLiteral("Share")).readEntry("explainerSeen", false);
+}
+
+void App::setShareExplainerSeen(bool seen)
+{
+    if (seen == shareExplainerSeen()) return;
+    KConfigGroup group = KSharedConfig::openConfig()->group(QStringLiteral("Share"));
+    group.writeEntry("explainerSeen", seen);
+    group.sync();
+    Q_EMIT shareExplainerSeenChanged();
+}
 
 void App::selectAdjacentList(int delta)
 {

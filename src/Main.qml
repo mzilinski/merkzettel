@@ -1,5 +1,4 @@
 import QtQuick
-import QtCore
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
@@ -16,13 +15,6 @@ Kirigami.ApplicationWindow {
     height: Kirigami.Units.gridUnit * 42
     visible: !app.startMinimized
 
-    // Persists the "share explainer was acknowledged" flag across sessions
-    // so we only show the banner once per user.
-    Settings {
-        id: shareSettings
-        category: "Share"
-        property bool explainerSeen: false
-    }
 
     function shareList(listId, displayName) {
         // Microsoft Graph doesn't expose share-management for To-Do lists.
@@ -30,7 +22,7 @@ Kirigami.ApplicationWindow {
         // familiar share UI; once the invitation is accepted, the list shows
         // up automatically here with isShared = true.
         const url = "https://to-do.office.com/tasks/list/" + listId;
-        if (!shareSettings.explainerSeen) {
+        if (!app.shareExplainerSeen) {
             shareExplainer.contextUrl = url;
             shareExplainer.contextName = displayName;
             shareExplainer.visible = true;
@@ -149,7 +141,7 @@ Kirigami.ApplicationWindow {
                         icon.name: "internet-services"
                         onTriggered: {
                             Qt.openUrlExternally(shareExplainer.contextUrl);
-                            shareSettings.explainerSeen = true;
+                            app.shareExplainerSeen = true;
                             shareExplainer.visible = false;
                         }
                     },
@@ -157,7 +149,7 @@ Kirigami.ApplicationWindow {
                         text: i18n("Don't show again")
                         icon.name: "dialog-ok"
                         onTriggered: {
-                            shareSettings.explainerSeen = true;
+                            app.shareExplainerSeen = true;
                             shareExplainer.visible = false;
                         }
                     }
@@ -330,12 +322,12 @@ Kirigami.ApplicationWindow {
                 "productName": "merkzettel",
                 "componentName": "merkzettel",
                 "shortDescription": i18n("Microsoft To Do client for KDE"),
-                "homepage": "https://invent.kde.org/",
-                "bugAddress": "https://invent.kde.org/",
+                "homepage": "https://mzilinski.github.io/merkzettel/",
+                "bugAddress": "https://github.com/mzilinski/merkzettel/issues",
                 "version": appVersion,
                 "otherText": i18n("Built with Kirigami, KDE Frameworks 6 and Qt 6.\n\nIf Merkzettel is useful to you, consider tipping the author: https://paypal.me/eit31\n\nThe underlying KDE/Qt stack is maintained by KDE e.V.: https://kde.org/community/donations/\n\nDisclaimer: This program is provided \"as is\", without warranty of any kind. The author accepts no liability for any data loss, missed appointments or other damages arising from its use, except in cases of intent or gross negligence, or for damages to life, body or health. See the GPL-3.0 license, sections 15 and 16, for the full disclaimer."),
                 "copyrightStatement": "© 2026 Malte Zilinski",
-                "desktopFileName": "org.kde.merkzettel",
+                "desktopFileName": "io.github.mzilinski.merkzettel",
                 "authors": [{
                     "name": "Malte Zilinski",
                     "task": i18n("Author"),

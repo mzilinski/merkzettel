@@ -98,12 +98,12 @@ jobs:
       - name: Inject client ID
         run: |
           CLIENT_ID="${{ secrets.MERKZETTEL_CLIENT_ID || '00000000-0000-0000-0000-000000000000' }}"
-          sed -i "s/__MERKZETTEL_CLIENT_ID__/${CLIENT_ID}/" flatpak/org.kde.merkzettel.yml
+          sed -i "s/__MERKZETTEL_CLIENT_ID__/${CLIENT_ID}/" flatpak/io.github.mzilinski.merkzettel.yml
 
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: merkzettel.flatpak
-          manifest-path: flatpak/org.kde.merkzettel.yml
+          manifest-path: flatpak/io.github.mzilinski.merkzettel.yml
           cache-key: flatpak-builder-${{ github.sha }}
 
   release:

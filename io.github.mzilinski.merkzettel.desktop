@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Name=Merkzettel
+GenericName=To-Do List
+GenericName[de]=Aufgabenliste
+Comment=Microsoft To Do on the Plasma desktop
+Comment[de]=Microsoft To Do auf dem Plasma-Desktop
+Exec=merkzettel
+Icon=io.github.mzilinski.merkzettel
+Categories=Qt;KDE;Office;ProjectManagement;
+Keywords=todo;tasks;microsoft;outlook;office365;m365;reminder;
+Keywords[de]=todo;aufgaben;microsoft;outlook;office365;m365;erinnerung;
+StartupNotify=true
+StartupWMClass=merkzettel
+X-DBUS-StartupType=Unique
+Actions=StartHidden;
+
+[Desktop Action StartHidden]
+Name=Start in tray
+Name[de]=Im Systemabschnitt starten
+Exec=merkzettel --tray

@@ -1,0 +1,15 @@
+[Global]
+IconName=io.github.mzilinski.merkzettel
+Name=Merkzettel
+Name[de]=Merkzettel
+Comment=Microsoft To Do client
+Comment[de]=Microsoft-To-Do-Client
+DesktopEntry=io.github.mzilinski.merkzettel
+
+[Event/reminder]
+Name=Task reminder
+Name[de]=Aufgabenerinnerung
+Comment=A task's reminder time has come
+Comment[de]=Die Erinnerungszeit einer Aufgabe ist erreicht
+Action=Popup
+Urgency=High

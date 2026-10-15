@@ -40,6 +40,9 @@ class App : public QObject
     Q_PROPERTY(bool startMinimized READ startMinimized CONSTANT)
     // "auto" / "light" / "dark" — drives the color-scheme menu's checked state.
     Q_PROPERTY(QString colorScheme READ colorScheme NOTIFY colorSchemeChanged)
+    // "Sharing happens in the web app" banner acknowledged (merkzettelrc).
+    Q_PROPERTY(bool shareExplainerSeen READ shareExplainerSeen WRITE setShareExplainerSeen
+               NOTIFY shareExplainerSeenChanged)
 
 public:
     explicit App(QObject *parent = nullptr);
@@ -59,6 +62,8 @@ public:
     void setCurrentListId(const QString &id);
     QVariantMap detailTask() const { return m_detailTask; }
     QString colorScheme() const { return m_colorScheme; }
+    bool shareExplainerSeen() const;
+    void setShareExplainerSeen(bool seen);
 
     TasksModel *tasksModel() const;
     TaskListsModel *listsModel() const;
@@ -146,6 +151,7 @@ Q_SIGNALS:
     void windowActivateRequested();
     void pickDateRequested(const QString &taskId, const QDateTime &initial);
     void colorSchemeChanged();
+    void shareExplainerSeenChanged();
     // Global "Quick add" shortcut fired: show the window, focus the add field.
     void quickAddRequested();
     // An undoable operation happened; QML shows message with an Undo action.

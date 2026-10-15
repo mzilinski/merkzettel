@@ -7,6 +7,12 @@
 #include <QLocale>
 #include <QStandardPaths>
 #include <QTranslator>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QSettings>
+#include <KConfigGroup>
+#include <KSharedConfig>
 #include <KAboutData>
 #include <KDBusService>
 #include <KLocalizedContext>
@@ -37,15 +43,52 @@ void installKirigamiTranslator(QApplication *app)
     }
     tr->deleteLater();
 }
+// Builds before the app-ID change ran with organizationName "KDE", which put
+// the cache under ~/.local/share/KDE/merkzettel and ~/.cache/KDE/merkzettel and
+// the share-explainer flag into ~/.config/KDE/merkzettel.conf. Move them once.
+void migrateLegacyLocations()
+{
+    const struct {
+        QStandardPaths::StandardLocation generic;
+        QStandardPaths::StandardLocation app;
+    } dirs[] = {
+        {QStandardPaths::GenericDataLocation, QStandardPaths::AppDataLocation},
+        {QStandardPaths::GenericCacheLocation, QStandardPaths::CacheLocation},
+    };
+    for (const auto &d : dirs) {
+        const QString legacy = QStandardPaths::writableLocation(d.generic)
+                             + QStringLiteral("/KDE/merkzettel");
+        const QString current = QStandardPaths::writableLocation(d.app);
+        if (QFileInfo::exists(legacy) && !QFileInfo::exists(current)) {
+            QDir().mkpath(QFileInfo(current).absolutePath());
+            QDir().rename(legacy, current);
+        }
+    }
+
+    const QString legacyConf = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
+                             + QStringLiteral("/KDE/merkzettel.conf");
+    if (QFileInfo::exists(legacyConf)) {
+        QSettings legacy(legacyConf, QSettings::IniFormat);
+        if (legacy.value(QStringLiteral("Share/explainerSeen")).toBool()) {
+            KConfigGroup group = KSharedConfig::openConfig()->group(QStringLiteral("Share"));
+            group.writeEntry("explainerSeen", true);
+            group.sync();
+        }
+        QFile::remove(legacyConf);
+    }
+}
 } // namespace
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QApplication::setOrganizationName(QStringLiteral("KDE"));
-    QApplication::setOrganizationDomain(QStringLiteral("kde.org"));
+    // No organization name: data goes to ~/.local/share/merkzettel and
+    // ~/.cache/merkzettel. The domain makes KDBusService register
+    // io.github.mzilinski.merkzettel, matching the app ID (D1).
+    QApplication::setOrganizationDomain(QStringLiteral("mzilinski.github.io"));
     QApplication::setApplicationName(QStringLiteral("merkzettel"));
-    QApplication::setWindowIcon(QIcon::fromTheme(QStringLiteral("merkzettel")));
+    QApplication::setWindowIcon(QIcon::fromTheme(QStringLiteral("io.github.mzilinski.merkzettel")));
+    migrateLegacyLocations();
     QApplication::setQuitOnLastWindowClosed(false);
 
     QQuickStyle::setStyle(QStringLiteral("org.kde.desktop"));
@@ -64,7 +107,14 @@ int main(int argc, char *argv[])
                      QStringLiteral(MERKZETTEL_VERSION),
                      i18n("Microsoft To Do client for KDE"),
                      KAboutLicense::GPL_V3);
-    about.setHomepage(QStringLiteral("https://invent.kde.org/"));
+    about.setLicense(KAboutLicense::GPL_V3, KAboutLicense::OrLaterVersions);
+    about.setCopyrightStatement(QStringLiteral("© 2026 Malte Zilinski"));
+    about.setHomepage(QStringLiteral("https://mzilinski.github.io/merkzettel/"));
+    about.setBugAddress(QByteArrayLiteral("https://github.com/mzilinski/merkzettel/issues"));
+    about.setOrganizationDomain(QByteArrayLiteral("mzilinski.github.io"));
+    about.setDesktopFileName(QStringLiteral("io.github.mzilinski.merkzettel"));
+    about.addAuthor(QStringLiteral("Malte Zilinski"), i18n("Author"),
+                    QStringLiteral("malte@zilinski.eu"));
     KAboutData::setApplicationData(about);
 
     QCommandLineParser parser;
@@ -101,7 +151,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(QStringLiteral("appVersion"),
                                              QStringLiteral(MERKZETTEL_VERSION));
 
-    engine.loadFromModule(QStringLiteral("org.kde.merkzettel"), QStringLiteral("Main"));
+    engine.loadFromModule(QStringLiteral("io.github.mzilinski.merkzettel"), QStringLiteral("Main"));
 
     if (engine.rootObjects().isEmpty()) {
         return 1;

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(merkzettel VERSION 0.3.1 LANGUAGES CXX)
+project(merkzettel VERSION 0.4.0 LANGUAGES CXX)
 
 set(QT_MIN_VERSION 6.6.0)
 set(KF_MIN_VERSION 6.0.0)
@@ -64,8 +64,10 @@ if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
-install(FILES org.kde.merkzettel.desktop DESTINATION ${KDE_INSTALL_APPDIR})
-install(FILES org.kde.merkzettel.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
-install(FILES icons/merkzettel.svg DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps)
+set(MERKZETTEL_APP_ID io.github.mzilinski.merkzettel)
+install(FILES ${MERKZETTEL_APP_ID}.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES ${MERKZETTEL_APP_ID}.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
+install(FILES icons/${MERKZETTEL_APP_ID}.svg DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps)
+install(FILES src/merkzettel.notifyrc DESTINATION ${KDE_INSTALL_KNOTIFYRCDIR})
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

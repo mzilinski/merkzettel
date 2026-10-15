@@ -40,12 +40,12 @@ progress summaries in [REPORT.md](REPORT.md).
 
 ### Packaging and identity
 
-- [ ] P0 [AUTO] App ID `io.github.mzilinski.merkzettel` (desktop file,
+- [x] P0 [AUTO] App ID `io.github.mzilinski.merkzettel` (desktop file,
   metainfo, icons, Flatpak, D-Bus, KAboutData) with data migration
-- [ ] P0 [AUTO] Complete AppStream metainfo (screenshots with captions,
+- [x] P0 [AUTO] Complete AppStream metainfo (screenshots with captions,
   releases, content rating, branding colours, URLs);
   `appstreamcli validate --strict` and `desktop-file-validate` clean
-- [ ] P0 [AUTO] Flatpak manifest against `org.kde.Platform` 6.x, minimal
+- [x] P0 [AUTO] Flatpak manifest against `org.kde.Platform` 6.x, minimal
   permissions, verified with `flatpak-builder`
 - [ ] P0 [AUTO] AUR `PKGBUILD` for `merkzettel` and `merkzettel-git`, `namcap`
   clean

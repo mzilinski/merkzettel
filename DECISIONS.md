@@ -70,3 +70,23 @@ release. Newest last. Each entry: context, decision, consequences.
   Kirigami 6; Ubuntu 26.04 LTS does.
 - **Decision:** CI builds on `ubuntu:26.04` (container) in addition to Arch,
   Fedora and openSUSE.
+
+## D8 — First public release is 0.4.0
+
+- **Context:** `0.3.1` was set in CMake but never tagged or released; a lot
+  of user-visible functionality was added since.
+- **Decision:** The first tagged, public release is `0.4.0`. `scripts/release.sh`
+  bumps CMake version, metainfo release entry and `CHANGELOG.md` together.
+
+## D9 — Flatpak runtime and keychain access
+
+- **Decision:** `org.kde.Platform` 6.11 (newest on Flathub at the time).
+  QtKeychain is built with libsecret so the refresh token goes through the
+  Secret Service (`org.freedesktop.secrets`, provided by KWallet 6/ksecretd
+  and GNOME Keyring); `org.kde.kwalletd6` stays for Plasma setups without
+  the Secret Service interface. Notifications, opening URLs/files and file
+  dialogs use portals and need no extra permission. KGlobalAccel has no
+  portal, hence `--talk-name=org.kde.kglobalaccel`.
+- **Single settings writer:** QML `Settings` (QSettings) is no longer used;
+  all persistent UI state goes through KConfig (`merkzettelrc`) so two
+  writers cannot clobber each other.

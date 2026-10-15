@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+SPDX-License-Identifier: CC0-1.0
+-->
+<component type="desktop-application">
+  <id>io.github.mzilinski.merkzettel</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Merkzettel</name>
+  <summary>Microsoft To Do on the Plasma desktop</summary>
+  <summary xml:lang="de">Microsoft To Do auf dem Plasma-Desktop</summary>
+
+  <developer id="io.github.mzilinski">
+    <name>Malte Zilinski</name>
+  </developer>
+
+  <description>
+    <p>
+      Merkzettel is a native client for Microsoft To Do, built with Qt and KDE's Kirigami.
+      It talks to Microsoft Graph directly — no web view, no browser tab — and keeps a local
+      copy of your lists so it starts instantly and stays usable offline.
+    </p>
+    <p xml:lang="de">
+      Merkzettel ist ein nativer Client für Microsoft To Do, gebaut mit Qt und KDEs Kirigami.
+      Er spricht direkt mit Microsoft Graph – ohne Web-Ansicht, ohne Browser-Tab – und hält eine
+      lokale Kopie deiner Listen, damit er sofort startet und auch offline nutzbar bleibt.
+    </p>
+    <p>Features:</p>
+    <p xml:lang="de">Funktionen:</p>
+    <ul>
+      <li>My Day, Important, Planned, Completed and All smart lists</li>
+      <li xml:lang="de">Smart-Listen „Mein Tag“, „Wichtig“, „Geplant“, „Erledigt“ und „Alle“</li>
+      <li>Due dates, reminders with desktop notifications, recurring tasks and steps</li>
+      <li xml:lang="de">Fälligkeiten, Erinnerungen mit Desktop-Benachrichtigungen, Wiederholungen und Schritte</li>
+      <li>Categories, file attachments and links on tasks</li>
+      <li xml:lang="de">Kategorien, Dateianhänge und Links an Aufgaben</li>
+      <li>Quick add from any application with a global shortcut and the system tray</li>
+      <li xml:lang="de">Schnellerfassung aus jeder Anwendung per globalem Kurzbefehl und Systemabschnitt</li>
+      <li>Natural date input such as "Pay rent tomorrow", sorting, search and multi-selection</li>
+      <li xml:lang="de">Natürliche Datumseingabe wie „Miete zahlen morgen“, Sortierung, Suche und Mehrfachauswahl</li>
+      <li>Works with personal Microsoft accounts and Microsoft 365 work or school accounts</li>
+      <li xml:lang="de">Funktioniert mit privaten Microsoft-Konten und Microsoft-365-Konten von Arbeit oder Schule</li>
+    </ul>
+    <p>
+      Your data stays between your computer and Microsoft: no telemetry, no third-party services.
+      The sign-in token is kept in the system keychain.
+    </p>
+    <p xml:lang="de">
+      Deine Daten bleiben zwischen deinem Computer und Microsoft: keine Telemetrie, keine Drittanbieter.
+      Das Anmelde-Token liegt im Schlüsselbund des Systems.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.mzilinski.merkzettel.desktop</launchable>
+
+  <provides>
+    <binary>merkzettel</binary>
+  </provides>
+
+  <categories>
+    <category>Office</category>
+    <category>ProjectManagement</category>
+  </categories>
+
+  <keywords>
+    <keyword>todo</keyword>
+    <keyword>tasks</keyword>
+    <keyword>Microsoft To Do</keyword>
+    <keyword>Microsoft 365</keyword>
+    <keyword>Outlook</keyword>
+    <keyword xml:lang="de">Aufgaben</keyword>
+  </keywords>
+
+  <url type="homepage">https://mzilinski.github.io/merkzettel/</url>
+  <url type="bugtracker">https://github.com/mzilinski/merkzettel/issues</url>
+  <url type="help">https://mzilinski.github.io/merkzettel/docs/</url>
+  <url type="faq">https://mzilinski.github.io/merkzettel/docs/en/faq/</url>
+  <url type="donation">https://paypal.me/eit31</url>
+  <url type="translate">https://mzilinski.github.io/merkzettel/docs/en/translating/</url>
+  <url type="contribute">https://github.com/mzilinski/merkzettel/blob/main/CONTRIBUTING.md</url>
+  <url type="vcs-browser">https://github.com/mzilinski/merkzettel</url>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#93c5fd</color>
+    <color type="primary" scheme_preference="dark">#1e3a8a</color>
+  </branding>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Tasks grouped by due date</caption>
+      <caption xml:lang="de">Aufgaben nach Fälligkeit gruppiert</caption>
+      <image>https://raw.githubusercontent.com/mzilinski/merkzettel/main/screenshots/en/tasks-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Dark mode follows the Plasma colour scheme</caption>
+      <caption xml:lang="de">Der dunkle Modus folgt dem Plasma-Farbschema</caption>
+      <image>https://raw.githubusercontent.com/mzilinski/merkzettel/main/screenshots/en/tasks-dark.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Plan the day with My Day</caption>
+      <caption xml:lang="de">Den Tag mit „Mein Tag“ planen</caption>
+      <image>https://raw.githubusercontent.com/mzilinski/merkzettel/main/screenshots/en/myday-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Task details with categories, recurrence and attachments</caption>
+      <caption xml:lang="de">Aufgabendetails mit Kategorien, Wiederholung und Anhängen</caption>
+      <image>https://raw.githubusercontent.com/mzilinski/merkzettel/main/screenshots/en/details-light.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1"/>
+
+  <requires>
+    <display_length compare="ge">360</display_length>
+    <internet>first-run</internet>
+  </requires>
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </supports>
+
+  <releases>
+    <release version="0.4.0" date="2026-10-15">
+      <description>
+        <p>First public release.</p>
+        <ul>
+          <li>My Day, Important, Planned and Completed smart lists</li>
+          <li>Per-list sorting, multi-selection, moving tasks between lists and undo</li>
+          <li>Categories, custom recurrence and file attachments</li>
+          <li>Keyboard shortcuts and a global quick-add shortcut</li>
+          <li>Works offline with cached data and handles Microsoft throttling</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+</component>

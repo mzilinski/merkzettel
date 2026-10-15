@@ -1,0 +1,71 @@
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: CC0-1.0
+#
+# Development manifest: builds the working tree. CI injects the client ID
+# (secret MERKZETTEL_CLIENT_ID) for __MERKZETTEL_CLIENT_ID__. The manifest
+# submitted to Flathub lives in flathub/ and builds a release tarball.
+id: io.github.mzilinski.merkzettel
+runtime: org.kde.Platform
+runtime-version: '6.11'
+sdk: org.kde.Sdk
+command: merkzettel
+
+finish-args:
+  # Microsoft sign-in and Graph API; also the OAuth loopback redirect.
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Tray icon (KStatusNotifierItem): talk to the host, own the item name.
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --own-name=org.kde.StatusNotifierItem-2-1
+  # Global "quick add" shortcut (KGlobalAccel has no portal).
+  - --talk-name=org.kde.kglobalaccel
+  # Refresh token in the system keychain: Secret Service (GNOME Keyring,
+  # KWallet 6 / ksecretd) and KWallet's own interface on older Plasma.
+  - --talk-name=org.freedesktop.secrets
+  - --talk-name=org.kde.kwalletd6
+  # Plasma colour scheme and fonts.
+  - --filesystem=xdg-config/kdeglobals:ro
+
+cleanup:
+  - /include
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /share/man
+  - '*.la'
+  - '*.a'
+
+modules:
+  - name: qtkeychain
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_WITH_QT6=ON
+      - -DBUILD_TRANSLATIONS=OFF
+      - -DBUILD_TEST_APPLICATION=OFF
+    sources:
+      - type: archive
+        url: https://github.com/frankosterfeld/qtkeychain/archive/refs/tags/0.16.0.tar.gz
+        sha256: 3be26ec4ae30eecf0c2ff7572ba83799791b157c76e15a05ef35f23dc25e4054
+        x-checker-data:
+          type: anitya
+          project-id: 4138
+          url-template: https://github.com/frankosterfeld/qtkeychain/archive/refs/tags/$version.tar.gz
+
+  - name: merkzettel
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_TESTING=OFF
+      - -DMERKZETTEL_CLIENT_ID=__MERKZETTEL_CLIENT_ID__
+      - -DMERKZETTEL_TENANT=common
+    sources:
+      - type: dir
+        path: ..
+        skip:
+          - build
+          - .flatpak-builder
+          - website

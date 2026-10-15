@@ -56,7 +56,7 @@ target_link_libraries(merkzettel PRIVATE
 )
 
 ecm_add_qml_module(merkzettel
-    URI org.kde.merkzettel
+    URI io.github.mzilinski.merkzettel
     VERSION 1.0
     QML_FILES
         Main.qml
