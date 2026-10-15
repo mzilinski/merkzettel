@@ -17,9 +17,9 @@ finish-args:
   - --socket=wayland
   - --socket=fallback-x11
   - --device=dri
-  # Tray icon (KStatusNotifierItem): talk to the host, own the item name.
+  # Tray icon: KStatusNotifierItem registers its unique bus name with the
+  # watcher, so no --own-name is needed.
   - --talk-name=org.kde.StatusNotifierWatcher
-  - --own-name=org.kde.StatusNotifierItem-2-1
   # Global "quick add" shortcut (KGlobalAccel has no portal).
   - --talk-name=org.kde.kglobalaccel
   # Refresh token in the system keychain: Secret Service (GNOME Keyring,
