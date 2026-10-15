@@ -171,9 +171,16 @@ Kirigami.ApplicationWindow {
                 onTriggered: app.refresh()
             },
             Kirigami.Action {
+                text: i18n("Leave demo")
+                icon.name: "media-playback-stop"
+                visible: app.canLeaveDemo
+                onTriggered: app.leaveDemoMode()
+            },
+            Kirigami.Action {
                 text: i18n("Sign out")
                 icon.name: "system-log-out"
                 enabled: app.loggedIn
+                visible: !app.demoMode
                 onTriggered: app.logout()
             },
             Kirigami.Action { separator: true },

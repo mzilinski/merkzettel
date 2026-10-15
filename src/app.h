@@ -38,6 +38,12 @@ class App : public QObject
     Q_PROPERTY(TaskListsModel *listsModel READ listsModel CONSTANT)
     Q_PROPERTY(QVariantMap detailTask READ detailTask NOTIFY detailTaskChanged)
     Q_PROPERTY(bool startMinimized READ startMinimized CONSTANT)
+    // Demo data instead of an account (--demo, or started from the login page).
+    Q_PROPERTY(bool demoMode READ demoMode NOTIFY demoModeChanged)
+    // False for builds without an Azure client ID: sign-in cannot work.
+    Q_PROPERTY(bool signInAvailable READ signInAvailable CONSTANT)
+    // Demo entered from the login page can be left again (not --demo).
+    Q_PROPERTY(bool canLeaveDemo READ canLeaveDemo NOTIFY demoModeChanged)
     // "auto" / "light" / "dark" — drives the color-scheme menu's checked state.
     Q_PROPERTY(QString colorScheme READ colorScheme NOTIFY colorSchemeChanged)
     // "Sharing happens in the web app" banner acknowledged (merkzettelrc).
@@ -51,8 +57,11 @@ public:
     void start();
     void setStartMinimized(bool minimized) { m_startMinimized = minimized; }
     bool startMinimized() const { return m_startMinimized; }
-    void setDemoMode(bool on) { m_demoMode = on; }
+    // --demo on the command line: no account handling at all this session.
+    void setDemoMode(bool on) { m_demoMode = on; m_demoFromCommandLine = on; }
     bool demoMode() const { return m_demoMode; }
+    bool signInAvailable() const;
+    bool canLeaveDemo() const { return m_demoMode && !m_demoFromCommandLine; }
 
     bool loggedIn() const;
     bool online() const { return m_online; }
@@ -70,6 +79,9 @@ public:
 
 public Q_SLOTS:
     void login();
+    // Try the app with demo data from the login page, and go back.
+    void enterDemoMode();
+    void leaveDemoMode();
     void logout();
     void refresh();
     void addTask(const QString &input);
@@ -141,6 +153,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void loggedInChanged();
+    void demoModeChanged();
     void onlineChanged();
     void statusChanged();
     void currentListIdChanged();
@@ -233,6 +246,7 @@ private:
     QVariantMap m_detailTask;
     bool m_startMinimized = false;
     bool m_demoMode = false;
+    bool m_demoFromCommandLine = false;
     QHash<QString, QList<Task>> m_demoTasks;
     KColorSchemeManager *m_colorSchemeManager = nullptr;
     QString m_colorScheme = QStringLiteral("auto");

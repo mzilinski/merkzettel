@@ -485,6 +485,38 @@ void App::refreshDetailTaskFromModel()
 }
 
 void App::login() { m_auth->login(); }
+
+bool App::signInAvailable() const
+{
+    return !QStringLiteral(MERKZETTEL_CLIENT_ID).isEmpty();
+}
+
+void App::enterDemoMode()
+{
+    if (m_demoMode || m_auth->hasSession()) return;
+    m_demoMode = true;
+    m_currentListId.clear();
+    loadDemoData();
+    reloadMyDay();
+    Q_EMIT demoModeChanged();
+    Q_EMIT loggedInChanged();
+    setStatus(i18n("Demo mode — no real data, all changes are local"));
+}
+
+void App::leaveDemoMode()
+{
+    if (!canLeaveDemo()) return;
+    m_demoMode = false;
+    m_demoTasks.clear();
+    m_demoMyDay.clear();
+    m_attachments.clear();
+    m_currentListId.clear();
+    m_tasksModel->clear();
+    m_listsModel->clear();
+    Q_EMIT currentListIdChanged();
+    Q_EMIT demoModeChanged();
+    Q_EMIT loggedInChanged();
+}
 void App::logout() { m_auth->logout(); }
 
 void App::refresh()

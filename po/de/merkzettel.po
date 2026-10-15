@@ -750,3 +750,34 @@ msgstr "Deine Microsoft-Anmeldung ist abgelaufen oder wurde widerrufen. Bitte me
 
 msgid "Not signed in"
 msgstr "Nicht angemeldet"
+
+# --- login page / demo ---
+msgid "This build has no Microsoft app registration, so signing in is not possible. Rebuild with your own client ID or try the demo."
+msgstr "Diesem Build fehlt eine Microsoft-App-Registrierung, daher ist keine Anmeldung möglich. Baue ihn mit deiner eigenen Client-ID neu oder probiere die Demo aus."
+
+msgid "Setup guide"
+msgstr "Einrichtungsanleitung"
+
+msgid "Try the demo"
+msgstr "Demo ausprobieren"
+
+msgid "Explore Merkzettel with sample tasks. Nothing is sent to Microsoft."
+msgstr "Lerne Merkzettel mit Beispielaufgaben kennen. Es wird nichts an Microsoft gesendet."
+
+msgid "What Merkzettel asks Microsoft for"
+msgstr "Was Merkzettel bei Microsoft anfragt"
+
+msgid "Read and change your tasks and lists in Microsoft To Do (Tasks.ReadWrite)"
+msgstr "Deine Aufgaben und Listen in Microsoft To Do lesen und ändern (Tasks.ReadWrite)"
+
+msgid "Your name and sign-in address to identify the account (User.Read, profile)"
+msgstr "Deinen Namen und deine Anmeldeadresse, um das Konto zu erkennen (User.Read, profile)"
+
+msgid "Stay signed in between sessions; the token is kept in your system keychain (offline_access)"
+msgstr "Angemeldet bleiben; das Token liegt im Schlüsselbund deines Systems (offline_access)"
+
+msgid "Merkzettel only talks to Microsoft. There is no telemetry and no other server involved."
+msgstr "Merkzettel spricht nur mit Microsoft. Es gibt keine Telemetrie und keinen weiteren Server."
+
+msgid "Leave demo"
+msgstr "Demo beenden"
