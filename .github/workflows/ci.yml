@@ -1,0 +1,180 @@
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: CC0-1.0
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["website/**", "docs/**", "*.md"]
+  pull_request:
+    paths-ignore: ["website/**", "docs/**", "*.md"]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Builds without the secret (forks) still compile and test; sign-in is then
+  # disabled in the binary.
+  CLIENT_ID: ${{ secrets.MERKZETTEL_CLIENT_ID }}
+
+jobs:
+  lint:
+    name: Lint (REUSE, AppStream, desktop file, translations, format)
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Install tools
+        run: |
+          pacman -Syu --noconfirm --needed git python reuse appstream desktop-file-utils \
+            gettext clang
+      - uses: actions/checkout@v6
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: REUSE
+        run: reuse lint
+      - name: AppStream metainfo
+        run: appstreamcli validate --strict --no-net io.github.mzilinski.merkzettel.metainfo.xml
+      - name: Desktop file
+        run: desktop-file-validate io.github.mzilinski.merkzettel.desktop
+      - name: Version consistency
+        run: python3 scripts/check-version.py
+      - name: Translations complete and template current
+        run: scripts/update-translations.sh --check
+      - name: clang-format
+        run: |
+          git ls-files '*.cpp' '*.h' | xargs clang-format --style=file --dry-run --Werror
+
+  build:
+    name: Build & test (${{ matrix.distro }})
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: arch
+            container: archlinux:latest
+            werror: "ON"
+            install: |
+              pacman -Syu --noconfirm --needed base-devel cmake ninja git \
+                qt6-base qt6-declarative qt6-networkauth \
+                kirigami kirigami-addons kcoreaddons kdbusaddons kglobalaccel ki18n \
+                knotifications kstatusnotifieritem kconfig kconfigwidgets kcolorscheme \
+                qtkeychain-qt6 extra-cmake-modules gettext appstream
+
+          - distro: fedora
+            container: fedora:latest
+            werror: "OFF"
+            install: |
+              dnf install -y --setopt=install_weak_deps=False \
+                gcc-c++ cmake ninja-build git make findutils \
+                qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtnetworkauth-devel \
+                kf6-kirigami-devel kf6-kirigami-addons-devel \
+                kf6-kcoreaddons-devel kf6-kdbusaddons-devel kf6-kglobalaccel-devel kf6-ki18n-devel \
+                kf6-knotifications-devel kf6-kstatusnotifieritem-devel \
+                kf6-kconfig-devel kf6-kconfigwidgets-devel kf6-kcolorscheme-devel \
+                qtkeychain-qt6-devel extra-cmake-modules gettext libappstream-glib
+
+          - distro: opensuse
+            container: opensuse/tumbleweed
+            werror: "OFF"
+            install: |
+              zypper -n install -y \
+                gcc-c++ cmake ninja git make \
+                qt6-base-devel qt6-declarative-devel qt6-networkauth-devel qt6-test-devel \
+                kf6-kirigami-devel kirigami-addons6-devel \
+                kf6-kcoreaddons-devel kf6-kdbusaddons-devel kf6-kglobalaccel-devel kf6-ki18n-devel \
+                kf6-knotifications-devel kf6-kstatusnotifieritem-devel \
+                kf6-kconfig-devel kf6-kconfigwidgets-devel kf6-kcolorscheme-devel \
+                qtkeychain-qt6-devel kf6-extra-cmake-modules gettext-tools AppStream
+
+          - distro: ubuntu-26.04
+            container: ubuntu:26.04
+            werror: "OFF"
+            install: |
+              export DEBIAN_FRONTEND=noninteractive
+              apt-get update
+              apt-get install -y --no-install-recommends build-essential cmake ninja-build git \
+                ca-certificates gettext extra-cmake-modules appstream \
+                qt6-base-dev qt6-declarative-dev qt6-networkauth-dev \
+                libkirigami-dev libkf6kirigamiaddons-dev \
+                libkf6coreaddons-dev libkf6dbusaddons-dev libkf6globalaccel-dev libkf6i18n-dev \
+                libkf6notifications-dev libkf6statusnotifieritem-dev \
+                libkf6config-dev libkf6configwidgets-dev libkf6colorscheme-dev \
+                qtkeychain-qt6-dev
+    steps:
+      - name: Install build dependencies
+        run: ${{ matrix.install }}
+      - uses: actions/checkout@v6
+      - name: Configure
+        run: |
+          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DMERKZETTEL_CLIENT_ID="$CLIENT_ID" -DMERKZETTEL_WERROR=${{ matrix.werror }}
+      - name: Build
+        run: cmake --build build
+      - name: Test
+        run: QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
+      - name: Install (staging)
+        run: DESTDIR="$PWD/stage" cmake --install build
+
+  static-analysis:
+    name: Static analysis (clang-tidy, clazy, cppcheck)
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Install dependencies
+        run: |
+          pacman -Syu --noconfirm --needed base-devel cmake ninja git python \
+            qt6-base qt6-declarative qt6-networkauth \
+            kirigami kirigami-addons kcoreaddons kdbusaddons kglobalaccel ki18n \
+            knotifications kstatusnotifieritem kconfig kconfigwidgets kcolorscheme \
+            qtkeychain-qt6 extra-cmake-modules gettext clang clazy cppcheck
+      - uses: actions/checkout@v6
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Configure and build
+        run: |
+          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake --build build
+      - name: Analyse
+        run: scripts/static-analysis.sh build
+
+  sanitizers:
+    name: Tests with ASan + UBSan
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Install dependencies
+        run: |
+          pacman -Syu --noconfirm --needed base-devel cmake ninja git \
+            qt6-base qt6-declarative qt6-networkauth \
+            kirigami kirigami-addons kcoreaddons kdbusaddons kglobalaccel ki18n \
+            knotifications kstatusnotifieritem kconfig kconfigwidgets kcolorscheme \
+            qtkeychain-qt6 extra-cmake-modules gettext
+      - uses: actions/checkout@v6
+      - name: Build
+        run: |
+          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Debug -DMERKZETTEL_SANITIZERS=ON
+          cmake --build build
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: ctest --test-dir build --output-on-failure
+
+  flatpak:
+    name: Flatpak
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.11
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v6
+      - name: Inject client ID
+        run: sed -i "s/__MERKZETTEL_CLIENT_ID__/${CLIENT_ID}/" flatpak/io.github.mzilinski.merkzettel.yml
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: merkzettel.flatpak
+          manifest-path: flatpak/io.github.mzilinski.merkzettel.yml
+          cache-key: flatpak-builder-${{ github.sha }}

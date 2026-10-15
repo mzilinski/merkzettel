@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: 2026 Malte Zilinski <malte@zilinski.eu>
+# SPDX-License-Identifier: CC0-1.0
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+env:
+  CLIENT_ID: ${{ secrets.MERKZETTEL_CLIENT_ID }}
+
+jobs:
+  source:
+    name: Source tarball
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check version
+        run: python3 scripts/check-version.py --tag "${GITHUB_REF_NAME}"
+      - name: Create tarball and checksum
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          git archive --format=tar --prefix="merkzettel-${VERSION}/" "${GITHUB_REF_NAME}" \
+            | xz -9 > "dist/merkzettel-${VERSION}.tar.xz"
+          (cd dist && sha256sum "merkzettel-${VERSION}.tar.xz" > "merkzettel-${VERSION}.tar.xz.sha256")
+      - name: Release notes from CHANGELOG
+        run: python3 scripts/changelog-excerpt.py "${GITHUB_REF_NAME}" > dist/release-notes.md
+      - uses: actions/upload-artifact@v7
+        with:
+          name: source
+          path: dist/
+
+  flatpak:
+    name: Flatpak bundle
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.11
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v6
+      - name: Inject client ID
+        run: sed -i "s/__MERKZETTEL_CLIENT_ID__/${CLIENT_ID}/" flatpak/io.github.mzilinski.merkzettel.yml
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: merkzettel-${{ github.ref_name }}.flatpak
+          manifest-path: flatpak/io.github.mzilinski.merkzettel.yml
+          cache-key: flatpak-release-${{ github.sha }}
+
+  publish:
+    name: Publish GitHub release
+    needs: [source, flatpak]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+      - name: Collect files
+        run: |
+          mkdir -p release
+          cp artifacts/source/merkzettel-*.tar.xz* release/
+          find artifacts -name '*.flatpak' -exec cp {} release/ \;
+          (cd release && for f in *.flatpak; do sha256sum "$f" > "$f.sha256"; done)
+          ls -la release
+      - uses: softprops/action-gh-release@v2
+        with:
+          body_path: artifacts/source/release-notes.md
+          files: release/*
+          prerelease: ${{ contains(github.ref_name, '-') }}
