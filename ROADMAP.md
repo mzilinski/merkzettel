@@ -59,15 +59,16 @@ progress summaries in [REPORT.md](REPORT.md).
 - [x] P0 [AUTO] QtTest suite: Graph client (mocked HTTP), add-bar date
   parser, database cache, models, recurrence decoding
 - [ ] P1 [AUTO] QML smoke tests of the core flows in `--demo`, headless
-- [ ] P1 [AUTO] Static analysis: clang-tidy, clazy, cppcheck in CI
+- [x] P1 [AUTO] Static analysis: clang-tidy, clazy, cppcheck in CI
   (warnings as errors)
-- [ ] P1 [AUTO] ASan/UBSan test run in CI
-- [ ] P0 [AUTO] CI: Arch, Fedora, openSUSE, Ubuntu 26.04 LTS, Flatpak,
+- [x] P1 [AUTO] ASan/UBSan test run in CI
+- [x] P0 [AUTO] CI: Arch, Fedora, openSUSE, Ubuntu 26.04 LTS, Flatpak,
   tests, `reuse lint`, AppStream and desktop-file validation, translation
   completeness
-- [ ] P0 [AUTO] Release workflow: tag → build → Flatpak bundle + source
+- [x] P0 [AUTO] Release workflow: tag → build → Flatpak bundle + source
   tarball (+ checksum, signature-ready) → GitHub release with CHANGELOG
-  excerpt
+  excerpt (scripts verified locally; first real run happens with the first
+  tag, see HUMAN_TODO.md)
 - [x] P1 [AUTO] Pre-commit hooks (clang-format, reuse), `.clang-format`
 - [x] P1 [AUTO] `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`,
   issue/PR templates
