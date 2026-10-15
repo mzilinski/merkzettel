@@ -33,7 +33,10 @@ folgen* übernimmt dein Plasma-Farbschema samt Akzentfarbe.
 Der Kurzbefehl zum schnellen Erfassen, **Meta+Alt+N**, holt Merkzettel aus
 jeder Anwendung nach vorn, mit dem Cursor im Feld für neue Aufgaben. Ändern
 kannst du ihn unter **Systemeinstellungen → Tastatur → Kurzbefehle →
-Merkzettel**.
+Merkzettel**. Dasselbe bietet das Menü des Systemabschnitts als
+**Neue Aufgabe …**. Auf Desktops ohne KDEs Dienst für globale Kurzbefehle
+(GNOME, Sway, …) legst du eine beliebige Taste auf den Befehl
+`merkzettel --quick-add`.
 
 ## Benachrichtigungen
 

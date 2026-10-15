@@ -116,6 +116,7 @@ flatpak-builder --user --install --force-clean build-flatpak /tmp/merkzettel.yml
 |---|---|
 | `--tray`, `-t` | Start hidden in the system tray |
 | `--demo` | Start with sample data, without an account |
+| `--quick-add` | Show the window with the cursor in the new-task field; also works for a running instance |
 | `--help` | Show all options |
 
 ## Uninstall

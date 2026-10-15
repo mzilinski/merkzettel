@@ -58,7 +58,8 @@ do-not-disturb mode. The Flatpak sends notifications through the portal.
 
 The shortcut is registered with KGlobalAccel. Outside Plasma this service may
 be missing. On Plasma, check *System Settings → Keyboard → Shortcuts →
-Merkzettel* for conflicts.
+Merkzettel* for conflicts. On other desktops bind a key to
+`merkzettel --quick-add` in the desktop's keyboard settings.
 
 ## Flatpak
 

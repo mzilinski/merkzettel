@@ -155,6 +155,9 @@ public Q_SLOTS:
     // Always bring the window to the front — used by the second-instance
     // hand-off so launching merkzettel again never hides a visible window.
     void activateWindow();
+    // Bring the window up with the cursor in the new-task field (global
+    // shortcut, tray menu, `merkzettel --quick-add`).
+    void quickAdd();
     // Color scheme picker — "auto"/"light"/"dark" only. KColorSchemeManager
     // auto-saves; the choice survives across launches.
     void setColorScheme(const QString &scheme);

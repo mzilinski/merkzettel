@@ -229,6 +229,7 @@ App::App(QObject *parent)
     connect(m_tray.get(), &TrayIcon::activated, this, &App::toggleWindow);
     connect(m_tray.get(), &TrayIcon::quitRequested, this, [] { qApp->quit(); });
     connect(m_tray.get(), &TrayIcon::syncRequested, this, &App::refresh);
+    connect(m_tray.get(), &TrayIcon::quickAddRequested, this, &App::quickAdd);
 
     connect(m_todo.get(), &TodoApi::attachmentsReceived, this,
             [this](const QString &, const QString &taskId, const QList<Attachment> &atts) {
@@ -348,10 +349,7 @@ void App::registerGlobalShortcuts()
     auto *quickAdd = new QAction(i18n("Quick add task"), this);
     quickAdd->setObjectName(QStringLiteral("quick_add_task"));
     KGlobalAccel::setGlobalShortcut(quickAdd, QKeySequence(Qt::META | Qt::ALT | Qt::Key_N));
-    connect(quickAdd, &QAction::triggered, this, [this] {
-        activateWindow();
-        Q_EMIT quickAddRequested();
-    });
+    connect(quickAdd, &QAction::triggered, this, &App::quickAdd);
 }
 
 bool App::loggedIn() const
@@ -1351,6 +1349,12 @@ void App::setShareExplainerSeen(bool seen)
     group.writeEntry("explainerSeen", seen);
     group.sync();
     Q_EMIT shareExplainerSeenChanged();
+}
+
+void App::quickAdd()
+{
+    activateWindow();
+    Q_EMIT quickAddRequested();
 }
 
 void App::selectAdjacentList(int delta)

@@ -17,6 +17,7 @@ public:
 
 Q_SIGNALS:
     void activated();
+    void quickAddRequested();
     void syncRequested();
     void quitRequested();
 

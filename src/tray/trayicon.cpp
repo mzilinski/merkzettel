@@ -23,6 +23,8 @@ TrayIcon::TrayIcon(QObject *parent)
     auto *menu = new QMenu();
     auto *openAction = menu->addAction(QIcon::fromTheme(QStringLiteral("view-list-details")),
                                        i18n("Show/hide window"));
+    auto *addAction
+        = menu->addAction(QIcon::fromTheme(QStringLiteral("list-add")), i18n("New task ..."));
     auto *syncAction
         = menu->addAction(QIcon::fromTheme(QStringLiteral("view-refresh")), i18n("Synchronize"));
     menu->addSeparator();
@@ -30,6 +32,7 @@ TrayIcon::TrayIcon(QObject *parent)
         = menu->addAction(QIcon::fromTheme(QStringLiteral("application-exit")), i18n("Quit"));
 
     connect(openAction, &QAction::triggered, this, &TrayIcon::activated);
+    connect(addAction, &QAction::triggered, this, &TrayIcon::quickAddRequested);
     connect(syncAction, &QAction::triggered, this, &TrayIcon::syncRequested);
     connect(quitAction, &QAction::triggered, this, &TrayIcon::quitRequested);
 

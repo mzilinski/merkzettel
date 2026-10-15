@@ -66,7 +66,8 @@ Modus „Nicht stören“. Das Flatpak sendet Benachrichtigungen über das Porta
 
 Der Kurzbefehl wird bei KGlobalAccel registriert. Außerhalb von Plasma fehlt
 dieser Dienst eventuell. Prüfe unter Plasma *Systemeinstellungen → Tastatur →
-Kurzbefehle → Merkzettel* auf Konflikte.
+Kurzbefehle → Merkzettel* auf Konflikte. Auf anderen Desktops legst du in den
+Tastatureinstellungen eine Taste auf `merkzettel --quick-add`.
 
 ## Flatpak
 

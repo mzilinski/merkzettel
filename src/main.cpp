@@ -6,6 +6,7 @@
 #include <QIcon>
 #include <QLocale>
 #include <QStandardPaths>
+#include <QTimer>
 #include <QTranslator>
 #include <QDir>
 #include <QFile>
@@ -121,8 +122,13 @@ int main(int argc, char *argv[])
                                   i18n("Start hidden in the system tray"));
     QCommandLineOption demoOption(
         QStringLiteral("demo"), i18n("Run with built-in demo data, no sign-in or network access"));
+    QCommandLineOption quickAddOption(
+        QStringLiteral("quick-add"),
+        i18n(
+            "Show the window with the cursor in the new-task field (also for a running instance)"));
     parser.addOption(trayOption);
     parser.addOption(demoOption);
+    parser.addOption(quickAddOption);
     parser.process(app);
     about.processCommandLine(&parser);
 
@@ -136,9 +142,16 @@ int main(int argc, char *argv[])
     controller.setStartMinimized(parser.isSet(trayOption));
     controller.setDemoMode(parser.isSet(demoOption));
 
-    QObject::connect(
-        &service, &KDBusService::activateRequested, &controller,
-        [&controller](const QStringList &, const QString &) { controller.activateWindow(); });
+    // A second invocation hands its arguments to the running instance:
+    // `merkzettel --quick-add` can be bound to any key on desktops without
+    // KGlobalAccel.
+    QObject::connect(&service, &KDBusService::activateRequested, &controller,
+                     [&controller](const QStringList &arguments, const QString &) {
+        if (arguments.contains(QLatin1String("--quick-add")))
+            controller.quickAdd();
+        else
+            controller.activateWindow();
+    });
 
     QQmlApplicationEngine engine;
     KLocalization::setupLocalizedContext(&engine);
@@ -153,6 +166,8 @@ int main(int argc, char *argv[])
     }
 
     controller.start();
+    if (parser.isSet(quickAddOption))
+        QTimer::singleShot(0, &controller, &Merkzettel::App::quickAdd);
 
     return app.exec();
 }

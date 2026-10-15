@@ -30,7 +30,9 @@ including the accent colour.
 
 The quick-add shortcut **Meta+Alt+N** brings Merkzettel to the front with the
 cursor in the new-task field, from any application. Change it in **System
-Settings → Keyboard → Shortcuts → Merkzettel**.
+Settings → Keyboard → Shortcuts → Merkzettel**. The tray menu offers the same
+as **New task …**. On desktops without KDE's global shortcut service (GNOME,
+Sway, …) bind any key to the command `merkzettel --quick-add`.
 
 ## Notifications
 

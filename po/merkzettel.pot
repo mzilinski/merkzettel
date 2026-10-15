@@ -20,8 +20,8 @@ msgstr ""
 msgid "Custom repeat"
 msgstr ""
 
-#: src/CustomRecurrenceDialog.qml:36 src/Main.qml:442 src/Main.qml:482
-#: src/Main.qml:526 src/TaskDetailSheet.qml:685
+#: src/CustomRecurrenceDialog.qml:36 src/Main.qml:456 src/Main.qml:496
+#: src/Main.qml:540 src/TaskDetailSheet.qml:685
 msgid "Cancel"
 msgstr ""
 
@@ -114,8 +114,8 @@ msgstr ""
 msgid "Merkzettel only talks to Microsoft. There is no telemetry and no other server involved."
 msgstr ""
 
-#: src/Main.qml:11 src/main.cpp:105 src/tray/trayicon.cpp:21
-#: src/tray/trayicon.cpp:50 src/tray/trayicon.cpp:54
+#: src/Main.qml:11 src/main.cpp:106 src/tray/trayicon.cpp:21
+#: src/tray/trayicon.cpp:53 src/tray/trayicon.cpp:57
 #, kde-format
 msgid "Merkzettel"
 msgstr ""
@@ -196,12 +196,12 @@ msgstr ""
 msgid "Delete list ..."
 msgstr ""
 
-#: src/Main.qml:331 src/main.cpp:106
+#: src/Main.qml:336 src/main.cpp:107
 #, kde-format
 msgid "Microsoft To Do client for KDE"
 msgstr ""
 
-#: src/Main.qml:335
+#: src/Main.qml:340
 msgid ""
 "Built with Kirigami, KDE Frameworks 6 and Qt 6.\n"
 "\n"
@@ -212,45 +212,45 @@ msgid ""
 "Disclaimer: This program is provided \"as is\", without warranty of any kind. The author accepts no liability for any data loss, missed appointments or other damages arising from its use, except in cases of intent or gross negligence, or for damages to life, body or health. See the GPL-3.0 license, sections 15 and 16, for the full disclaimer."
 msgstr ""
 
-#: src/Main.qml:340 src/main.cpp:114
+#: src/Main.qml:345 src/main.cpp:115
 #, kde-format
 msgid "Author"
 msgstr ""
 
-#: src/Main.qml:437
+#: src/Main.qml:451
 msgid "Delete list?"
 msgstr ""
 
-#: src/Main.qml:438
+#: src/Main.qml:452
 msgid "This will permanently delete the list \"%1\" and all of its tasks. This cannot be undone."
 msgstr ""
 
-#: src/Main.qml:447 src/TaskDelegate.qml:299 src/TaskDetailSheet.qml:648
+#: src/Main.qml:461 src/TaskDelegate.qml:299 src/TaskDetailSheet.qml:648
 #: src/TaskDetailSheet.qml:690 src/TasksPage.qml:261
 msgid "Delete"
 msgstr ""
 
-#: src/Main.qml:460
+#: src/Main.qml:474
 msgid "New list"
 msgstr ""
 
-#: src/Main.qml:471
+#: src/Main.qml:485
 msgid "List name"
 msgstr ""
 
-#: src/Main.qml:487
+#: src/Main.qml:501
 msgid "Create"
 msgstr ""
 
-#: src/Main.qml:503
+#: src/Main.qml:517
 msgid "Rename list"
 msgstr ""
 
-#: src/Main.qml:515
+#: src/Main.qml:529
 msgid "New list name"
 msgstr ""
 
-#: src/Main.qml:531
+#: src/Main.qml:545
 msgid "Rename"
 msgstr ""
 
@@ -408,7 +408,7 @@ msgstr ""
 msgid "Reminder:"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:246 src/app.cpp:1400
+#: src/TaskDetailSheet.qml:246 src/app.cpp:1406
 #, kde-format
 msgid "Reminder"
 msgstr ""
@@ -509,7 +509,7 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: src/TaskDetailSheet.qml:634 src/app.cpp:1410
+#: src/TaskDetailSheet.qml:634 src/app.cpp:1416
 #, kde-format
 msgid "Mark done"
 msgstr ""
@@ -677,22 +677,22 @@ msgstr ""
 msgid "Synced — %1 changed, %2 removed"
 msgstr ""
 
-#: src/app.cpp:225 src/app.cpp:273
+#: src/app.cpp:225 src/app.cpp:274
 #, kde-format
 msgid "Error: %1"
 msgstr ""
 
-#: src/app.cpp:244
+#: src/app.cpp:245
 #, kde-format
 msgid "Attachments updated"
 msgstr ""
 
-#: src/app.cpp:298 src/app.cpp:524
+#: src/app.cpp:301 src/app.cpp:524
 #, kde-format
 msgid "Demo mode — no real data, all changes are local"
 msgstr ""
 
-#: src/app.cpp:346
+#: src/app.cpp:349
 #, kde-format
 msgid "Quick add task"
 msgstr ""
@@ -786,177 +786,177 @@ msgstr ""
 msgid "Saved \"%1\""
 msgstr ""
 
-#: src/app.cpp:1422
+#: src/app.cpp:1428
 #, kde-format
 msgid "Tasks"
 msgstr ""
 
-#: src/app.cpp:1423 src/app.cpp:1537 src/app.cpp:1538
+#: src/app.cpp:1429 src/app.cpp:1543 src/app.cpp:1544
 #, kde-format
 msgid "Work"
 msgstr ""
 
-#: src/app.cpp:1424
+#: src/app.cpp:1430
 #, kde-format
 msgid "Home"
 msgstr ""
 
-#: src/app.cpp:1425
+#: src/app.cpp:1431
 #, kde-format
 msgid "Shopping"
 msgstr ""
 
-#: src/app.cpp:1426
+#: src/app.cpp:1432
 #, kde-format
 msgid "Learning"
 msgstr ""
 
-#: src/app.cpp:1467
+#: src/app.cpp:1473
 #, kde-format
 msgid "Pay electricity bill"
 msgstr ""
 
-#: src/app.cpp:1469
+#: src/app.cpp:1475
 #, kde-format
 msgid "Reply to Anna about the proposal"
 msgstr ""
 
-#: src/app.cpp:1471
+#: src/app.cpp:1477
 #, kde-format
 msgid "Buy groceries"
 msgstr ""
 
-#: src/app.cpp:1472
+#: src/app.cpp:1478
 #, kde-format
 msgid "milk, bread, coffee, oranges"
 msgstr ""
 
-#: src/app.cpp:1479
+#: src/app.cpp:1485
 #, kde-format
 msgid "Team standup"
 msgstr ""
 
-#: src/app.cpp:1481
+#: src/app.cpp:1487
 #, kde-format
 msgid "Pick up parcel from the post office"
 msgstr ""
 
-#: src/app.cpp:1483
+#: src/app.cpp:1489
 #, kde-format
 msgid "Submit travel expenses"
 msgstr ""
 
-#: src/app.cpp:1485
+#: src/app.cpp:1491
 #, kde-format
 msgid "Read 'The Pragmatic Programmer' ch.4"
 msgstr ""
 
-#: src/app.cpp:1486
+#: src/app.cpp:1492
 #, kde-format
 msgid "Focus on the chapter on orthogonality."
 msgstr ""
 
-#: src/app.cpp:1487
+#: src/app.cpp:1493
 #, kde-format
 msgid "Plan summer holiday"
 msgstr ""
 
-#: src/app.cpp:1495
+#: src/app.cpp:1501
 #, kde-format
 msgid "Learn Rust"
 msgstr ""
 
-#: src/app.cpp:1495
+#: src/app.cpp:1501
 #, kde-format
 msgid "Start with the official book."
 msgstr ""
 
-#: src/app.cpp:1497
+#: src/app.cpp:1503
 #, kde-format
 msgid "Refactor printer driver"
 msgstr ""
 
-#: src/app.cpp:1498
+#: src/app.cpp:1504
 #, kde-format
 msgid "Update CV"
 msgstr ""
 
-#: src/app.cpp:1499
+#: src/app.cpp:1505
 #, kde-format
 msgid "Renew library card"
 msgstr ""
 
-#: src/app.cpp:1504
+#: src/app.cpp:1510
 #, kde-format
 msgid "Quarterly report"
 msgstr ""
 
-#: src/app.cpp:1511
+#: src/app.cpp:1517
 #, kde-format
 msgid "Code review for Markus"
 msgstr ""
 
-#: src/app.cpp:1513
+#: src/app.cpp:1519
 #, kde-format
 msgid "1:1 with manager"
 msgstr ""
 
-#: src/app.cpp:1518
+#: src/app.cpp:1524
 #, kde-format
 msgid "Water the plants"
 msgstr ""
 
-#: src/app.cpp:1519
+#: src/app.cpp:1525
 #, kde-format
 msgid "Fix the bathroom faucet"
 msgstr ""
 
-#: src/app.cpp:1523
+#: src/app.cpp:1529
 #, kde-format
 msgid "New running shoes"
 msgstr ""
 
-#: src/app.cpp:1524
+#: src/app.cpp:1530
 #, kde-format
 msgid "Birthday present for Mum"
 msgstr ""
 
-#: src/app.cpp:1529
+#: src/app.cpp:1535
 #, kde-format
 msgid "Finish KDE Frameworks 6 tutorial"
 msgstr ""
 
-#: src/app.cpp:1531
+#: src/app.cpp:1537
 #, kde-format
 msgid "Watch Qt 6.6 release video"
 msgstr ""
 
-#: src/app.cpp:1536 src/app.cpp:1537
+#: src/app.cpp:1542 src/app.cpp:1543
 #, kde-format
 msgid "Finance"
 msgstr ""
 
-#: src/app.cpp:1539
+#: src/app.cpp:1545
 #, kde-format
 msgid "Family"
 msgstr ""
 
-#: src/app.cpp:1551
+#: src/app.cpp:1563
 #, kde-format
 msgid "Hotel receipt.pdf"
 msgstr ""
 
-#: src/app.cpp:1553
+#: src/app.cpp:1565
 #, kde-format
 msgid "Train ticket.png"
 msgstr ""
 
-#: src/app.cpp:1585
+#: src/app.cpp:1597
 #, kde-format
 msgid "Signed in, loading lists ..."
 msgstr ""
 
-#: src/app.cpp:1591
+#: src/app.cpp:1603
 #, kde-format
 msgid "Sign-in error: %1"
 msgstr ""
@@ -1026,14 +1026,19 @@ msgstr ""
 msgid "No connection to Microsoft (%1)"
 msgstr ""
 
-#: src/main.cpp:121
+#: src/main.cpp:122
 #, kde-format
 msgid "Start hidden in the system tray"
 msgstr ""
 
-#: src/main.cpp:123
+#: src/main.cpp:124
 #, kde-format
 msgid "Run with built-in demo data, no sign-in or network access"
+msgstr ""
+
+#: src/main.cpp:128
+#, kde-format
+msgid "Show the window with the cursor in the new-task field (also for a running instance)"
 msgstr ""
 
 #: src/models/tasklistsmodel.cpp:70
@@ -1123,22 +1128,27 @@ msgstr ""
 
 #: src/tray/trayicon.cpp:27
 #, kde-format
+msgid "New task ..."
+msgstr ""
+
+#: src/tray/trayicon.cpp:29
+#, kde-format
 msgid "Synchronize"
 msgstr ""
 
-#: src/tray/trayicon.cpp:30
+#: src/tray/trayicon.cpp:32
 #, kde-format
 msgid "Quit"
 msgstr ""
 
-#: src/tray/trayicon.cpp:51
+#: src/tray/trayicon.cpp:54
 #, kde-format
 msgid "%1 open task due today"
 msgid_plural "%1 open tasks due today"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/tray/trayicon.cpp:54
+#: src/tray/trayicon.cpp:57
 #, kde-format
 msgid "No tasks due"
 msgstr ""

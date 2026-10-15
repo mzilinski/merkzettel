@@ -117,6 +117,7 @@ flatpak-builder --user --install --force-clean build-flatpak /tmp/merkzettel.yml
 | Option | Wirkung |
 |---|---|
 | `--tray`, `-t` | Versteckt im Systemabschnitt starten |
+| `--quick-add` | Fenster mit dem Cursor im Feld für neue Aufgaben anzeigen; funktioniert auch bei bereits laufender Instanz |
 | `--demo` | Mit Beispieldaten starten, ohne Konto |
 | `--help` | Alle Optionen anzeigen |
 
