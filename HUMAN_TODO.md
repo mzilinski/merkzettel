@@ -12,7 +12,7 @@ decision. Do them **in this order**; later steps depend on earlier ones.
 | # | Task | Why it cannot be automated | Effort |
 |---|---|---|---|
 | 1 | Imprint address and legal review | Personal data and legal responsibility | 15 min + review |
-| 2 | Enable GitHub Pages | Repository setting | 2 min |
+| 2 | ~~Enable GitHub Pages~~ — **done 2026-10-15**, site live | Repository setting | 2 min |
 | 3 | Azure app for public releases | Your Microsoft account; no app may be created on your behalf | 15 min |
 | 4 | Client ID into CI and packaging | Depends on 3 | 5 min |
 | 5 | GPG key for signed tags (optional, recommended) | Your identity | 15 min |
@@ -58,6 +58,29 @@ online) and before step 8: the AppStream metainfo links to the website, and
 Flathub's linter checks the links.
 
 ## 3. Azure app registration for public releases
+
+> **Status 2026-10-16 — in progress, blocked on sign-in.** Notes from the
+> first attempt:
+>
+> - *"AADSTS50058 … no user is signed in"* in the portal: the browser blocked
+>   the login cookies. Click **Sign in again** (not "continue without token"),
+>   or use a private window on <https://portal.azure.com>, or allow cookies for
+>   `login.microsoftonline.com`, `entra.microsoft.com`, `portal.azure.com`.
+> - *"account does not exist in tenant 'Microsoft Services'"*: you signed in
+>   with a **personal Microsoft account that has no directory (tenant)**.
+>   Such accounts cannot register apps. Two ways out:
+>   - **A (preferred):** sign in with the account that owns your existing
+>     test registration — its tenant ID starts with `10929875-` (see
+>     `MERKZETTEL_TENANT` in `build/CMakeCache.txt`). Check *profile → Switch
+>     directory*, then create a **new** registration there. Only if that
+>     tenant is yours, not an employer's — otherwise the app belongs to them.
+>   - **B:** create a free Azure account at <https://azure.microsoft.com/free>
+>     with your personal account; it creates a directory (credit-card identity
+>     check, an app registration costs nothing). Then register the app.
+> - Your existing registration is single-tenant (only accounts of that one
+>   directory can sign in), so it is not suitable for public packages.
+> - When you have the client ID, hand it to Claude: it can do step 4 (GitHub
+>   secret, PKGBUILDs, sign-in test).
 
 Packages from Flathub and the AUR need a client ID that belongs to the
 project, not to a private test registration (decision D2). Follow
