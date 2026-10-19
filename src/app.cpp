@@ -490,12 +490,14 @@ void App::syncAllLists()
 
 void App::refreshDetailTaskFromModel()
 {
-    const QString openId = m_detailTask.value(QStringLiteral("taskId")).toString();
+    QString openId = m_detailTask.value(QStringLiteral("taskId")).toString();
+    if (openId.isEmpty()) openId = m_pendingDetailId;
     if (openId.isEmpty()) return;
     const int n = m_tasksModel->rowCount();
     for (int i = 0; i < n; ++i) {
         const auto idx = m_tasksModel->index(i, 0);
         if (m_tasksModel->data(idx, TasksModel::IdRole).toString() == openId) {
+            if (openId == m_pendingDetailId) m_pendingDetailId.clear();
             setDetailTask(m_tasksModel->taskAt(i));
             return;
         }
@@ -573,7 +575,7 @@ void App::refresh()
     }
 }
 
-void App::addTask(const QString &input)
+void App::addTask(const QString &input, bool openDetails)
 {
     if (input.trimmed().isEmpty()) return;
 
@@ -608,6 +610,14 @@ void App::addTask(const QString &input)
     std::function<void(const QString &)> onCreated;
     if (m_currentListId == QLatin1String(TaskListsModel::kVirtualMyDayId)) {
         onCreated = [this](const QString &id) { setInMyDay({id}, true); };
+    }
+    if (openDetails) {
+        // The model only learns about the task with the next fetch (or
+        // demoChanged()), so refreshDetailTaskFromModel() opens it then.
+        onCreated = [this, onCreated](const QString &id) {
+            if (onCreated) onCreated(id);
+            m_pendingDetailId = id;
+        };
     }
     if (m_demoMode) {
         Task t;
@@ -1210,6 +1220,7 @@ void App::openLinkedResource(const QString &webUrl)
 void App::openTaskDetails(int row)
 {
     const QVariantMap task = m_tasksModel->taskAt(row);
+    m_pendingDetailId.clear();
     setDetailTask(task);
     if (!m_demoMode && task.value(QStringLiteral("hasAttachments")).toBool()) {
         m_todo->fetchAttachments(task.value(QStringLiteral("listId")).toString(),
@@ -1362,6 +1373,7 @@ void App::deleteAttachment(const QString &taskId, const QString &attachmentId)
 void App::closeTaskDetails()
 {
     m_detailTask.clear();
+    m_pendingDetailId.clear();
     Q_EMIT detailTaskChanged();
 }
 

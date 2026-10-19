@@ -284,11 +284,16 @@ Kirigami.ScrollablePage {
                     id: addField
                     Layout.fillWidth: true
                     placeholderText: i18n("New task ... (\"tomorrow\", \"mo\", \"25.5.\" at end for due date)")
-                    onAccepted: addCurrent()
+                    // Handled here rather than in onAccepted: TextInput passes
+                    // Return on after accepting, and ScrollablePage forwards it
+                    // to the list, which would open the current task's details.
+                    // Shift+Return also opens the new task's details.
+                    Keys.onReturnPressed: event => addCurrent(event.modifiers & Qt.ShiftModifier)
+                    Keys.onEnterPressed: event => addCurrent(event.modifiers & Qt.ShiftModifier)
                     Keys.onDownPressed: page.focusTaskList()
-                    function addCurrent() {
+                    function addCurrent(openDetails) {
                         if (text.trim().length > 0) {
-                            app.addTask(text.trim());
+                            app.addTask(text.trim(), !!openDetails);
                             text = "";
                         }
                     }
@@ -307,6 +312,9 @@ Kirigami.ScrollablePage {
                                  ? i18n("Search across all lists ...")
                                  : i18n("Search tasks ...")
                 onTextChanged: app.tasksModel.filterText = text
+                // Swallow Return so it doesn't reach the list (see addField).
+                Keys.onReturnPressed: {}
+                Keys.onEnterPressed: {}
                 Keys.onDownPressed: page.focusTaskList()
             }
             RowLayout {

@@ -18,6 +18,9 @@ The shortcuts follow Microsoft To Do where an equivalent exists.
 
 | Shortcut | Action |
 |---|---|
+| <kbd>Enter</kbd> in the new-task field | Add the task, stay in the field for the next one |
+| <kbd>Shift</kbd>+<kbd>Enter</kbd> in the new-task field | Add the task and open its details |
+| <kbd>Enter</kbd> in the details' title field | Save the title and close the details |
 | <kbd>↓</kbd> in the new-task or search field | Move into the task list |
 | <kbd>↑</kbd> / <kbd>↓</kbd> | Previous / next task |
 | <kbd>Enter</kbd> | Open the details |

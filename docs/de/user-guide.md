@@ -49,8 +49,10 @@ deiner Standardliste und bekommen die passende Eigenschaft – einen Stern in
 
 ## Aufgaben hinzufügen
 
-Tippe in **Neue Aufgabe ...** und drücke <kbd>Eingabe</kbd>. Ein Datumswort am
-Ende setzt das Fälligkeitsdatum:
+Tippe in **Neue Aufgabe ...** und drücke <kbd>Eingabe</kbd>; das Feld bleibt
+für die nächste Aufgabe bereit. <kbd>Umschalt</kbd>+<kbd>Eingabe</kbd> legt die
+Aufgabe an und öffnet sofort ihre Details. Ein Datumswort am Ende setzt das
+Fälligkeitsdatum:
 
 | Du tippst | Fällig |
 |---|---|

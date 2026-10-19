@@ -172,6 +172,17 @@ private Q_SLOTS:
         QVERIFY(task.completed());
     }
 
+    void addTaskCanOpenDetails()
+    {
+        m_app->setCurrentListId(QStringLiteral("demo-tasks"));
+        m_app->addTask(QStringLiteral("Without details"));
+        QVERIFY(m_app->detailTask().isEmpty());
+        m_app->addTask(QStringLiteral("With details"), true);
+        QCOMPARE(m_app->detailTask().value(QStringLiteral("title")).toString(),
+                 QStringLiteral("With details"));
+        m_app->closeTaskDetails();
+    }
+
     void plainNeutralisesMarkup()
     {
         const QString s = App::plain(QStringLiteral("<b>x</b>"));

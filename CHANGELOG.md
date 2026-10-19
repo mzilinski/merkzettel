@@ -13,6 +13,17 @@ AppStream metainfo in sync.
 
 ## [Unreleased]
 
+### Added
+
+- <kbd>Shift</kbd>+<kbd>Enter</kbd> in the new-task field adds the task and
+  opens its details.
+- <kbd>Enter</kbd> in the details' title field saves and closes the details.
+
+### Fixed
+
+- <kbd>Enter</kbd> in the new-task or search field no longer opens the details
+  of the previously selected task.
+
 ## [0.4.0] - 2026-10-15
 
 First public release.

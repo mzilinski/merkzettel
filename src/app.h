@@ -97,7 +97,8 @@ public Q_SLOTS:
     void leaveDemoMode();
     void logout();
     void refresh();
-    void addTask(const QString &input);
+    // openDetails: open the new task in the detail sheet once it exists.
+    void addTask(const QString &input, bool openDetails = false);
     void completeTask(const QString &taskId);
     void uncompleteTask(const QString &taskId);
     void deleteTask(const QString &taskId);
@@ -263,6 +264,8 @@ private:
     int m_movesInFlight = 0;
     QSet<QString> m_moveTouchedLists;
     QVariantMap m_detailTask;
+    // Created task to open in the detail sheet as soon as the model has it.
+    QString m_pendingDetailId;
     bool m_startMinimized = false;
     bool m_demoMode = false;
     bool m_demoFromCommandLine = false;

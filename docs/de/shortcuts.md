@@ -18,6 +18,9 @@ Die Kürzel folgen Microsoft To Do, wo es eine Entsprechung gibt.
 
 | Kürzel | Aktion |
 |---|---|
+| <kbd>Eingabe</kbd> im Feld für neue Aufgaben | Aufgabe anlegen, im Feld bleiben für die nächste |
+| <kbd>Umschalt</kbd>+<kbd>Eingabe</kbd> im Feld für neue Aufgaben | Aufgabe anlegen und ihre Details öffnen |
+| <kbd>Eingabe</kbd> im Titelfeld der Details | Titel speichern und Details schließen |
 | <kbd>↓</kbd> im Feld für neue Aufgaben oder im Suchfeld | In die Aufgabenliste wechseln |
 | <kbd>↑</kbd> / <kbd>↓</kbd> | Vorherige / nächste Aufgabe |
 | <kbd>Eingabe</kbd> | Details öffnen |

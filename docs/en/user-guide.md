@@ -44,8 +44,9 @@ Day in *My Day*.
 
 ## Adding tasks
 
-Type into **New task …** and press <kbd>Enter</kbd>. A date word at the end
-sets the due date:
+Type into **New task …** and press <kbd>Enter</kbd>; the field stays ready
+for the next task. <kbd>Shift</kbd>+<kbd>Enter</kbd> adds the task and opens
+its details right away. A date word at the end sets the due date:
 
 | You type | Due date |
 |---|---|

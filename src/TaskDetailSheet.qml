@@ -58,11 +58,22 @@ Kirigami.OverlaySheet {
                 Kirigami.FormData.label: i18n("Title:")
                 Layout.fillWidth: true
                 text: hasTask ? task.title : ""
-                onEditingFinished: {
-                    if (hasTask && text.trim().length > 0 && text !== task.title) {
-                        app.setTaskTitle(task.taskId, text.trim());
+                // Return saves and closes; closing also takes the focus away,
+                // which emits editingFinished again before the new title has
+                // come back from the server, hence the per-task guard.
+                property string submitted: ""
+                function commit() {
+                    if (!hasTask) return;
+                    const t = text.trim();
+                    const key = task.taskId + "\n" + t;
+                    if (t.length > 0 && t !== task.title && key !== submitted) {
+                        submitted = key;
+                        app.setTaskTitle(task.taskId, t);
                     }
                 }
+                onEditingFinished: commit()
+                Keys.onReturnPressed: { commit(); sheet.close(); }
+                Keys.onEnterPressed: { commit(); sheet.close(); }
             }
 
             RowLayout {
