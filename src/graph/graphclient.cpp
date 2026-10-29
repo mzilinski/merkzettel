@@ -20,7 +20,8 @@ constexpr auto kGraphBase = "https://graph.microsoft.com/v1.0";
 constexpr int kMaxConcurrent = 4;      // Outlook/To Do per-mailbox concurrency
 constexpr int kMaxThrottleRetries = 5; // then surface the 429 as an error
 
-// "HTTP <status>[: <Graph error message>]" — callers match on the prefix.
+// "HTTP <status>[ (<Graph error code>)][: <Graph error message>]" — callers
+// match on the prefix, or on the code.
 QString errorMessage(int status, const QByteArray &data, QNetworkReply *reply)
 {
     if (status == 0) {
@@ -31,8 +32,10 @@ QString errorMessage(int status, const QByteArray &data, QNetworkReply *reply)
     const auto errDoc = QJsonDocument::fromJson(data);
     if (errDoc.isObject()) {
         const auto err = errDoc.object().value(QStringLiteral("error")).toObject();
+        const QString code = err.value(QStringLiteral("code")).toString();
+        if (!code.isEmpty()) errMsg += QStringLiteral(" (%1)").arg(code);
         const QString msg = err.value(QStringLiteral("message")).toString();
-        if (!msg.isEmpty()) errMsg = QStringLiteral("HTTP %1: %2").arg(status).arg(msg);
+        if (!msg.isEmpty()) errMsg += QStringLiteral(": %1").arg(msg);
     } else if (reply->error() != QNetworkReply::NoError) {
         errMsg = QStringLiteral("HTTP %1: %2").arg(status).arg(reply->errorString());
     }

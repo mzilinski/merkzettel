@@ -413,9 +413,11 @@ void TodoApi::syncTasks(const QString &listId, const QString &deltaLink)
         }
     }, [this, state, listId](const QJsonObject &lastPage, const QString &err) {
         if (!err.isEmpty()) {
-            // 410 means the delta token is no longer valid — caller must drop
-            // it and run a full fetchTasks fallback.
-            if (err.contains(QStringLiteral("HTTP 410"))) {
+            // The delta token is no longer valid — caller must drop it and run
+            // a full fetchTasks fallback. Graph says so with 410, or with 400
+            // ErrorInvalidSyncStateData when it no longer accepts the state.
+            if (err.startsWith(QStringLiteral("HTTP 410"))
+                || err.startsWith(QStringLiteral("HTTP 400 (ErrorInvalidSyncStateData)"))) {
                 Q_EMIT tasksDeltaExpired(listId);
             } else {
                 Q_EMIT errorOccurred(err);

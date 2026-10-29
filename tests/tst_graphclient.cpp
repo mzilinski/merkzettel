@@ -215,6 +215,51 @@ private Q_SLOTS:
         QCOMPARE(expired.at(0).at(0).toString(), QStringLiteral("L"));
     }
 
+    void refusedDeltaStateRequestsFullFetch()
+    {
+        // Graph's other way of refusing a stored delta token.
+        MockHttpServer server([](const MockHttpServer::Request &) {
+            MockHttpServer::Response r;
+            r.status = 400;
+            r.body
+                = R"({"error":{"code":"ErrorInvalidSyncStateData","message":"Invalid sync state"}})";
+            return r;
+        });
+        AuthManager auth;
+        GraphClient graph(&auth);
+        graph.setBaseUrl(server.baseUrl());
+        TodoApi api(&graph);
+
+        QSignalSpy expired(&api, &TodoApi::tasksDeltaExpired);
+        QSignalSpy failed(&api, &TodoApi::errorOccurred);
+        api.syncTasks(QStringLiteral("L"), server.baseUrl() + QStringLiteral("/delta?token=old"));
+        QVERIFY(expired.wait(5000));
+        QCOMPARE(expired.at(0).at(0).toString(), QStringLiteral("L"));
+        QCOMPARE(failed.count(), 0);
+    }
+
+    void otherBadRequestIsReportedAsError()
+    {
+        MockHttpServer server([](const MockHttpServer::Request &) {
+            MockHttpServer::Response r;
+            r.status = 400;
+            r.body = R"({"error":{"code":"ErrorInvalidRequest","message":"Bad request"}})";
+            return r;
+        });
+        AuthManager auth;
+        GraphClient graph(&auth);
+        graph.setBaseUrl(server.baseUrl());
+        TodoApi api(&graph);
+
+        QSignalSpy expired(&api, &TodoApi::tasksDeltaExpired);
+        QSignalSpy failed(&api, &TodoApi::errorOccurred);
+        api.syncTasks(QStringLiteral("L"), server.baseUrl() + QStringLiteral("/delta?token=old"));
+        QVERIFY(failed.wait(5000));
+        QCOMPARE(failed.at(0).at(0).toString(),
+                 QStringLiteral("HTTP 400 (ErrorInvalidRequest): Bad request"));
+        QCOMPARE(expired.count(), 0);
+    }
+
     void addTaskReportsCreatedId()
     {
         QByteArray postedBody;
