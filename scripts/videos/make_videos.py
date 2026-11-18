@@ -8,9 +8,11 @@ performed in the app and the narration in English and German. For each
 script and language this tool
 
   1. synthesises the narration with Piper (one WAV per sentence, cached),
-  2. records the demo mode in Xvfb (1920x1080, KWin X11 for the Breeze window
-     decoration, kglobalacceld for the global shortcut) with ffmpeg x11grab
-     while xdotool performs the actions at their start times,
+  2. records the demo mode in a headless Plasma Wayland session (nested
+     kwin_wayland --virtual at 1920x1080, see scripts/wayland_session.py:
+     Breeze decoration, global shortcuts, input through KWin's EIS server,
+     frames through org.kde.KWin.ScreenShot2) while the actions run at their
+     start times,
   3. renders title and end cards from HTML (website/scripts/render-cards.mjs),
   4. mixes the narration, normalises it (EBU R128 loudnorm) and encodes
      H.264/AAC MP4 with key-press captions,
@@ -21,8 +23,8 @@ English and German subtitles fit either video.
 
 Usage: scripts/videos/make_videos.py [--build build] [--only ID ...]
                                       [--lang en,de] [--out DIR]
-Needs: xvfb-run, dbus-run-session, kwin_x11, kglobalacceld, xdotool, xprop,
-       ffmpeg (libx264, x11grab), piper (pip: piper-tts), node + Playwright
+Needs: kwin_wayland, dbus-run-session, libei, PyGObject, ffmpeg (libx264),
+       piper (pip: piper-tts), node + Playwright
        (website/node_modules), the voices in $MERKZETTEL_VOICES
        (default ~/.cache/merkzettel-videos/voices).
 """
@@ -36,7 +38,6 @@ import math
 import os
 import re
 import shutil
-import signal
 import subprocess
 import sys
 import tempfile
@@ -46,6 +47,7 @@ import wave
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "scripts"))
 SCRIPTS = ROOT / "docs/videos"
 CACHE = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "merkzettel-videos"
 VOICES = Path(os.environ.get("MERKZETTEL_VOICES", CACHE / "voices"))
@@ -61,6 +63,7 @@ FRAME = (WIN_X, WIN_Y - 28, WIN_W, WIN_H + 28)
 FPS = 30
 NARRATION_DELAY = 0.35   # seconds between segment start and narration
 SENTENCE_GAP = 0.3
+LAYOUT = {"en": "us", "de": "de"}   # keyboard layout of the session, for `type`
 
 VOICE = {
     "en": {"model": "en_US-libritts_r-medium", "speaker": "20", "length_scale": "1.0"},
@@ -284,20 +287,19 @@ def key_label(combo: str, lang: str) -> str:
 
 
 def record(spec: dict, build: str, workdir: Path) -> tuple[Path, list]:
-    """Run the recorder in its own Xvfb + D-Bus session."""
+    """Run the recorder in its own D-Bus session with a nested KWin."""
     spec_file = workdir / "spec.json"
     spec_file.write_text(json.dumps(spec))
     lang = spec["lang"]
-    env = dict(os.environ)
-    env.pop("WAYLAND_DISPLAY", None)
+    env = {k: v for k, v in os.environ.items() if k not in ("WAYLAND_DISPLAY", "DISPLAY")}
     for k in ("config", "data", "cache"):
         (workdir / k).mkdir(exist_ok=True)
     shutil.copy("/usr/share/color-schemes/BreezeLight.colors", workdir / "config/kdeglobals")
     (workdir / "config/kwriterc").write_text("[General]\nShow welcome view for new window=false\n")
     env.update({
         "XDG_CONFIG_HOME": str(workdir / "config"), "XDG_DATA_HOME": str(workdir / "data"),
-        "XDG_CACHE_HOME": str(workdir / "cache"), "QT_QPA_PLATFORM": "xcb",
-        "XDG_SESSION_TYPE": "x11", "MERKZETTEL_BIN": str(ROOT / build / "bin/merkzettel"),
+        "XDG_CACHE_HOME": str(workdir / "cache"),
+        "MERKZETTEL_BIN": str(ROOT / build / "bin/merkzettel"),
         "LANG": "de_DE.UTF-8" if lang == "de" else "en_US.UTF-8",
         "LC_ALL": "de_DE.UTF-8" if lang == "de" else "en_US.UTF-8",
         "LANGUAGE": lang,
@@ -305,8 +307,7 @@ def record(spec: dict, build: str, workdir: Path) -> tuple[Path, list]:
     for k, v in spec["env"].items():
         env[k] = v
     with open(workdir / "session.log", "w") as log:
-        rc = subprocess.run(["xvfb-run", "-a", "-s", "-screen 0 1920x1080x24 -nolisten tcp",
-                             "dbus-run-session", "--", sys.executable, __file__, "--record",
+        rc = subprocess.run(["dbus-run-session", "--", sys.executable, __file__, "--record",
                              str(spec_file)], env=env, stdout=log, stderr=subprocess.STDOUT).returncode
     if rc != 0 or not (workdir / "result.json").exists():
         sys.stderr.write((workdir / "session.log").read_text()[-4000:])
@@ -316,96 +317,66 @@ def record(spec: dict, build: str, workdir: Path) -> tuple[Path, list]:
 
 
 class Recorder:
-    """Runs inside Xvfb: starts the session, performs the actions."""
+    """Runs inside the D-Bus session: starts KWin, performs the actions."""
 
     def __init__(self, spec: dict):
         self.spec = spec
         self.lang = spec["lang"]
         self.work = Path(spec["workdir"])
-        self.procs: list[subprocess.Popen] = []
         self.keys: list[tuple[float, str]] = []
         self.t0 = None
-        self.mouse = (WIN_X + WIN_W - 40, WIN_Y + WIN_H - 40)
         self.win = None
-
-    def spawn(self, cmd, **kw):
-        p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **kw)
-        self.procs.append(p)
-        return p
-
-    def xdo(self, *args):
-        subprocess.run(["xdotool", *map(str, args)], check=False,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.s = None
 
     def now(self) -> float:
         """Current time on the video timeline."""
         return time.monotonic() - self.t0 + self.spec["rec_start"]
 
-    def place(self, pid: int | None, name: str | None, geom):
-        args = ["xdotool", "search", "--sync", "--onlyvisible"]
-        args += ["--pid", str(pid)] if pid else ["--name", name]
-        win = subprocess.run(args, capture_output=True, text=True, timeout=60).stdout.split()[-1]
-        x, y, w, h = geom
-        self.xdo("windowsize", win, w, h)
-        self.xdo("windowmove", win, x, y)
-        return win
-
     # --- actions
     def act(self, verb: str, args: list[str]):
+        s, inp = self.s, self.s.input
         if verb in ("title", "end", "poster"):
             return
         if verb == "launch":
-            self.spawn([os.environ["MERKZETTEL_BIN"], *args])
-            self.win = self.place(None, "^Merkzettel$", (WIN_X, WIN_Y, WIN_W, WIN_H))
+            app = s.spawn([os.environ["MERKZETTEL_BIN"], *args])
+            self.win = s.place(WIN_X, WIN_Y, WIN_W, WIN_H, pid=app.pid)["uuid"]
             time.sleep(6)   # the start-up notification disappears
-            self.xdo("windowactivate", "--sync", self.win)
+            s.activate(self.win)
         elif verb == "other":
             # other X Y W H command ...
             x, y, w, h = map(int, args[:4])
             cmd = args[4:]
             if cmd[0] == "kwrite" and len(cmd) == 1:
                 cmd.append(str(self.work / ("notizen.txt" if self.lang == "de" else "notes.txt")))
-            p = self.spawn(cmd)
-            win = self.place(p.pid, None, (x, y, w, h))
+            p = s.spawn(cmd)
+            win = s.place(x, y, w, h, pid=p.pid)["uuid"]
             time.sleep(2)
-            self.xdo("windowactivate", "--sync", win)
+            s.activate(win)
         elif verb == "move":
-            self.move(int(args[0]), int(args[1]), float(args[2]) if len(args) > 2 else 0.7)
+            inp.glide(int(args[0]), int(args[1]), float(args[2]) if len(args) > 2 else 0.7)
         elif verb in ("click", "rclick", "ctrlclick"):
-            self.move(int(args[0]), int(args[1]), 0.6)
+            inp.glide(int(args[0]), int(args[1]), 0.6)
             time.sleep(0.15)
             if verb == "ctrlclick":
-                self.xdo("keydown", "ctrl")
-                self.xdo("click", 1)
-                self.xdo("keyup", "ctrl")
+                inp.click(1, hold=inp.keymap.combo("ctrl"))
             else:
-                self.xdo("click", 3 if verb == "rclick" else 1)
+                inp.click(3 if verb == "rclick" else 1)
             time.sleep(0.25)
         elif verb in ("key", "keyq"):
-            for i, combo in enumerate(args):
+            for combo in args:
                 if verb == "key":
                     self.keys.append((self.now(), key_label(combo, self.lang)))
-                self.xdo("key", "--clearmodifiers", combo)
+                inp.combo(combo)
                 time.sleep(0.45)
         elif verb == "type":
-            self.xdo("type", "--delay", 85, args[0])
+            inp.type(args[0], delay=0.085)
             time.sleep(0.2)
         elif verb == "wait":
             time.sleep(float(args[0]))
         elif verb == "activate":
-            self.xdo("windowactivate", "--sync", self.win)
+            s.activate(self.win)
         else:
             raise SystemExit(f"unknown action {verb}")
-
-    def move(self, x: int, y: int, dur: float):
-        x0, y0 = self.mouse
-        steps = max(2, int(dur * 60))
-        for i in range(1, steps + 1):
-            f = i / steps
-            f = f * f * (3 - 2 * f)   # smoothstep
-            self.xdo("mousemove", int(x0 + (x - x0) * f), int(y0 + (y - y0) * f))
-            time.sleep(dur / steps / 2)
-        self.mouse = (x, y)
 
     def run_actions(self, actions):
         for lang, verb, args in actions:
@@ -413,40 +384,35 @@ class Recorder:
                 self.act(verb, args)
 
     def main(self):
-        disp = os.environ["DISPLAY"]
-        # kglobalacceld first: KWin registers Alt+F4 and friends through it.
-        self.spawn(["/usr/lib/kglobalacceld"])
-        time.sleep(1)
-        self.spawn(["kwin_x11", "--replace"], env=dict(os.environ, KWIN_COMPOSE="N"))
-        time.sleep(3)
-        (self.work / ("notizen.txt" if self.lang == "de" else "notes.txt")).write_text("")
-        self.xdo("mousemove", *self.mouse)
-        self.run_actions(self.spec["setup"])
-        if self.win:
-            self.xdo("mousemove", *self.mouse)
-        rec = self.work / "rec.mkv"
-        ff = subprocess.Popen(
-            ["ffmpeg", "-y", "-loglevel", "error", "-f", "x11grab", "-draw_mouse", "1",
-             "-framerate", str(FPS), "-video_size", "1920x1080", "-i", disp, "-copyts",
-             "-c:v", "libx264", "-preset", "ultrafast", "-qp", "0", str(rec)],
-            stdin=subprocess.PIPE)
-        time.sleep(2.0)
-        self.t0 = time.monotonic()
-        wall0 = time.time()
-        for row in self.spec["rows"]:
-            delay = row["time"] - self.now()
-            if delay > 0:
-                time.sleep(delay)
-            elif delay < -0.3:
-                print(f"warning: segment {row['time']:.1f}s starts {-delay:.1f}s late", file=sys.stderr)
-            self.run_actions(row["actions"])
-        end = self.spec["rec_end"] + 0.5
-        if end > self.now():
-            time.sleep(end - self.now())
-        ff.communicate(b"q")
-        (self.work / "result.json").write_text(json.dumps({"wall0": wall0, "keys": self.keys}))
-        for p in self.procs:
-            p.send_signal(signal.SIGTERM)
+        from wayland_session import ScreenRecorder, Session
+
+        self.s = Session(1920, 1080, layout=LAYOUT[self.lang], log=self.work / "kwin.log")
+        try:
+            (self.work / ("notizen.txt" if self.lang == "de" else "notes.txt")).write_text("")
+            rest = (WIN_X + WIN_W - 40, WIN_Y + WIN_H - 40)
+            self.s.input.move(*rest)
+            self.run_actions(self.spec["setup"])
+            if self.win:
+                self.s.input.move(*rest)
+            rec = ScreenRecorder(self.s, self.work / "rec.mkv", FPS)
+            rec.start()
+            rec.started.wait()
+            time.sleep(2.0)
+            self.t0 = time.monotonic()
+            for row in self.spec["rows"]:
+                delay = row["time"] - self.now()
+                if delay > 0:
+                    time.sleep(delay)
+                elif delay < -0.3:
+                    print(f"warning: segment {row['time']:.1f}s starts {-delay:.1f}s late", file=sys.stderr)
+                self.run_actions(row["actions"])
+            end = self.spec["rec_end"] + 0.5
+            if end > self.now():
+                time.sleep(end - self.now())
+            rec.stop()
+            (self.work / "result.json").write_text(json.dumps({"offset": self.t0 - rec.t0, "keys": self.keys}))
+        finally:
+            self.s.close()
 
 
 # --------------------------------------------------------------- assemble ---
@@ -464,13 +430,9 @@ def build_video(script: dict, lang: str, plan: list[dict], cards: dict, rec: Pat
     narration = work / "narration.wav"
     mix(plan, total, narration)
 
-    # x11grab stamps frames with the wall clock; -copyts keeps it.
-    start = float(subprocess.run(
-        ["ffprobe", "-v", "error", "-show_entries", "format=start_time", "-of", "csv=p=0", str(rec)],
-        capture_output=True, text=True, check=True).stdout.strip())
-    offset = result["wall0"] - start
-    if not 0 <= offset < 10:
-        offset = 2.0
+    # Frame n of the recording shows the screen at rec.t0 + n/FPS; the
+    # recorder stores where the timeline starts in it.
+    offset = result["offset"]
 
     draw = []
     for t, label in result["keys"]:

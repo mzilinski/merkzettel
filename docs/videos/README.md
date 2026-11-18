@@ -33,16 +33,27 @@ screen coordinates of the 1920×1080 recording, with the Merkzettel window at
 | `other X Y W H cmd …` | Start another application and place its window (`kwrite` gets an empty file) |
 | `move X Y [seconds]` | Move the mouse smoothly |
 | `click X Y`, `rclick X Y`, `ctrlclick X Y` | Move there and click (right, with Ctrl) |
-| `key combo …` | Press keys (xdotool names) and show them as a caption |
+| `key combo …` | Press keys (XKB keysym names joined with `+`, e.g. `ctrl+f`, `super+alt+n`, `Return`) and show them as a caption |
 | `keyq combo …` | Press keys without a caption |
-| `type "text"` | Type text |
+| `type "text"` | Type text (English videos on a US layout, German ones on a German layout) |
 | `wait seconds` | Pause |
 | `poster` | Take the poster frame 1.5 s after this segment starts |
 
+## Recording
+
+Each video is recorded in its own headless Plasma Wayland session: a nested
+`kwin_wayland --virtual` on a private D-Bus session
+(`scripts/wayland_session.py`, shared with `scripts/screenshots.py`).
+Merkzettel and the other applications run as native Wayland clients, with
+the Breeze decoration and KWin's global shortcuts. The recorder only uses
+interfaces KWin offers itself: input through its EIS server (libei), window
+placement through KWin scripts, frames through `org.kde.KWin.ScreenShot2`.
+Nothing touches the desktop you are working in.
+
 ## Requirements
 
-Xvfb (`xvfb-run`), `dbus-run-session`, `kwin_x11`, `kglobalacceld`,
-`xdotool`, `ffmpeg` with libx264, Node.js with `website/node_modules`
+`kwin_wayland` (Plasma 6), `dbus-run-session`, libei, PyGObject,
+`ffmpeg` with libx264, Node.js with `website/node_modules`
 (`make website-deps`), [Piper](https://github.com/OHF-Voice/piper1-gpl)
 (`pipx install piper-tts`) and two voices in
 `~/.cache/merkzettel-videos/voices/` (or `$MERKZETTEL_VOICES`):

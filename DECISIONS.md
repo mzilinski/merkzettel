@@ -135,7 +135,7 @@ release. Newest last. Each entry: context, decision, consequences.
 ## D14 — Video pipeline and storage
 
 - **Context:** The how-to videos are built from scripts in `docs/videos/`
-  (Xvfb, KWin, xdotool, ffmpeg, Piper). Building them needs a desktop
+  (headless KWin Wayland, ffmpeg, Piper). Building them needs a desktop
   stack, the app and ~120 MB of voices, which the Pages workflow on
   `ubuntu-latest` does not have.
 - **Decision:** Each script has a fixed timeline (start time per segment);

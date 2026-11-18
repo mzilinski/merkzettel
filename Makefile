@@ -50,7 +50,7 @@ flatpak:
 	  $(BUILD)/flatpak flatpak/io.github.mzilinski.merkzettel.yml
 
 screenshots: build
-	scripts/screenshots.sh $(BUILD)
+	python3 scripts/screenshots.py $(BUILD)
 
 website-deps:
 	cd website && npm ci --no-audit --no-fund
