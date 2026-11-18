@@ -23,6 +23,7 @@ import mmap
 import os
 import select
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -273,6 +274,29 @@ class Input:
 
 # ---------------------------------------------------------------- session ---
 
+_libc = ctypes.CDLL(None, use_errno=True)
+
+
+def _die_with_parent():
+    """preexec_fn: SIGTERM when the Python process goes, even on SIGKILL."""
+    _libc.prctl(1, 15)   # PR_SET_PDEATHSIG, SIGTERM
+
+
+# kwin_wayland carries cap_sys_nice, and exec'ing it clears the parent-death
+# signal. This watchdog keeps it and passes it on to KWin.
+_WATCHDOG = """
+import os, signal, sys
+pid = int(sys.argv[1])
+def stop(*_):
+    try: os.kill(pid, signal.SIGTERM)
+    except ProcessLookupError: pass
+    sys.exit(0)
+signal.signal(signal.SIGTERM, stop)
+while True:
+    signal.pause()
+"""
+
+
 class Session:
     """kwin_wayland --virtual on its own socket in the current D-Bus session."""
 
@@ -291,6 +315,8 @@ class Session:
             ["kwin_wayland", "--virtual", "--no-lockscreen", "--width", str(width), "--height", str(height),
              "--socket", self.socket],
             env=env, stdout=self.log, stderr=subprocess.STDOUT)
+        self.watchdog = subprocess.Popen([sys.executable, "-c", _WATCHDOG, str(self.kwin.pid)],
+                                         preexec_fn=_die_with_parent)
         self.bus = Gio.bus_get_sync(Gio.BusType.SESSION)
         self._wait_for("org.kde.KWin", 30)
         self._wait_for_path("/org/kde/KWin/ScreenShot2", 10)
@@ -351,7 +377,7 @@ class Session:
 
     def spawn(self, cmd: list[str], env: dict | None = None) -> subprocess.Popen:
         p = subprocess.Popen(cmd, env=dict(self.env, **(env or {})),
-                             stdout=self.log, stderr=subprocess.STDOUT)
+                             stdout=self.log, stderr=subprocess.STDOUT, preexec_fn=_die_with_parent)
         self.procs.append(p)
         return p
 
@@ -482,6 +508,8 @@ reply({{ok: !!c}});
             self.kwin.wait(10)
         except subprocess.TimeoutExpired:
             self.kwin.kill()
+        self.watchdog.terminate()
+        self.watchdog.wait()
         self.log.close()
 
 
